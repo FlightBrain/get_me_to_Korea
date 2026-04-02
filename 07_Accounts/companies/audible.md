@@ -71,6 +71,12 @@ Internal AI/ML for recommendation algorithms, content moderation, voice synthesi
 
 ## Conversation History
 
+**2026-04-10 - Q&A Session Scheduled**
+Contact: Audible stakeholder (TBD), Walton Stephens (AE), Kensington Belza (SDR)
+Time: 12:30 PM PT
+Prep Doc: AUDIBLE_QA_PREP_APR10.md
+Purpose: Discovery on voice/audio AI eval, recommendation engines, agentic AI roadmap
+
 **2026-04-01 - LinkedIn Outreach**
 Contacts: Razib Rahman, Harshul Jain, Pranav S
 Method: LinkedIn connection requests + messaging

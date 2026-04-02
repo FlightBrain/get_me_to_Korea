@@ -19,8 +19,8 @@ Tracks repeating tasks that happen on a cadence (daily, weekly, monthly). Ensure
 |------|-----------|-----------|----------|-------|
 | **Daily startup routine** | Daily (9:00am) | Apr 1 | Apr 2 | Review TODAY priorities, check blocked items, update calendar. (15min) |
 | **Email inbox review** | Daily (10:00am) | Apr 1 | Apr 2 | Process new messages, respond to urgent, flag for follow-up. (10min) |
-| **Daily outreach log** | Daily (5:00pm) | TBD | Apr 2 | Log emails sent, calls made, responses received in CRM. (10min) |
-| **Daily shutdown routine** | Daily (5:30pm) | TBD | Apr 2 | Capture wins, update DONE_LOG, prep for tomorrow, clear desk. (10min) |
+| **Daily outreach log** | Daily (5:00pm) | Apr 1 | Apr 2 | Log emails sent, calls made, responses received in CRM. (10min) |
+| **Daily shutdown routine** | Daily (5:30pm) | Apr 1 | Apr 2 | Capture wins, update DONE_LOG, prep for tomorrow, clear desk. (10min) |
 | **Weekly review** | Weekly (Friday 4pm) | TBD | Apr 4 | Retrospective: wins, blockers, learnings. Update next week's goals. (30min) |
 | **Weekly pipeline review** | Weekly (Monday 10am) | TBD | Apr 7 | Review open opportunities, activity metrics, forecast. With manager if possible. (30min) |
 | **Memory file update** | Weekly (Friday 5pm) | Mar 31 | Apr 4 | Refresh 02_Memory files: lessons learned, account notes, resources discovered. (30min) |

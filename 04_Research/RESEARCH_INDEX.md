@@ -16,18 +16,36 @@
 |---------|----------|-------|-------|------|-------|
 | [Example] | AI/ML | Series B+ | LLM reliability | 2026-04-01 | Add after research complete |
 
+## Braintrust Deep Research
+**File:** `BRAINTRUST_DEEP_RESEARCH.md` (created 2026-04-01)
+Full Notion knowledge pull covering: Product, ICP, Messaging, Customers, Competitive, Sales Process, Events, Objection Handling, What's Working. Source: 12 Notion pages.
+
+**File:** `SLACK_INTEL_APRIL2026.md` (created 2026-04-01)
+Slack intelligence pull: wins (SoFi, Eve $500K, Gusto $521K, blitz day 69 meetings), competitive intel (LangSmith, Langfuse, Arize battle cards), product news (Topics, Loop, Brainstore, BYOC), HumanX strategy, converting personas, PMF signals.
+
+## Competitive Resources (Quick Links)
+- CI Hub: https://www.notion.so/braintrustdata/Competitive-intelligence-hub-c4b82b2f4f2542c08ab84d33acd1635a
+- CI Bot: https://ci-bot.preview.braintrust.dev/
+- Competitive Deck: https://docs.google.com/presentation/d/1N_Y0ji9Gat3cQOCnxJu9fF2Ca_1mv6AdiIDAgyymFwA/
+- Email Hall of Fame: https://www.notion.so/braintrustdata/Email-Hall-of-Fame-2fef785802898042b12fec7cf02ec91b
+- Arize Battle Card: https://www.notion.so/braintrustdata/Braintrust-vs-Arize-Lark-Health-334f785802898039b6f6f3bd44b20eaf
+- Nubank POC (vs LangSmith): https://docs.google.com/document/d/1LLarJy1zYLL5idsYqdQ8lJ7uonZY5RWS08sd6csOBBo/edit
+
 ## Competitors Tracked
 
-**Active Competitors in AI Eval/Observability:**
-- Weights & Biases (experiment tracking, model monitoring)
-- Arize AI (model monitoring, drift detection)
-- Fiddler AI (AI explainability, monitoring)
-- DataRobot (AutoML, model governance)
-- AWS SageMaker Model Monitor (built-in, enterprise)
-- Anthropic Evals (open source, limited scope)
+**Active Competitors in AI Eval/Observability (from Gong, Jan 2026):**
+- Langfuse (37% of competitive mentions, 1,195 mentions. Self-hosting, ClickHouse scale issues, acquired by ClickHouse)
+- LangSmith (34%, 1,083 mentions. Framework lock-in, performance issues, can't handle complex agents)
+- Arize AI (19%, 596 mentions. Traditional ML platform, struggling with GenAI)
+- MLflow (5%, 172 mentions. Legacy, poor LLM support)
+- Galileo (3%, 98 mentions. Out-of-box scores focus)
+- Maxim (1%, 35 mentions. Lower pricing tier, dev UX)
+- Raindrop (<1%, 9 mentions. Deep search, emerging)
+
+**Full competitive analysis:** See `BRAINTRUST_DEEP_RESEARCH.md` Section 5
 
 **Indirect Competitors:**
-- LLM testing tools (PromptFoo, LangSmith)
+- Internal/homegrown eval systems (common objection: "we built our own")
 - LLM-as-a-judge frameworks (OpenAI, Claude)
 - In-house eval solutions (major enterprises)
 
