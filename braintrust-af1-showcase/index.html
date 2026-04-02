@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Braintrust × Nike AF1 | SDR Team Exclusive</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bt: #2C1FEA;
+    --bt-light: #5B4FFF;
+    --dark: #0A0A0F;
+    --mid: #555;
+    --light: #999;
+    --bg: #FAFAFA;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 2.5rem;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .nav-left { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-left svg { height: 20px; width: auto; }
+  .nav-x { font-size: 0.85rem; font-weight: 300; color: var(--light); }
+  .nav-nike { font-size: 1.1rem; font-weight: 900; letter-spacing: -0.02em; }
+  .nav-right { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--light); font-weight: 500; }
+  .nav-badge { background: var(--bt); color: white; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 1rem; }
+
+  /* FULL BLEED HERO */
+  .hero {
+    margin-top: 56px;
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
+    background: #F2F2F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero img {
+    width: 85%;
+    max-width: 1000px;
+    object-fit: contain;
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 40px 80px rgba(0,0,0,0.12));
+  }
+  .hero:hover img { transform: scale(1.03) rotate(-1.5deg); }
+  .hero-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(10,10,15,0.85));
+    padding: 4rem 3rem 3rem;
+    color: white;
+  }
+  .hero-overlay-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .hero-text h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
+  }
+  .hero-text p {
+    font-size: 1rem; color: rgba(255,255,255,0.7); margin-top: 0.75rem; max-width: 440px; line-height: 1.5;
+  }
+  .hero-meta { text-align: right; }
+  .hero-meta-item { margin-bottom: 0.75rem; }
+  .hero-meta-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+  .hero-meta-value { font-size: 1rem; font-weight: 700; }
+
+  @media (max-width: 768px) {
+    .hero-overlay-inner { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+    .hero-meta { text-align: left; display: flex; gap: 2rem; }
+  }
+
+  /* SECTION TITLES */
+  .section { max-width: 1200px; margin: 0 auto; padding: 5rem 2.5rem; }
+  .section-label { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--bt); font-weight: 600; margin-bottom: 0.5rem; }
+  .section-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 2.5rem; }
+
+  /* STORY BLOCK */
+  .story {
+    background: white;
+    padding: 5rem 2.5rem;
+  }
+  .story-inner {
+    max-width: 700px; margin: 0 auto; text-align: center;
+  }
+  .story-inner h2 {
+    font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1.25rem; line-height: 1.2;
+  }
+  .story-inner p {
+    color: var(--mid); font-size: 1rem; line-height: 1.8; margin-bottom: 1rem;
+  }
+  .story-badge {
+    display: inline-block; background: rgba(44,31,234,0.08); color: var(--bt);
+    padding: 0.5rem 1.25rem; border-radius: 100px; font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.05em; margin-top: 1rem;
+  }
+
+  /* IMAGE GRID */
+  .grid-2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+  }
+  .grid-3 {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;
+  }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+  .grid-item {
+    border-radius: 16px; overflow: hidden; background: #F2F2F2;
+    position: relative; cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s;
+  }
+  .grid-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+  }
+  .grid-item img {
+    width: 100%; display: block;
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  .grid-item:hover img { transform: scale(1.04); }
+  .grid-item-label {
+    position: absolute; bottom: 1rem; left: 1rem;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(8px);
+    padding: 0.4rem 0.9rem; border-radius: 8px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em;
+  }
+
+  /* DETAIL STRIP */
+  .strip {
+    background: var(--dark); color: white; padding: 4.5rem 2.5rem;
+  }
+  .strip-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem;
+  }
+  @media (max-width: 768px) { .strip-inner { grid-template-columns: 1fr 1fr; } }
+  .strip-item { text-align: center; }
+  .strip-num { font-size: 2rem; font-weight: 900; color: var(--bt-light); margin-bottom: 0.5rem; }
+  .strip-item h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .strip-item p { font-size: 0.78rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  /* FEATURE SPLIT */
+  .feature-split {
+    max-width: 1200px; margin: 0 auto; padding: 5rem 2.5rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+  }
+  @media (max-width: 768px) { .feature-split { grid-template-columns: 1fr; } }
+  .feature-img { border-radius: 20px; overflow: hidden; background: #F2F2F2; }
+  .feature-img img { width: 100%; display: block; transition: transform 0.6s; }
+  .feature-img:hover img { transform: scale(1.02); }
+  .feature-copy h2 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1rem; line-height: 1.15; }
+  .feature-copy p { color: var(--mid); line-height: 1.7; font-size: 0.95rem; margin-bottom: 1.25rem; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tag { background: rgba(44,31,234,0.08); color: var(--bt); padding: 0.4rem 0.9rem; border-radius: 100px; font-size: 0.7rem; font-weight: 600; }
+
+  /* TONGUE VOTE */
+  .vote-section { background: white; padding: 5rem 2.5rem; }
+  .vote-inner { max-width: 1200px; margin: 0 auto; }
+  .vote-header { text-align: center; margin-bottom: 3rem; }
+  .vote-header h2 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .vote-header p { color: var(--mid); font-size: 0.95rem; }
+  .vote-img {
+    border-radius: 20px; overflow: hidden; background: #F2F2F2;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+  }
+  .vote-img img { width: 100%; display: block; }
+  .vote-cta {
+    text-align: center; margin-top: 2rem;
+  }
+  .vote-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--bt); color: white;
+    padding: 0.9rem 2rem; border-radius: 50px; border: none;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .vote-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(44,31,234,0.3); }
+
+  /* COLORWAY */
+  .colorway { padding: 4rem 2.5rem; text-align: center; }
+  .colorway h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .colorway p { color: var(--light); font-size: 0.85rem; margin-bottom: 2rem; }
+  .swatches { display: flex; justify-content: center; gap: 1.25rem; }
+  .sw {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 3px solid transparent; cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .sw:hover, .sw.active { border-color: var(--bt); transform: scale(1.15); }
+  .sw-label { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--light); margin-top: 0.4rem; text-align: center; }
+
+  /* FOOTER */
+  footer {
+    padding: 2.5rem; text-align: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+  }
+  .foot-logos { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .foot-logos svg { height: 16px; }
+  footer p { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--light); }
+
+  /* ANIMATIONS */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <svg fill="none" viewBox="0 0 26 27"><path d="M9.55176 0c1.50704.00001 2.72944 1.23684 2.72944 2.76172v2.76074c0 1.52488-1.2224 2.76171-2.72944 2.76172H8.1875V9.3584h1.36426c1.50694.00001 2.72944 1.2359 2.72944 2.7607v2.7618c0 1.5248-1.2225 2.7607-2.72944 2.7607H8.1875v1.0742h1.36426c1.50704 0 2.72944 1.2369 2.72944 2.7617v2.7608c0 1.5249-1.2224 2.7617-2.72944 2.7617H6.82227c-1.50687-.0002-2.72852-1.237-2.72852-2.7617v-1.917H2.72949C1.22244 22.3213 0 21.0845 0 19.5596v-2.7617c.000238-1.5247 1.22259-2.7608 2.72949-2.7608h1.36426v-1.0742H2.72949c-1.5069 0-2.729254-1.2361-2.72949-2.7608V7.44043c0-1.52489 1.22244-2.76172 2.72949-2.76172h1.36426V2.76172C4.09375 1.23697 5.3154.000222 6.82227 0zm9.40034 0c1.507.000155 2.7286 1.23693 2.7286 2.76172v1.91699h1.3652c1.5069.00024 2.7285 1.23698 2.7285 2.76172v2.76167c-.0002 1.5246-1.2218 2.7606-2.7285 2.7608h-1.3652v1.0742h1.3652c1.5067.0002 2.7283 1.2362 2.7285 2.7608v2.7617c0 1.5247-1.2216 2.7615-2.7285 2.7617h-1.3652v1.917c0 1.5248-1.2216 2.7615-2.7286 2.7617h-2.7294c-1.507-.0001-2.7286-1.2369-2.7286-2.7617v-2.7608c0-1.5248 1.2216-2.7616 2.7286-2.7617h1.3642v-1.0742h-1.3642c-1.507-.0001-2.7285-1.236-2.7286-2.7607v-2.7618c.0001-1.5247 1.2216-2.76062 2.7286-2.7607h1.3642V8.28418h-1.3642c-1.507-.00008-2.7286-1.23688-2.7286-2.76172V2.76172c0-1.52484 1.2216-2.761643 2.7286-2.76172z" fill="#2C1FEA"/></svg>
+    <span class="nav-x">&times;</span>
+    <span class="nav-nike">Nike</span>
+    <span class="nav-badge">SDR Exclusive</span>
+  </div>
+  <div class="nav-right">Concept  |  Internal Review</div>
+</nav>
+
+<!-- HERO: Full bleed product shot -->
+<section class="hero">
+  <img src="side-view.jpg" alt="Braintrust × Nike AF1">
+  <div class="hero-overlay">
+    <div class="hero-overlay-inner">
+      <div class="hero-text">
+        <h1>Built for the<br>SDR Team</h1>
+        <p>The team that opens every door deserves a shoe that opens every conversation.</p>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Silhouette</div>
+          <div class="hero-meta-value">Air Force 1 Low</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Colorway</div>
+          <div class="hero-meta-value">White / Royal Blue</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Limited To</div>
+          <div class="hero-meta-value">SDR Team Only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY: The why -->
+<div class="story reveal">
+  <div class="story-inner">
+    <h2>Made to be worn,<br>not handed out.</h2>
+    <p>The Braintrust Air Force 1 keeps it simple: monogram insole, custom tongue, clean finish. No big speech. No oversized logo. Just a pair that looks good up close and even better in rotation.</p>
+    <p>Every detail is intentional. The monogram insole carries the Braintrust pattern underfoot. The tongue reads Nike Air Braintrust. Subtle at first glance. Better the closer you look. Built to wear, not just to brand.</p>
+    <span class="story-badge">Braintrust SDR Team  |  SS26 Concept</span>
+  </div>
+</div>
+
+<!-- PRODUCT VIEWS: 2 column grid -->
+<div class="section">
+  <div class="section-label">Product Views</div>
+  <div class="section-title">Every Angle</div>
+  <div class="grid-2 reveal">
+    <div class="grid-item">
+      <img src="side-view.jpg" alt="Lateral View">
+      <span class="grid-item-label">Lateral</span>
+    </div>
+    <div class="grid-item">
+      <img src="back-view.jpg" alt="Heel View">
+      <span class="grid-item-label">Heel Pair</span>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL STRIP: Numbers and features -->
+<div class="strip">
+  <div class="strip-inner">
+    <div class="strip-item reveal">
+      <div class="strip-num">01</div>
+      <h3>Embroidered Icon</h3>
+      <p>Braintrust node grid stitched in royal blue on the lateral panel. Your prospects will notice.</p>
+    </div>
+    <div class="strip-item reveal">
+      <div class="strip-num">02</div>
+      <h3>Debossed Heel</h3>
+      <p>Left shoe embroidered, right shoe debossed. Two expressions of the same brand.</p>
+    </div>
+    <div class="strip-item reveal">
+      <div class="strip-num">03</div>
+      <h3>Monogram Insole</h3>
+      <p>All over Braintrust pattern on deep blue. The flex only the team knows about.</p>
+    </div>
+    <div class="strip-item reveal">
+      <div class="strip-num">04</div>
+      <h3>Co Branded Tongue</h3>
+      <p>Nike Air × Braintrust tongue tag. Clean enough for the boardroom, bold enough for the expo.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE SPLIT: Insole close up -->
+<div class="feature-split">
+  <div class="feature-img reveal">
+    <img src="top-close.jpg" alt="Insole Detail">
+  </div>
+  <div class="feature-copy reveal">
+    <div class="section-label">The Details</div>
+    <h2>Every Detail<br>Earns Its Place.</h2>
+    <p>From the monogram insole to the Nike Air Braintrust tongue, nothing is overdone. Clean from a distance. Distinct up close. Exactly how it should be.</p>
+    <p>Premium tumbled leather. Royal blue Swoosh. Embroidered on the left, debossed on the right. Two expressions of the same mark.</p>
+    <div class="tag-row">
+      <span class="tag">Premium Tumbled Leather</span>
+      <span class="tag">Custom Insole</span>
+      <span class="tag">SDR Exclusive</span>
+      <span class="tag">Co Branded Tongue</span>
+    </div>
+  </div>
+</div>
+
+<!-- TONGUE TAG VOTE -->
+<div class="vote-section">
+  <div class="vote-inner">
+    <div class="vote-header reveal">
+      <div class="section-label">Design Exploration</div>
+      <h2>Tongue Tag Variations</h2>
+      <p>Four concepts for the tongue label. Which one should we go with?</p>
+    </div>
+    <div class="vote-img reveal">
+      <img src="tongue-study.jpg" alt="Tongue Tag Variation Study">
+    </div>
+    <div class="vote-cta reveal">
+      <button class="vote-btn" onclick="this.textContent='Vote recorded! Panel 3 is leading'; this.style.background='#16a34a';">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v6m0 0l3-3m-3 3L5 4M2 10l1.106 3.318A1 1 0 004.056 14h7.888a1 1 0 00.95-.682L14 10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cast Your Vote in Slack
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- COLORWAY -->
+<div class="colorway reveal">
+  <h3>Colorway</h3>
+  <p>White / Royal Blue</p>
+  <div class="swatches">
+    <div>
+      <div class="sw active" style="background: #fff; border: 1px solid #ddd;"></div>
+      <div class="sw-label">White</div>
+    </div>
+    <div>
+      <div class="sw" style="background: #4D6BFF;"></div>
+      <div class="sw-label">Royal</div>
+    </div>
+    <div>
+      <div class="sw" style="background: #2C1FEA;"></div>
+      <div class="sw-label">BT Blue</div>
+    </div>
+    <div>
+      <div class="sw" style="background: #0A0A0F;"></div>
+      <div class="sw-label">Black</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logos">
+    <svg fill="none" viewBox="0 0 26 27" height="18"><path d="M9.55176 0c1.50704.00001 2.72944 1.23684 2.72944 2.76172v2.76074c0 1.52488-1.2224 2.76171-2.72944 2.76172H8.1875V9.3584h1.36426c1.50694.00001 2.72944 1.2359 2.72944 2.7607v2.7618c0 1.5248-1.2225 2.7607-2.72944 2.7607H8.1875v1.0742h1.36426c1.50704 0 2.72944 1.2369 2.72944 2.7617v2.7608c0 1.5249-1.2224 2.7617-2.72944 2.7617H6.82227c-1.50687-.0002-2.72852-1.237-2.72852-2.7617v-1.917H2.72949C1.22244 22.3213 0 21.0845 0 19.5596v-2.7617c.000238-1.5247 1.22259-2.7608 2.72949-2.7608h1.36426v-1.0742H2.72949c-1.5069 0-2.729254-1.2361-2.72949-2.7608V7.44043c0-1.52489 1.22244-2.76172 2.72949-2.76172h1.36426V2.76172C4.09375 1.23697 5.3154.000222 6.82227 0zm9.40034 0c1.507.000155 2.7286 1.23693 2.7286 2.76172v1.91699h1.3652c1.5069.00024 2.7285 1.23698 2.7285 2.76172v2.76167c-.0002 1.5246-1.2218 2.7606-2.7285 2.7608h-1.3652v1.0742h1.3652c1.5067.0002 2.7283 1.2362 2.7285 2.7608v2.7617c0 1.5247-1.2216 2.7615-2.7285 2.7617h-1.3652v1.917c0 1.5248-1.2216 2.7615-2.7286 2.7617h-2.7294c-1.507-.0001-2.7286-1.2369-2.7286-2.7617v-2.7608c0-1.5248 1.2216-2.7616 2.7286-2.7617h1.3642v-1.0742h-1.3642c-1.507-.0001-2.7285-1.236-2.7286-2.7607v-2.7618c.0001-1.5247 1.2216-2.76062 2.7286-2.7607h1.3642V8.28418h-1.3642c-1.507-.00008-2.7286-1.23688-2.7286-2.76172V2.76172c0-1.52484 1.2216-2.761643 2.7286-2.76172z" fill="#2C1FEA"/></svg>
+    <span style="color:#999; font-size:0.85rem;">&times;</span>
+    <span style="font-weight:900; font-size:0.95rem;">NIKE</span>
+  </div>
+  <p>SDR Team Exclusive  |  Concept Design  |  Not For Retail</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Swatch interaction
+  document.querySelectorAll('.sw').forEach(s => {
+    s.addEventListener('click', () => {
+      document.querySelectorAll('.sw').forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+    });
+  });
+
+  // Parallax hero
+  window.addEventListener('scroll', () => {
+    const h = document.querySelector('.hero img');
+    if (h) h.style.transform = `translateY(${window.scrollY * 0.15}px)`;
+  });
+</script>
+
+</body>
+</html>

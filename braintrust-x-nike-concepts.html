@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Braintrust × Nike — Concept Collection</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bt-blue: #2C1FEA;
+    --bt-blue-light: #5B4FFF;
+    --bt-blue-dark: #1A0FB0;
+    --bt-glow: rgba(44, 31, 234, 0.3);
+    --bg-dark: #0A0A0F;
+    --bg-card: #111118;
+    --bg-card-hover: #181822;
+    --text-primary: #FFFFFF;
+    --text-secondary: #8888AA;
+    --accent-gradient: linear-gradient(135deg, #2C1FEA, #6B5BFF, #2C1FEA);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(44, 31, 234, 0.08) 0%, transparent 50%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  .hero-collab {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    z-index: 1;
+  }
+
+  .hero-collab svg { height: 36px; width: auto; }
+
+  .collab-x {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+  }
+
+  .nike-wordmark {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    z-index: 1;
+    background: linear-gradient(180deg, #fff 40%, rgba(255,255,255,0.6));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 520px;
+    margin-top: 1.5rem;
+    line-height: 1.6;
+    z-index: 1;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: bob 2s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* Shoe Cards */
+  .collection {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem 8rem;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--bt-blue-light);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 3rem;
+  }
+
+  .shoe-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .shoe-card {
+    background: var(--bg-card);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    cursor: pointer;
+  }
+
+  .shoe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(44, 31, 234, 0.15);
+  }
+
+  .shoe-card-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 500px;
+  }
+
+  @media (max-width: 768px) {
+    .shoe-card-inner { grid-template-columns: 1fr; }
+  }
+
+  .shoe-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    min-height: 400px;
+  }
+
+  .shoe-visual svg {
+    width: 90%;
+    max-width: 480px;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));
+    transition: transform 0.6s ease;
+  }
+
+  .shoe-card:hover .shoe-visual svg {
+    transform: rotate(-3deg) scale(1.05);
+  }
+
+  .shoe-info {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .shoe-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+  }
+
+  .shoe-subtitle {
+    font-size: 0.85rem;
+    color: var(--bt-blue-light);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .shoe-desc {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .shoe-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .feature-tag {
+    background: rgba(44, 31, 234, 0.12);
+    color: var(--bt-blue-light);
+    padding: 0.4rem 0.9rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    border: 1px solid rgba(44, 31, 234, 0.2);
+  }
+
+  .shoe-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  .shoe-price span {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-left: 0.5rem;
+  }
+
+  /* Color swatches */
+  .colorways {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .swatch:hover, .swatch.active {
+    border-color: #fff;
+    transform: scale(1.15);
+  }
+
+  /* Tech Specs Section */
+  .tech-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem 8rem;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .tech-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: border-color 0.3s;
+  }
+
+  .tech-card:hover {
+    border-color: rgba(44, 31, 234, 0.3);
+  }
+
+  .tech-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(44, 31, 234, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .tech-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .tech-card p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-collab">
+    <svg fill="none" viewBox="0 0 173 27">
+      <path d="M9.55176 0c1.50704.00001 2.72944 1.23684 2.72944 2.76172v2.76074c0 1.52488-1.2224 2.76171-2.72944 2.76172H8.1875V9.3584h1.36426c1.50694.00001 2.72944 1.2359 2.72944 2.7607v2.7618c0 1.5248-1.2225 2.7607-2.72944 2.7607H8.1875v1.0742h1.36426c1.50704 0 2.72944 1.2369 2.72944 2.7617v2.7608c0 1.5249-1.2224 2.7617-2.72944 2.7617H6.82227c-1.50687-.0002-2.72852-1.237-2.72852-2.7617v-1.917H2.72949C1.22244 22.3213 0 21.0845 0 19.5596v-2.7617c.000238-1.5247 1.22259-2.7608 2.72949-2.7608h1.36426v-1.0742H2.72949c-1.5069 0-2.729254-1.2361-2.72949-2.7608V7.44043c0-1.52489 1.22244-2.76172 2.72949-2.76172h1.36426V2.76172C4.09375 1.23697 5.3154.000222 6.82227 0zm9.40034 0c1.507.000155 2.7286 1.23693 2.7286 2.76172v1.91699h1.3652c1.5069.00024 2.7285 1.23698 2.7285 2.76172v2.76167c-.0002 1.5246-1.2218 2.7606-2.7285 2.7608h-1.3652v1.0742h1.3652c1.5067.0002 2.7283 1.2362 2.7285 2.7608v2.7617c0 1.5247-1.2216 2.7615-2.7285 2.7617h-1.3652v1.917c0 1.5248-1.2216 2.7615-2.7286 2.7617h-2.7294c-1.507-.0001-2.7286-1.2369-2.7286-2.7617v-2.7608c0-1.5248 1.2216-2.7616 2.7286-2.7617h1.3642v-1.0742h-1.3642c-1.507-.0001-2.7285-1.236-2.7286-2.7607v-2.7618c.0001-1.5247 1.2216-2.76062 2.7286-2.7607h1.3642V8.28418h-1.3642c-1.507-.00008-2.7286-1.23688-2.7286-2.76172V2.76172c0-1.52484 1.2216-2.761643 2.7286-2.76172z" fill="white"/>
+      <path d="M74.5243 7.90918c3.4065 0 6.2295 1.97014 6.2295 5.58102v8.2061h1.9463v2.9551h-2.9199c-1.1678-.0001-2.0116-.821-2.0117-1.9698v-.5586c-.5191 1.5428-2.0434 2.8564-4.5088 2.8565-3.0171 0-5.58-1.8385-5.5801-5.0225 0-3.0528 1.8811-4.8915 5.9687-5.3183l3.7959-.3936v-1.1816c0-1.2474-.9084-2.3311-2.9199-2.3311-1.7192.0001-2.66.952-2.8223 2.0352h-3.4384c.3569-3.01985 3.1788-4.85833 6.2607-4.85842M134.956 18.2822c0 2.3964 1.427 3.5127 3.406 3.5127 1.947 0 3.374-1.1164 3.374-3.5127V8.2373h3.407v10.1113c-.001 4.661-3.277 6.6308-6.781 6.6309-3.536 0-6.813-1.9699-6.813-6.6641V8.2373h3.407zm19.581-10.37302c3.406.00013 5.871 2.13412 6.423 4.95702h-3.341c-.324-1.2145-1.46-2.1337-3.082-2.1338-1.719 0-2.628.8865-2.628 1.9697 0 3.1841 9.31.7552 9.311 7.1885 0 3.2169-2.887 5.0888-6.229 5.0889-3.374 0-6.489-1.9372-7.008-5.3184h3.407c.357 1.4444 1.784 2.4297 3.601 2.4297 1.59 0 2.92-.7224 2.92-2.0351 0-3.7094-9.344-.887-9.344-7.2881 0-2.82301 2.629-4.85842 5.97-4.85842M47.042 2.3291c4.412.00009 6.8779 2.72444 6.8779 6.10547 0 1.83823-.5844 3.61053-2.4336 4.56253 1.8817.8535 3.4717 2.7579 3.4717 5.1543 0 3.9719-2.7578 6.4999-7.04 6.5h-9.8623V2.3291zm19.2422 9.0928h-4.7686v13.2295h-3.4072v-13.459c0-1.70695.9735-2.95504 2.7578-2.9551h5.418zm22.5615 13.2295h-3.4062V8.2373h3.4062zM100.407 7.90918c3.309 0 5.776 2.49522 5.776 5.90922v10.833h-3.31V14.4092c0-2.0352-1.232-3.5449-3.2763-3.5449-2.1412 0-3.5039 1.5096-3.5039 3.5449v10.2422H92.751V8.2373h3.3095v1.8389c.8111-1.08323 2.0112-2.16688 4.3465-2.16702m13.94.32812h3.341v2.9551h-3.341v10.3398h3.082v3.1192h-3.244c-2.077 0-3.18-1.3791-3.18-3.086v-10.373h-2.53V8.2373h2.692V3.6416h3.18zm14.606 3.1846h-4.769v13.2295h-3.407v-13.459c0-1.70699.974-2.9551 2.758-2.9551h5.418zm39.777-3.1846h3.342v2.9551h-3.342v10.3398h3.082v3.1192h-3.244c-2.076-.0002-3.178-1.3792-3.178-3.086v-10.373h-2.532V8.2373h2.694V3.6416h3.178z" fill="white"/>
+      <path d="M73.7761 17.331c-1.7842.1969-2.7578.9191-2.7578 2.4619.0002 1.4441 1.2013 2.33 2.8233 2.33 2.1085-.0002 3.6005-1.674 3.6005-3.9716v-1.1817zM41.5918 21.5h6.1641c2.2057-.0001 3.6326-1.0837 3.6328-3.3154 0-2.3962-1.5243-3.4472-3.6328-3.4473h-6.1641zm-.0332-9.8486h5.4834c1.9789-.0001 3.3086-.7548 3.3086-3.1182 0-2.36341-1.427-3.05268-3.3086-3.05273h-5.4834zm47.4492-5.94144h-3.6982V2.3291h3.6982z" fill="white"/>
+    </svg>
+    <span class="collab-x">×</span>
+    <svg viewBox="0 0 69 30" fill="white" height="30">
+      <path d="M29.956 1.785c-.534-.308-1.074-.56-1.652-.756-.579-.198-1.175-.34-1.805-.422-.63-.083-1.305-.124-2.018-.124-.8 0-1.535.078-2.202.236-.668.158-1.253.388-1.757.69-.504.304-.917.675-1.238 1.116-.322.441-.528.944-.617 1.507h3.564c.06-.323.226-.588.498-.793.271-.205.634-.308 1.088-.308.624 0 1.076.14 1.358.418.281.279.422.693.422 1.242v.63l-2.87.342c-1.542.182-2.69.592-3.444 1.228-.753.637-1.13 1.53-1.13 2.677 0 .588.106 1.11.317 1.567.212.457.504.845.878 1.165.374.32.818.563 1.332.728.514.165 1.074.248 1.68.248.753 0 1.405-.136 1.957-.407.552-.271 1.019-.665 1.4-1.18v1.34h3.484V5.19c0-.752-.12-1.396-.36-1.93-.24-.535-.584-.967-1.028-1.296l.143-.18zM27.6 9.78c0 .654-.264 1.18-.792 1.576-.528.397-1.152.596-1.872.596-.4 0-.72-.098-.96-.293-.24-.196-.36-.464-.36-.804 0-.38.148-.67.444-.87.296-.2.76-.34 1.392-.42L27.6 9.33v.45zM9.5 0L0 14.28h5.108L14.6 0H9.5zM9.7 7.14L5.142 14.28h4.524l2.45-3.714L9.7 7.14zM39.05.266h-3.94v13.662h3.94V.266zM55.618.266h-3.94v5.376l-4.472-5.376h-3.636l4.472 5.376-4.804 8.286h4.306l3.072-5.376 1.062 1.278v4.098h3.94V.266zM67.688 4.284c-.393-.66-.89-1.2-1.493-1.62-.602-.42-1.276-.73-2.02-.93-.744-.2-1.527-.3-2.35-.3-1.18 0-2.24.21-3.18.63-.94.42-1.74.99-2.4 1.71-.66.72-1.17 1.56-1.53 2.52-.36.96-.54 1.98-.54 3.06 0 1.06.18 2.06.54 3 .36.94.87 1.77 1.53 2.49.66.72 1.44 1.29 2.34 1.71.9.42 1.89.63 2.97.63.871 0 1.681-.11 2.431-.33.75-.22 1.42-.55 2.01-.99.59-.44 1.08-.98 1.47-1.62.39-.64.65-1.37.78-2.19h-3.93c-.13.5-.39.89-.78 1.17-.39.28-.87.42-1.44.42-.87 0-1.55-.3-2.04-.9-.49-.6-.75-1.43-.78-2.49h9.15c.04-.38.06-.67.06-.87 0-1.08-.15-2.08-.45-3-.3-.92-.74-1.72-1.32-2.4l-.03-.03zm-6.26 2.94c.44-.52 1.05-.78 1.83-.78.76 0 1.35.26 1.77.78.42.52.65 1.15.69 1.89h-5.04c.09-.7.32-1.37.75-1.89z"/>
+    </svg>
+  </div>
+
+  <h1>The Execution<br>Layer Collection</h1>
+  <p>Where artificial intelligence meets athletic performance. Four concepts. One vision. Built different.</p>
+
+  <div class="scroll-hint">
+    <span>Scroll to explore</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10m0 0l4-4m-4 4L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </div>
+</section>
+
+<!-- SHOE COLLECTION -->
+<section class="collection">
+  <div class="section-label">SS26 Concept Collection</div>
+  <div class="section-title">Four Concepts</div>
+
+  <div class="shoe-grid">
+
+    <!-- SHOE 1: The Eval Runner -->
+    <div class="shoe-card">
+      <div class="shoe-card-inner">
+        <div class="shoe-visual" style="background: linear-gradient(135deg, #0D0B2E, #1a1348, #2C1FEA22);">
+          <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shoe 1: Low-profile runner -->
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2C1FEA"/>
+                <stop offset="100%" stop-color="#6B5BFF"/>
+              </linearGradient>
+              <linearGradient id="sole1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#1A0FB0"/>
+                <stop offset="100%" stop-color="#2C1FEA"/>
+              </linearGradient>
+              <filter id="glow1"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <!-- Sole -->
+            <path d="M60 210 Q80 230 160 240 Q280 250 400 235 Q440 228 450 215 Q455 205 440 200 Q420 195 380 198 Q280 205 160 200 Q100 198 70 200 Q55 202 60 210Z" fill="url(#sole1)" opacity="0.9"/>
+            <!-- Midsole with grid pattern -->
+            <path d="M65 200 Q85 210 160 215 Q280 222 400 210 Q435 205 445 198 Q448 192 435 188 Q280 178 160 180 Q100 182 70 188 Q60 192 65 200Z" fill="#1A0FB0"/>
+            <!-- Grid lines on midsole -->
+            <line x1="120" y1="195" x2="120" y2="210" stroke="#2C1FEA" stroke-width="1" opacity="0.5"/>
+            <line x1="180" y1="192" x2="180" y2="215" stroke="#2C1FEA" stroke-width="1" opacity="0.5"/>
+            <line x1="240" y1="190" x2="240" y2="218" stroke="#2C1FEA" stroke-width="1" opacity="0.5"/>
+            <line x1="300" y1="190" x2="300" y2="216" stroke="#2C1FEA" stroke-width="1" opacity="0.5"/>
+            <line x1="360" y1="192" x2="360" y2="212" stroke="#2C1FEA" stroke-width="1" opacity="0.5"/>
+            <!-- Upper -->
+            <path d="M80 188 Q90 140 130 110 Q170 85 220 80 Q280 76 340 90 Q380 100 410 120 Q430 135 440 155 Q445 170 440 185 Q280 175 160 178 Q100 180 80 188Z" fill="url(#g1)"/>
+            <!-- Mesh texture lines -->
+            <path d="M130 130 Q200 105 300 110 Q370 118 410 140" stroke="rgba(255,255,255,0.08)" stroke-width="1" fill="none"/>
+            <path d="M120 150 Q200 125 310 130 Q380 138 420 158" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/>
+            <path d="M110 170 Q200 148 320 152 Q390 158 435 175" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/>
+            <!-- Swoosh -->
+            <path d="M380 110 Q300 145 180 155 Q130 158 100 155 Q130 148 200 140 Q300 125 370 115Z" fill="white" opacity="0.9" filter="url(#glow1)"/>
+            <!-- Collar -->
+            <path d="M80 188 Q88 145 120 115 Q135 102 150 98 Q140 108 130 125 Q110 155 100 185Z" fill="#1E14C0"/>
+            <!-- Tongue -->
+            <path d="M135 100 Q150 75 170 68 Q185 64 195 70 Q190 78 178 90 Q165 100 150 105Z" fill="#3D30FF"/>
+            <!-- BT Logo mark on tongue area -->
+            <rect x="158" y="74" width="14" height="14" rx="3" fill="rgba(255,255,255,0.25)"/>
+            <rect x="162" y="78" width="3" height="3" rx="0.5" fill="white" opacity="0.8"/>
+            <rect x="166" y="78" width="3" height="3" rx="0.5" fill="white" opacity="0.8"/>
+            <rect x="162" y="82" width="3" height="3" rx="0.5" fill="white" opacity="0.8"/>
+            <rect x="166" y="82" width="3" height="3" rx="0.5" fill="white" opacity="0.8"/>
+            <!-- Laces -->
+            <line x1="150" y1="105" x2="175" y2="95" stroke="white" stroke-width="1.5" opacity="0.6"/>
+            <line x1="160" y1="115" x2="190" y2="100" stroke="white" stroke-width="1.5" opacity="0.5"/>
+            <line x1="170" y1="125" x2="205" y2="108" stroke="white" stroke-width="1.5" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="shoe-info">
+          <div class="shoe-subtitle">Model 001</div>
+          <div class="shoe-name">The Eval Runner</div>
+          <p class="shoe-desc">A precision racing flat built for those who measure everything. The gradient knit upper shifts from Braintrust blue to deep indigo — representing the journey from vibes to evals. React foam midsole with data-grid texture.</p>
+          <div class="shoe-features">
+            <span class="feature-tag">Flyknit 3.0</span>
+            <span class="feature-tag">React Foam</span>
+            <span class="feature-tag">Carbon Plate</span>
+            <span class="feature-tag">180g</span>
+          </div>
+          <div class="shoe-price">$220 <span>Concept</span></div>
+          <div class="colorways">
+            <div class="swatch active" style="background: linear-gradient(135deg, #2C1FEA, #6B5BFF);"></div>
+            <div class="swatch" style="background: linear-gradient(135deg, #0A0A0F, #2C1FEA);"></div>
+            <div class="swatch" style="background: linear-gradient(135deg, #fff, #2C1FEA);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOE 2: The Orchestrator -->
+    <div class="shoe-card">
+      <div class="shoe-card-inner">
+        <div class="shoe-info">
+          <div class="shoe-subtitle">Model 002</div>
+          <div class="shoe-name">The Orchestrator</div>
+          <p class="shoe-desc">A mid-top lifestyle silhouette with modular panel construction — each panel a different material, connected by visible stitching that maps the Braintrust node grid. The shoe that connects systems.</p>
+          <div class="shoe-features">
+            <span class="feature-tag">Premium Leather</span>
+            <span class="feature-tag">Modular Panels</span>
+            <span class="feature-tag">Air Max Unit</span>
+            <span class="feature-tag">Node Stitch</span>
+          </div>
+          <div class="shoe-price">$280 <span>Concept</span></div>
+          <div class="colorways">
+            <div class="swatch active" style="background: #0A0A0F; border: 1px solid #333;"></div>
+            <div class="swatch" style="background: #2C1FEA;"></div>
+            <div class="swatch" style="background: #F5F5F5; border: 1px solid #ddd;"></div>
+          </div>
+        </div>
+        <div class="shoe-visual" style="background: linear-gradient(135deg, #111118, #1a1a25, #0D0B2E);">
+          <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shoe 2: Mid-top with modular panels -->
+            <defs>
+              <linearGradient id="g2a" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#0A0A0F"/>
+                <stop offset="100%" stop-color="#1a1a25"/>
+              </linearGradient>
+            </defs>
+            <!-- Sole -->
+            <path d="M70 220 Q90 240 170 248 Q290 255 410 240 Q445 233 455 220 Q458 212 445 208 Q290 195 170 198 Q105 200 75 208 Q65 212 70 220Z" fill="#1A0FB0"/>
+            <!-- Air unit -->
+            <ellipse cx="380" cy="218" rx="35" ry="12" fill="none" stroke="#2C1FEA" stroke-width="1.5" opacity="0.7"/>
+            <ellipse cx="380" cy="218" rx="28" ry="8" fill="#2C1FEA" opacity="0.15"/>
+            <!-- Midsole -->
+            <path d="M75 208 Q95 216 170 220 Q290 226 410 215 Q440 210 450 205 Q452 198 440 195 Q290 185 170 188 Q105 190 80 195 Q70 198 75 208Z" fill="#18182E"/>
+            <!-- Upper - back panel -->
+            <path d="M85 195 Q90 120 120 85 Q140 65 165 55 Q155 65 145 85 Q125 120 115 190Z" fill="#0A0A0F" stroke="#2C1FEA" stroke-width="0.8"/>
+            <!-- Upper - mid panel -->
+            <path d="M115 190 Q125 130 160 100 Q200 75 250 72 Q230 85 210 105 Q180 135 165 188Z" fill="#111118" stroke="#2C1FEA" stroke-width="0.8"/>
+            <!-- Upper - front panel -->
+            <path d="M165 188 Q180 140 220 110 Q270 82 330 80 Q370 82 400 95 Q420 108 435 130 Q442 150 440 175 Q435 190 430 195 Q290 183 165 188Z" fill="#0A0A0F" stroke="#2C1FEA" stroke-width="0.8"/>
+            <!-- Upper - toe panel -->
+            <path d="M350 100 Q390 108 415 130 Q430 148 435 170 Q438 185 435 195 Q420 192 410 188 Q395 160 370 140 Q350 125 340 115Z" fill="#18182E" stroke="#2C1FEA" stroke-width="0.8"/>
+            <!-- Node connections - visible stitching -->
+            <circle cx="140" cy="130" r="3" fill="#2C1FEA" opacity="0.8"/>
+            <circle cx="200" cy="105" r="3" fill="#2C1FEA" opacity="0.8"/>
+            <circle cx="280" cy="95" r="3" fill="#2C1FEA" opacity="0.8"/>
+            <circle cx="350" cy="110" r="3" fill="#2C1FEA" opacity="0.8"/>
+            <circle cx="400" cy="145" r="3" fill="#2C1FEA" opacity="0.8"/>
+            <line x1="140" y1="130" x2="200" y2="105" stroke="#2C1FEA" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <line x1="200" y1="105" x2="280" y2="95" stroke="#2C1FEA" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <line x1="280" y1="95" x2="350" y2="110" stroke="#2C1FEA" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <line x1="350" y1="110" x2="400" y2="145" stroke="#2C1FEA" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <!-- Swoosh - outlined -->
+            <path d="M390 105 Q310 138 190 148 Q140 150 110 147" stroke="white" stroke-width="2.5" fill="none" opacity="0.85"/>
+            <!-- Collar / ankle -->
+            <path d="M85 195 Q88 130 115 90 Q130 72 148 62 Q160 56 168 55 Q158 68 148 85 Q128 118 118 160 Q112 185 115 195Z" fill="#141420"/>
+            <!-- Tongue -->
+            <path d="M148 62 Q158 38 175 28 Q188 22 200 28 Q195 38 185 52 Q172 68 160 75Z" fill="#18182E" stroke="#2C1FEA" stroke-width="0.5"/>
+            <!-- BT logo on heel -->
+            <rect x="92" y="148" width="16" height="16" rx="3" fill="rgba(44,31,234,0.3)" stroke="#2C1FEA" stroke-width="0.5"/>
+            <rect x="96" y="152" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.8"/>
+            <rect x="101" y="152" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.8"/>
+            <rect x="96" y="157" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.8"/>
+            <rect x="101" y="157" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.8"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOE 3: The Loop -->
+    <div class="shoe-card">
+      <div class="shoe-card-inner">
+        <div class="shoe-visual" style="background: linear-gradient(135deg, #0A0520, #1a0a40, #2C1FEA11);">
+          <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shoe 3: Chunky trainer with circular motif -->
+            <defs>
+              <linearGradient id="g3" x1="0" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stop-color="#6B5BFF"/>
+                <stop offset="50%" stop-color="#2C1FEA"/>
+                <stop offset="100%" stop-color="#1A0FB0"/>
+              </linearGradient>
+              <radialGradient id="rg3" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stop-color="#6B5BFF" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#2C1FEA" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- Loop circle motif in background -->
+            <circle cx="250" cy="150" r="100" fill="none" stroke="#2C1FEA" stroke-width="0.5" opacity="0.15"/>
+            <circle cx="250" cy="150" r="80" fill="none" stroke="#6B5BFF" stroke-width="0.5" opacity="0.1"/>
+            <circle cx="250" cy="150" r="120" fill="none" stroke="#2C1FEA" stroke-width="0.3" opacity="0.1"/>
+            <!-- Chunky sole -->
+            <path d="M55 225 Q80 252 170 260 Q300 268 420 248 Q455 240 462 225 Q465 212 450 205 Q420 195 380 198 Q280 205 160 202 Q100 200 68 205 Q50 210 55 225Z" fill="#1A0FB0"/>
+            <!-- Sole texture circles -->
+            <circle cx="150" cy="242" r="8" fill="none" stroke="#2C1FEA" stroke-width="1" opacity="0.3"/>
+            <circle cx="250" cy="248" r="8" fill="none" stroke="#2C1FEA" stroke-width="1" opacity="0.3"/>
+            <circle cx="350" cy="242" r="8" fill="none" stroke="#2C1FEA" stroke-width="1" opacity="0.3"/>
+            <!-- Thick midsole -->
+            <path d="M60 205 Q85 218 170 224 Q300 232 420 218 Q450 212 458 205 Q460 192 445 185 Q420 178 380 180 Q280 185 160 183 Q100 182 72 185 Q55 190 60 205Z" fill="white" opacity="0.95"/>
+            <!-- Circular cutout in midsole -->
+            <circle cx="390" cy="198" r="15" fill="#1A0FB0" opacity="0.8"/>
+            <circle cx="390" cy="198" r="10" fill="#2C1FEA" opacity="0.6"/>
+            <circle cx="390" cy="198" r="5" fill="#6B5BFF" opacity="0.8"/>
+            <!-- Upper -->
+            <path d="M75 183 Q85 130 125 95 Q170 65 230 58 Q300 54 360 70 Q400 82 425 105 Q440 125 445 150 Q448 170 445 183 Q300 172 160 175 Q100 177 75 183Z" fill="url(#g3)"/>
+            <!-- Circular design elements on upper -->
+            <circle cx="200" cy="110" r="25" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+            <circle cx="200" cy="110" r="15" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <circle cx="320" cy="105" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <!-- Swoosh with loop treatment -->
+            <path d="M400 98 Q320 130 200 142 Q140 146 105 140" stroke="white" stroke-width="3" fill="none" opacity="0.85"/>
+            <circle cx="105" cy="140" r="4" fill="white" opacity="0.85"/>
+            <!-- Collar -->
+            <path d="M75 183 Q82 135 110 100 Q130 78 148 68 Q138 82 128 105 Q108 145 100 180Z" fill="#1E14C0"/>
+            <!-- Tongue -->
+            <path d="M140 72 Q152 48 170 38 Q185 32 198 38 Q192 48 180 62 Q168 75 155 82Z" fill="#3D30FF"/>
+            <!-- Infinity/loop symbol on side -->
+            <path d="M280 120 C295 105 315 105 315 120 C315 135 295 135 280 120Z" fill="none" stroke="white" stroke-width="1.5" opacity="0.5"/>
+            <path d="M280 120 C265 135 245 135 245 120 C245 105 265 105 280 120Z" fill="none" stroke="white" stroke-width="1.5" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="shoe-info">
+          <div class="shoe-subtitle">Model 003</div>
+          <div class="shoe-name">The Loop</div>
+          <p class="shoe-desc">Named after Braintrust's iterative eval workflow. A chunky lifestyle trainer where every design element is circular — the feedback loop made physical. Concentric circles in the midsole window, infinity stitching on the lateral panel.</p>
+          <div class="shoe-features">
+            <span class="feature-tag">Neoprene Upper</span>
+            <span class="feature-tag">Zoom Air</span>
+            <span class="feature-tag">Circle Traction</span>
+            <span class="feature-tag">3M Accents</span>
+          </div>
+          <div class="shoe-price">$260 <span>Concept</span></div>
+          <div class="colorways">
+            <div class="swatch active" style="background: linear-gradient(135deg, #6B5BFF, #2C1FEA);"></div>
+            <div class="swatch" style="background: #0A0A0F; border: 1px solid #333;"></div>
+            <div class="swatch" style="background: linear-gradient(135deg, #fff, #E8E6FF); border: 1px solid #ddd;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOE 4: Zero Person -->
+    <div class="shoe-card">
+      <div class="shoe-card-inner">
+        <div class="shoe-info">
+          <div class="shoe-subtitle">Model 004</div>
+          <div class="shoe-name">Zero Person</div>
+          <p class="shoe-desc">The provocative one. A minimal slip-on with no laces, no tongue, no wasted material — the shoe that runs itself. Seamless one-piece knit upper in pure white with a single Braintrust blue accent line tracing the node pattern from heel to toe.</p>
+          <div class="shoe-features">
+            <span class="feature-tag">One-Piece Knit</span>
+            <span class="feature-tag">Laceless</span>
+            <span class="feature-tag">ZoomX Foam</span>
+            <span class="feature-tag">Zero Waste</span>
+          </div>
+          <div class="shoe-price">$300 <span>Concept</span></div>
+          <div class="colorways">
+            <div class="swatch active" style="background: #F5F5F5; border: 1px solid #ddd;"></div>
+            <div class="swatch" style="background: #0A0A0F; border: 1px solid #333;"></div>
+            <div class="swatch" style="background: #2C1FEA;"></div>
+          </div>
+        </div>
+        <div class="shoe-visual" style="background: linear-gradient(135deg, #F0F0F5, #E0E0EA, #D8D6F0);">
+          <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shoe 4: Minimal slip-on -->
+            <defs>
+              <linearGradient id="g4" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#F8F8FC"/>
+                <stop offset="100%" stop-color="#EEEEF5"/>
+              </linearGradient>
+              <filter id="shadow4"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#00000022"/></filter>
+            </defs>
+            <!-- Sole - very minimal -->
+            <path d="M80 215 Q100 228 180 232 Q300 238 410 225 Q440 220 448 212 Q450 206 440 202 Q300 192 180 195 Q110 197 85 202 Q75 206 80 215Z" fill="#DDDDE8"/>
+            <!-- Midsole -->
+            <path d="M82 202 Q105 210 180 213 Q300 218 410 208 Q438 204 445 200 Q447 194 438 190 Q300 180 180 183 Q110 185 88 190 Q78 194 82 202Z" fill="#F0F0F5"/>
+            <!-- Upper - seamless one-piece -->
+            <path d="M95 190 Q105 135 140 102 Q180 72 240 65 Q310 60 370 75 Q410 88 430 112 Q442 132 445 158 Q446 175 443 190 Q300 178 180 182 Q115 185 95 190Z" fill="url(#g4)" filter="url(#shadow4)"/>
+            <!-- Subtle knit texture -->
+            <path d="M140 120 Q220 95 340 100 Q400 108 430 130" stroke="#E0E0EA" stroke-width="0.8" fill="none"/>
+            <path d="M130 140 Q220 118 345 122 Q405 128 435 150" stroke="#E0E0EA" stroke-width="0.8" fill="none"/>
+            <path d="M120 160 Q220 140 348 144 Q408 150 440 168" stroke="#E0E0EA" stroke-width="0.8" fill="none"/>
+            <!-- Single blue accent line - the "neural pathway" -->
+            <path d="M100 175 Q120 145 155 118 Q200 90 260 82 Q320 78 370 90 Q405 102 425 125 Q438 145 442 170" stroke="#2C1FEA" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+            <!-- Node dots along the line -->
+            <circle cx="155" cy="118" r="3" fill="#2C1FEA" opacity="0.7"/>
+            <circle cx="260" cy="82" r="3" fill="#2C1FEA" opacity="0.7"/>
+            <circle cx="370" cy="90" r="3" fill="#2C1FEA" opacity="0.7"/>
+            <circle cx="425" cy="125" r="3" fill="#2C1FEA" opacity="0.7"/>
+            <!-- Collar opening - no tongue -->
+            <path d="M95 190 Q100 145 128 110 Q145 90 165 80 Q155 92 145 112 Q125 148 118 185Z" fill="#EEEEF5"/>
+            <!-- Heel tab with BT mark -->
+            <rect x="98" y="135" width="18" height="22" rx="4" fill="white" stroke="#2C1FEA" stroke-width="1"/>
+            <rect x="103" y="140" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.6"/>
+            <rect x="108" y="140" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.6"/>
+            <rect x="103" y="145" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.6"/>
+            <rect x="108" y="145" width="3.5" height="3.5" rx="0.5" fill="#2C1FEA" opacity="0.6"/>
+            <!-- Minimal swoosh - just an outline -->
+            <path d="M400 100 Q320 128 210 138 Q150 142 120 138" stroke="#C0C0D0" stroke-width="1.5" fill="none" opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TECH SECTION -->
+<section class="tech-section">
+  <div class="section-label">Design Philosophy</div>
+  <div class="section-title">Built on Intelligence</div>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#6B5BFF" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#6B5BFF" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#6B5BFF" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#6B5BFF" stroke-width="1.5"/></svg>
+      </div>
+      <h3>Node Grid Pattern</h3>
+      <p>The Braintrust icon's four-square grid is the DNA of every design — appearing in outsole traction, panel stitching, and heel branding across all four silhouettes.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#6B5BFF" stroke-width="1.5"/><path d="M12 3c0 9-9 9-9 9" stroke="#6B5BFF" stroke-width="1.5"/><path d="M21 12c0 0-9 0-9 9" stroke="#6B5BFF" stroke-width="1.5"/></svg>
+      </div>
+      <h3>Gradient Language</h3>
+      <p>Every colorway transitions from Braintrust Blue (#2C1FEA) through the spectrum — representing the shift from ambiguity to clarity, from vibes to evals.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6B5BFF" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Execution Layer Sole</h3>
+      <p>The midsole unit across all models features a visible grid structure — the "execution layer" that sits between intention and ground contact. Performance you can see.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#6B5BFF" stroke-width="1.5"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="#6B5BFF" stroke-width="1.5"/></svg>
+      </div>
+      <h3>Zero Waste Ethos</h3>
+      <p>Inspired by the "Zero Person" concept — maximum output, minimum waste. Sustainable materials, minimal colorways, and packaging made from recycled eval printouts.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Braintrust × Nike — Concept Collection SS26 — Not for retail — Design exploration only
+</footer>
+
+<script>
+  // Simple parallax on scroll
+  const hero = document.querySelector('.hero');
+  const cards = document.querySelectorAll('.shoe-card');
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    hero.style.transform = `translateY(${scrollY * 0.3}px)`;
+    hero.style.opacity = Math.max(0, 1 - scrollY / 600);
+  });
+
+  // Intersection observer for card animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  cards.forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(40px)';
+    card.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+    observer.observe(card);
+  });
+
+  // Swatch click interaction
+  document.querySelectorAll('.colorways').forEach(group => {
+    group.querySelectorAll('.swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        group.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
