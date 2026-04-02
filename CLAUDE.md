@@ -1,0 +1,80 @@
+# CLAUDE.md - Auto-loaded every session
+
+## Who You're Working With
+Kensington Belza (he/him), Strategic SDR at Braintrust (braintrust.dev). West Coast team. ~170 named accounts. AE partners: Jay Vermont, Walton Stephens, Dave Smith. Manager: Nathan Nguyen. GitHub: FlightBrain.
+
+## Workspace Layout
+This repo is Kensington's AI-native operating system for sales execution.
+- `SELF_PROMPT.md` - Full operating manual (identity, rules, messaging, customer stories, tools, protocols). READ THIS FIRST for any outreach work.
+- `HOW_TO_WORK_WITH_ME.md` - Communication style, preferences, operating rules for Claude.
+- `00_Inbox/` - Quick captures, triage zone
+- `01_Memory/` - 4-layer memory (stable/working/episodic/patterns)
+- `02_Tasks/` - Active todos, backlog, recurring
+- `03_Outreach/` - Sequences, messaging, objection handling, personalization
+- `04_Research/` - ICP notes, competitor intel, signals
+- `05_Writing/` - Drafts, tone guide, snippets
+- `06_Playbooks/` - SOPs for daily routines, research, channel tactics
+- `07_Accounts/` - Company files, people files, opportunity tracking
+- `08_Ops/` - Conventions, file naming, memory policy
+- `09_Templates/` - Reusable templates
+- `99_Archive/` - Closed/historical
+
+## Immutable Rules (Non-Negotiable)
+1. NO EM DASHES EVER. Use commas, periods, colons instead.
+2. Lowercase subject lines in email.
+3. LinkedIn connect request max 300 characters.
+4. All links must include https:// prefix.
+5. Every outreach touch must include an info drop (case study, stat, insight). No exceptions.
+6. Never use Navan case study for non-voice use cases.
+7. Check Slack #c-[client] channels before drafting outreach.
+8. Phone is primary channel. Email is air cover for warm dials.
+9. Event perks (Warriors games, dinners) = economic buyers and champions ONLY.
+
+## Communication Style
+- Lead with action/recommendation, not hedging
+- Dense, concise, opinionated. No fluff, no filler words.
+- Be specific to Braintrust, not generic. Use actual customer names, stats, playbooks.
+- Always suggest next steps. Never end without clarity on what to do next.
+- Always update workspace files after work is done.
+- No hedging ("might," "could," "possibly"). Be direct.
+- No corporate jargon ("synergy," "leverage," "circle back").
+
+## Case Study Quick Reference
+| Signal | Customer | Stat | Link |
+|--------|----------|------|------|
+| Scaling AI across large eng org | Notion | <24hr model deploy, 70 engineers | braintrust.dev/customers/notion |
+| AI accuracy too low | Zapier | 50% to 90%+ accuracy in 2-3 months | braintrust.dev/customers/zapier |
+| Search/RAG/conversational AI | Dropbox | 10K+ tests, <10min eval per PR | braintrust.dev/customers/dropbox |
+| AI copilot, need observability | Retool | 25% accuracy improvement, log analysis in minutes | braintrust.dev/customers/retool |
+| Voice AI | Navan | 0.9+ F1 score, hundreds of daily calls | braintrust.dev/customers/navan |
+| Dev tools/code AI | Graphite | 5% reduction in negative rules, 90%+ acceptance | braintrust.dev/customers/graphite |
+| EdTech/AI grading | Coursera | 45x more feedback, 90% satisfaction | braintrust.dev/customers/coursera |
+| High volume observability | Replit | Millions of sessions, pattern detection | braintrust.dev/customers/replit |
+| Token economics/cost | Fintool | 1.5B tokens/day visibility | reference only |
+| Document extraction | Carta | Schema alignment (champion: Jayant) | reference only |
+
+## Key Notion Pages (Live Pull When Needed)
+- Company Messaging: 28cf7858-0289-802f-ba30-e9dba867fd2a
+- Customer Stories Outreach Guide: 32cf7858-0289-8107-b4b1-c86f00c30426
+- SDR Hub: 2bef7858-0289-80f7-a75c-c51d1d3598b1
+- AE & SDR Engagement Model: 2fdf7858-0289-8077-93f0-d36e1f92d36c
+- Understanding Braintrust: 2eaf7858-0289-8093-b785-db2ebcfddbcb
+- Braintrust Trace 2026 (event): 27af7858-0289-801f-aa27-fdd87687a37c
+
+## Key Slack Channels
+- #pg (C08F05QEFR6) - Pipeline generation wins
+- #sales (C05RCTFNS5N) - Sales team
+- #sales-team-west (C09DM7N1KM4) - West team
+- #sales-enablement (C08FSLNT876) - Enablement content
+- #gtm (C07EAV5QK5F) - GTM strategy
+- #pg-blitz-redemption (C0AKLGAACDB) - Blitz competitions
+- Client channels follow pattern: #braintrust-[company] or #c-[company]
+
+## MCP Integrations Available
+Slack, Notion, Gmail, Google Calendar, Apollo, Granola. Use these for:
+- Post-call follow-up emails: Paste call notes, draft email, stage as Gmail draft
+- Warm follow-ups: Context + Gmail draft
+- LinkedIn messages: Draft for copy/paste (no send API)
+- Calendar events: Create directly via Google Calendar
+- Prospect research: Apollo search + enrich
+- Meeting notes: Pull from Granola
