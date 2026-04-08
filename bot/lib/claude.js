@@ -22,11 +22,8 @@ export async function callClaude(systemPrompt, userMessage, triggerType) {
 
 function buildUserContent(text, triggerType) {
   if (triggerType === 'direct') {
-    return `someone just said to you: "${text}"\n\nrespond as kensington.`;
+    return `someone in the channel said: "${text}"\n\nrespond helpfully as claudesington.`;
   }
-  if (triggerType === 'inferred') {
-    return `someone asked something that seems to be about your pipeline or accounts: "${text}"\n\njump in as kensington.`;
-  }
-  // chime-in
-  return `someone in the channel just said: "${text}"\n\nif you have something genuinely useful or funny to add as kensington, say it. if not, respond with exactly: [SKIP]`;
+  // inferred
+  return `someone asked something about the team, accounts, or needs a resource: "${text}"\n\nrespond helpfully as claudesington.`;
 }

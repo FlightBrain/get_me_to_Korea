@@ -20,7 +20,7 @@ const INFERRED_PATTERNS = [
   /\b(amazon|pigment|expedia|audible|coinbase|bytedance|snap|commure|intel|liveramp|cloudera|cerebras|sutter)\b.*\?/i,
 ];
 
-// Returns: 'direct', 'inferred', or 'chime-in'
+// Returns: 'direct', 'inferred', or null (ignore)
 export function detectTrigger(text) {
   if (!text) return null;
 
@@ -33,5 +33,6 @@ export function detectTrigger(text) {
     if (pattern.test(text)) return 'inferred';
   }
 
-  return 'chime-in';
+  // No match = don't respond. No chime-ins, no wasted tokens.
+  return null;
 }

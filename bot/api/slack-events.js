@@ -3,9 +3,9 @@ import getRawBody from 'raw-body';
 import { verifySlackSignature, postToSlack } from '../lib/slack.js';
 import { detectTrigger } from '../lib/trigger.js';
 import { fetchContext } from '../lib/context.js';
+import { fetchCalendarContext } from '../lib/calendar.js';
 import { buildSystemPrompt } from '../prompts/system.js';
 import { callClaude } from '../lib/claude.js';
-import { shouldChimeIn } from '../lib/chime-rate.js';
 
 export const config = {
   api: { bodyParser: false },
@@ -18,24 +18,22 @@ async function processEvent(body) {
   // Hard guard: never reply to bot messages (prevents infinite loops)
   if (event.bot_id || event.subtype === 'bot_message') return;
 
-  // Detect what kind of trigger this is
+  // Only respond to direct mentions or inferred questions
   const trigger = detectTrigger(event.text);
   if (!trigger) return;
 
-  // Chime-in goes through 3 gates (probabilistic + rate limit + Claude judgment)
-  if (trigger === 'chime-in') {
-    if (!shouldChimeIn()) return;
-  }
-
-  // Fetch live Notion context
-  const context = await fetchContext();
-  const systemPrompt = buildSystemPrompt(context);
+  // Fetch Notion + calendar context in parallel
+  const [notionContext, calendarContext] = await Promise.all([
+    fetchContext(),
+    fetchCalendarContext(),
+  ]);
+  const systemPrompt = buildSystemPrompt(notionContext, calendarContext);
 
   // Call Claude
   const reply = await callClaude(systemPrompt, event.text, trigger);
   if (!reply || reply === '[SKIP]') return;
 
-  // Direct mentions get a thread reply. Inferred + chime-ins post to channel.
+  // Direct mentions get a thread reply. Inferred posts to channel.
   await postToSlack({
     channel: event.channel,
     text: reply,
