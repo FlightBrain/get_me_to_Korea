@@ -144,6 +144,41 @@ describe('classifyIntent', () => {
     );
   });
 
+  it('detects help requests', () => {
+    assert.equal(
+      classifyIntent('has anyone put together slides for compliance'),
+      'help_request',
+    );
+  });
+
+  it('detects help request with "do we have"', () => {
+    assert.equal(
+      classifyIntent('do we have a deck for enterprise security'),
+      'help_request',
+    );
+  });
+
+  it('detects help request with "how do I"', () => {
+    assert.equal(
+      classifyIntent('how do I set up a demo environment'),
+      'help_request',
+    );
+  });
+
+  it('detects help request with "need help"', () => {
+    assert.equal(
+      classifyIntent('need help with the onboarding checklist'),
+      'help_request',
+    );
+  });
+
+  it('detects competitive intel request', () => {
+    assert.equal(
+      classifyIntent('what do we say against langsmith'),
+      'braintrust_resources',
+    );
+  });
+
   it('detects bot meta questions', () => {
     assert.equal(classifyIntent('what can you do'), 'bot_meta');
   });
@@ -152,9 +187,17 @@ describe('classifyIntent', () => {
     assert.equal(classifyIntent('lol'), 'banter');
   });
 
+  it('detects celebration banter', () => {
+    assert.equal(classifyIntent('lets gooo!'), 'banter');
+  });
+
+  it('detects casual greeting banter', () => {
+    assert.equal(classifyIntent('good morning!'), 'banter');
+  });
+
   it('defaults to general_qna', () => {
     assert.equal(
-      classifyIntent('how do I set up a demo environment'),
+      classifyIntent('tell me about the braintrust trace event'),
       'general_qna',
     );
   });
@@ -337,8 +380,8 @@ describe('buildSystemPrompt', () => {
       intent: 'calendar_whereabouts',
       threadContext: '',
     });
-    assert.ok(prompt.includes('calendar/whereabouts'));
-    assert.ok(prompt.includes('do NOT guess'));
+    assert.ok(prompt.includes('calendar/location question'));
+    assert.ok(prompt.includes('do not guess'));
   });
 
   it('includes intent-specific rules for bot_meta', () => {
@@ -349,8 +392,8 @@ describe('buildSystemPrompt', () => {
       intent: 'bot_meta',
       threadContext: '',
     });
-    assert.ok(prompt.includes('what you can do'));
-    assert.ok(prompt.includes('cannot do'));
+    assert.ok(prompt.includes('someone asked what you can do'));
+    assert.ok(prompt.includes('can\'t access CRM'));
   });
 
   it('never contains em dashes', () => {
@@ -373,7 +416,7 @@ describe('buildSystemPrompt', () => {
       threadContext: '',
     });
     assert.ok(prompt.includes('never invent facts'));
-    assert.ok(prompt.includes('never claim CRM'));
+    assert.ok(prompt.includes('never claim accounts'));
   });
 
   it('uses slack mrkdwn formatting guidance', () => {
@@ -385,7 +428,7 @@ describe('buildSystemPrompt', () => {
       threadContext: '',
     });
     assert.ok(prompt.includes('*text*'));
-    assert.ok(prompt.includes('not **text**'));
+    assert.ok(prompt.includes('bold:'));
   });
 });
 
@@ -460,7 +503,7 @@ describe('no fake identity claims', () => {
       intent: 'general_qna',
       threadContext: '',
     });
-    assert.ok(prompt.includes('you are a bot, not a person'));
+    assert.ok(prompt.includes('a bot, not a person'));
     assert.ok(prompt.includes('never pretend to be kensington'));
   });
 

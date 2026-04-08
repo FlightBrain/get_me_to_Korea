@@ -1,5 +1,8 @@
-// Lightweight deterministic intent classifier.
-// Runs before the model to apply stricter behavioral rules per category.
+// Intent classifier. Runs before the model to decide:
+// 1. What behavioral rules to apply
+// 2. Whether to relay to the Notion agent or answer locally
+//
+// Order matters: first match wins. More specific intents come first.
 
 const INTENT_PATTERNS = [
   { intent: 'calendar_whereabouts', patterns: [
@@ -9,6 +12,8 @@ const INTENT_PATTERNS = [
     /\bschedule\b/i,
     /\bcalendar\b/i,
     /\bwhat('?s| is)\s+\w+\s+doing\s+today\b/i,
+    /\bfree\s+(at|from|today|tomorrow|this)\b/i,
+    /\bavailab(le|ility)\b/i,
   ]},
   { intent: 'account_or_pipeline', patterns: [
     /\baccount\b/i,
@@ -24,6 +29,8 @@ const INTENT_PATTERNS = [
     /\bdo\s+you\s+know\b/i,
     /\btell\s+me\s+about\s+(a\s+)?person\b/i,
   ]},
+  // braintrust_resources BEFORE help_request so "case study" and
+  // "competitive" queries match the specific intent first.
   { intent: 'braintrust_resources', patterns: [
     /\bcase\s+stud(y|ies)\b/i,
     /\bcustomer\s+stor(y|ies)\b/i,
@@ -38,6 +45,20 @@ const INTENT_PATTERNS = [
     /\beval(s|uation)?\b/i,
     /\bobservability\b/i,
   ]},
+  { intent: 'help_request', patterns: [
+    /\bwhere\s+can\s+i\s+find\b/i,
+    /\bhas\s+anyone\b/i,
+    /\banyone\s+have\b/i,
+    /\bhow\s+do\s+(i|we|you)\b/i,
+    /\bwhat('?s| is)\s+the\s+(process|playbook|sop|template|deck|doc)\b/i,
+    /\bcan\s+you\s+(find|look\s*up|check|pull|grab|get)\b/i,
+    /\bneed\s+(help|a\s+link|the\s+link|a\s+doc|info|content)\b/i,
+    /\bslides?\b.*\b(for|about|on)\b/i,
+    /\bdemo\b.*\b(for|about|content|deck)\b/i,
+    /\bbattlecard\b/i,
+    /\bobjection\s+handl/i,
+    /\bdo\s+we\s+have\b/i,
+  ]},
   { intent: 'bot_meta', patterns: [
     /\bwhat\s+(can|do)\s+you\b/i,
     /\bwho\s+are\s+you\b/i,
@@ -45,7 +66,9 @@ const INTENT_PATTERNS = [
     /\bhelp\b/i,
   ]},
   { intent: 'banter', patterns: [
-    /^(lol|haha|nice|yo|sup|hey|gm|gn|gg|fire|cooked|vibes|w+)\s*[!?.]*$/i,
+    /^(lol|haha|nice|yo|sup|hey|gm|gn|gg|fire|vibes|w+|dude|bro|facts|real|true|bet|word|nah|yep|yea|damn|wow|sheesh|goat|legend|king|queen|clutch|insane|wild|huge|big|massive|crazy|sick|lit|dope|clean|solid|tough|pain|rip|oof|bruh|fam|gang|squad|team|mood|same|dead|crying|stop|no\s*way)\s*[!?.]*$/i,
+    /^(good\s+(morning|night|luck)|happy\s+\w+|congrats|lets?\s+go+|lfg|huge\s*w|big\s*w|w\s+w\s+w)\s*[!?.]*$/i,
+    /^[\p{Emoji}\s!?.]+$/u,
   ]},
 ];
 

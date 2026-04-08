@@ -14,8 +14,13 @@ const RELAY_TIMEOUT_MSG =
   "i couldn't get a grounded answer from the knowledge base in time. " +
   'try again in a bit, or ask in the relevant slack channel directly.';
 
-// Intents that skip the relay entirely (answered locally).
-const LOCAL_ONLY_INTENTS = new Set(['banter', 'bot_meta']);
+// Intents answered locally by Claude (no relay needed).
+// Everything else gets relayed for grounded Notion/Calendar answers.
+const LOCAL_ONLY_INTENTS = new Set([
+  'banter',           // casual chat, just vibe
+  'bot_meta',         // "what can you do" answered locally
+  'braintrust_resources', // hardcoded links, no relay needed
+]);
 
 // ---- public entry point ----
 
