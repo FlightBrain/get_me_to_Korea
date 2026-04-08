@@ -74,12 +74,19 @@ async function processEvent(body) {
   // Fetch thread context first (needed for both relay and local).
   const threadContext = await buildThreadContext(event);
 
-  const relayResult = await executeRelay({
-    event,
-    cleanedText,
-    threadContext,
-    intent,
-  });
+  console.log(`pre-relay: RELAY_ENABLED=${process.env.RELAY_ENABLED}`);
+
+  let relayResult = null;
+  try {
+    relayResult = await executeRelay({
+      event,
+      cleanedText,
+      threadContext,
+      intent,
+    });
+  } catch (e) {
+    console.error(`relay error: ${e.message}`);
+  }
 
   if (relayResult) {
     if (relayResult.skipped) return; // duplicate relay, silently exit
