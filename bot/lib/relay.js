@@ -177,17 +177,32 @@ export function cleanRelayResponse(text, requestId) {
 
   let cleaned = text;
 
-  // Strip the REQUEST_ID trailer.
+  // Strip REQUEST_ID line/trailer.
   cleaned = cleaned.replace(
     new RegExp(`\\s*REQUEST_ID\\s*=\\s*${requestId}\\s*`, 'gi'),
     '',
   );
 
-  // Strip any relay markers the agent might echo back.
+  // Strip relay markers the agent might echo back.
   cleaned = cleaned.replace(/\[CLAUDESINGTON_RELAY_RESPONSE\]/gi, '');
   cleaned = cleaned.replace(/\[CLAUDESINGTON_RELAY_REQUEST\]/gi, '');
 
-  cleaned = cleaned.trim();
+  // Strip structured metadata labels from the Notion agent output.
+  // "Answer: ..." -> just the answer text
+  cleaned = cleaned.replace(/^Answer:\s*/im, '');
+  // "Confidence: high|medium|low" line
+  cleaned = cleaned.replace(/^Confidence:\s*(high|medium|low)\s*$/gim, '');
+  // "Sources used: ..." line
+  cleaned = cleaned.replace(/^Sources\s+used:\s*.+$/gim, '');
+  // "Source: ..." line (alternate format)
+  cleaned = cleaned.replace(/^Source:\s*.+$/gim, '');
+
+  // Clean up Slack emoji shortcodes -> strip the colons so they render
+  // e.g. ":mag:" stays as-is (Slack renders these natively)
+
+  // Collapse excessive blank lines and trim.
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+
   return cleaned || "i got a response but couldn't parse it. try asking again.";
 }
 

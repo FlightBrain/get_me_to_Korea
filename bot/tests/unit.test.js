@@ -684,4 +684,22 @@ describe('cleanRelayResponse', () => {
     const cleaned = cleanRelayResponse(text, 'test-id-99');
     assert.equal(cleaned, 'the answer is yes.');
   });
+
+  it('strips Answer: label', () => {
+    const text = 'Answer: braintrust does evals.\nConfidence: high\nSources used: Notion\nREQUEST_ID=abc';
+    const cleaned = cleanRelayResponse(text, 'abc');
+    assert.equal(cleaned, 'braintrust does evals.');
+  });
+
+  it('strips Confidence and Sources lines', () => {
+    const text = 'your calendar has 5 meetings today.\nConfidence: medium\nSources used: Calendar\nREQUEST_ID=xyz';
+    const cleaned = cleanRelayResponse(text, 'xyz');
+    assert.equal(cleaned, 'your calendar has 5 meetings today.');
+  });
+
+  it('handles full Notion agent structured output', () => {
+    const text = 'Answer: Today you have 3 meetings: standup at 9am, 1:1 at 11am, and team sync at 2pm.\nConfidence: high\nSources used: Multiple\nREQUEST_ID=full-test';
+    const cleaned = cleanRelayResponse(text, 'full-test');
+    assert.equal(cleaned, 'Today you have 3 meetings: standup at 9am, 1:1 at 11am, and team sync at 2pm.');
+  });
 });
