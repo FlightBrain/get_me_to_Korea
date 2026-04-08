@@ -22,14 +22,14 @@ export default async function handler(req, res) {
     return res.status(400).end();
   }
 
-  // Verify request came from Slack
-  if (!verifySlackSignature(req, rawBody)) {
-    return res.status(401).end();
-  }
-
-  // One-time URL verification during Slack app setup
+  // URL verification must happen before signature check (Slack handshake during setup)
   if (body.type === 'url_verification') {
     return res.status(200).json({ challenge: body.challenge });
+  }
+
+  // Verify all other requests came from Slack
+  if (!verifySlackSignature(req, rawBody)) {
+    return res.status(401).end();
   }
 
   // ACK immediately. Slack requires 200 within 3 seconds.
