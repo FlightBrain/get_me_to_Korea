@@ -27,11 +27,6 @@ async function processEvent(body) {
   if (event.bot_id || event.subtype === 'bot_message') return;
 
   // --- DUPLICATE-EVENT FIX ---
-  // When someone @mentions the bot, Slack fires BOTH an app_mention event
-  // AND a message event. These often land on separate serverless instances
-  // so in-memory dedup cannot catch both. Fix: if this is a plain
-  // "message" event whose text contains the bot's direct <@ID> mention,
-  // skip it and let the app_mention event handle it instead.
   const botUserId = process.env.SLACK_BOT_USER_ID || '';
   if (
     event.type === 'message' &&
@@ -42,7 +37,7 @@ async function processEvent(body) {
     return;
   }
 
-  // Guard: deduplicate within warm instances (retries / repeated deliveries)
+  // Guard: deduplicate within warm instances
   if (isDuplicate(event)) {
     console.log(`dedup: skipping duplicate event ${event.channel}:${event.ts}`);
     return;
@@ -60,22 +55,17 @@ async function processEvent(body) {
   const intent = classifyIntent(cleanedText);
 
   console.log(
-    `event: trigger=${trigger} intent=${intent} channel=${event.channel} ts=${event.ts}`,
+    `event: trigger=${trigger} intent=${intent} channel=${event.channel}`,
   );
 
-  // Thread routing for the final reply:
-  //   - already in a thread -> reply in same thread
-  //   - direct mention at top level -> start a thread on that message
-  //   - inferred trigger at top level -> post to channel (no thread)
+  // Thread routing for the final reply
   const replyThreadTs =
     event.thread_ts || (trigger === 'direct' ? event.ts : undefined);
 
   // --- RELAY PATH ---
-  // Fetch thread context first (needed for both relay and local).
   const threadContext = await buildThreadContext(event);
 
   let relayResult = null;
-  let relayError = null;
   try {
     relayResult = await executeRelay({
       event,
@@ -84,32 +74,11 @@ async function processEvent(body) {
       intent,
     });
   } catch (e) {
-    relayError = e;
-    console.error(`relay error: ${e.message}\n${e.stack}`);
-  }
-
-  // DEBUG: if relay was supposed to fire but didn't, show why
-  if (!relayResult && process.env.RELAY_ENABLED === 'true') {
-    const debugInfo = relayError
-      ? `[relay debug: threw error: ${relayError.message}]`
-      : '[relay debug: returned null, check intent/channel guards]';
-    console.log(debugInfo);
-    // Temporarily prepend debug info to the bot's reply so we can see it
-    const debugPrefix = relayError
-      ? `(relay error: ${relayError.message})\n\n`
-      : `(relay returned null for intent=${intent})\n\n`;
-
-    // Post debug info and skip to local path
-    await postToSlack({
-      channel: event.channel,
-      text: debugPrefix + 'falling back to local answer...',
-      thread_ts: replyThreadTs,
-    });
-    // Still continue to local Claude below
+    console.error(`relay error: ${e.message}`);
   }
 
   if (relayResult) {
-    if (relayResult.skipped) return; // duplicate relay, silently exit
+    if (relayResult.skipped) return;
 
     const safeAnswer = applyGuardrails(relayResult.answer);
 
@@ -127,8 +96,7 @@ async function processEvent(body) {
     }
 
     console.log(
-      `replied (relay): fromRelay=${relayResult.fromRelay} ` +
-        `requestId=${relayResult.requestId} channel=${event.channel}`,
+      `replied (relay): fromRelay=${relayResult.fromRelay} channel=${event.channel}`,
     );
     return;
   }
@@ -168,8 +136,6 @@ async function processEvent(body) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  // Slack retries when it doesn't get a fast 200. If we see a retry
-  // header, ACK and skip; the original invocation is still processing.
   if (req.headers['x-slack-retry-num']) {
     console.log(`ignoring slack retry #${req.headers['x-slack-retry-num']}`);
     return res.status(200).end();
@@ -183,17 +149,14 @@ export default async function handler(req, res) {
     return res.status(400).end();
   }
 
-  // URL verification handshake (no signature check needed)
   if (body.type === 'url_verification') {
     return res.status(200).json({ challenge: body.challenge });
   }
 
-  // Verify request came from Slack
   if (!verifySlackSignature(req, rawBody)) {
     return res.status(401).end();
   }
 
-  // ACK immediately, process in background
   waitUntil(processEvent(body));
   return res.status(200).end();
 }

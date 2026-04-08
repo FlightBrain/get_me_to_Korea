@@ -26,9 +26,6 @@ export async function executeRelay({
   intent,
 }) {
   const config = getRelayConfig();
-  console.log(
-    `relay: enabled=${config.enabled} env=${process.env.RELAY_ENABLED} intent=${intent}`,
-  );
   if (!config.enabled) return null;
 
   // Some intents are better answered locally.
