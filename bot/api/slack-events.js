@@ -74,9 +74,8 @@ async function processEvent(body) {
   // Fetch thread context first (needed for both relay and local).
   const threadContext = await buildThreadContext(event);
 
-  console.log(`pre-relay: RELAY_ENABLED=${process.env.RELAY_ENABLED}`);
-
   let relayResult = null;
+  let relayError = null;
   try {
     relayResult = await executeRelay({
       event,
@@ -85,7 +84,28 @@ async function processEvent(body) {
       intent,
     });
   } catch (e) {
-    console.error(`relay error: ${e.message}`);
+    relayError = e;
+    console.error(`relay error: ${e.message}\n${e.stack}`);
+  }
+
+  // DEBUG: if relay was supposed to fire but didn't, show why
+  if (!relayResult && process.env.RELAY_ENABLED === 'true') {
+    const debugInfo = relayError
+      ? `[relay debug: threw error: ${relayError.message}]`
+      : '[relay debug: returned null, check intent/channel guards]';
+    console.log(debugInfo);
+    // Temporarily prepend debug info to the bot's reply so we can see it
+    const debugPrefix = relayError
+      ? `(relay error: ${relayError.message})\n\n`
+      : `(relay returned null for intent=${intent})\n\n`;
+
+    // Post debug info and skip to local path
+    await postToSlack({
+      channel: event.channel,
+      text: debugPrefix + 'falling back to local answer...',
+      thread_ts: replyThreadTs,
+    });
+    // Still continue to local Claude below
   }
 
   if (relayResult) {
