@@ -11,6 +11,9 @@ import { fetchCalendarContext } from '../lib/calendar.js';
 import { buildThreadContext } from '../lib/thread-context.js';
 import { buildSystemPrompt } from '../prompts/system.js';
 import { callClaude } from '../lib/claude.js';
+import { applyGuardrails } from '../lib/guardrails.js';
+import { executeRelay } from '../lib/relay.js';
+import { updateJob } from '../lib/relay-store.js';
 
 export const config = {
   api: { bodyParser: false },
@@ -25,8 +28,8 @@ async function processEvent(body) {
 
   // --- DUPLICATE-EVENT FIX ---
   // When someone @mentions the bot, Slack fires BOTH an app_mention event
-  // AND a message event.  These often land on separate serverless instances
-  // so in-memory dedup cannot catch both.  Fix: if this is a plain
+  // AND a message event. These often land on separate serverless instances
+  // so in-memory dedup cannot catch both. Fix: if this is a plain
   // "message" event whose text contains the bot's direct <@ID> mention,
   // skip it and let the app_mention event handle it instead.
   const botUserId = process.env.SLACK_BOT_USER_ID || '';
@@ -56,18 +59,63 @@ async function processEvent(body) {
   // Classify intent for behavioral constraints
   const intent = classifyIntent(cleanedText);
 
-  // Build capability summary
+  console.log(
+    `event: trigger=${trigger} intent=${intent} channel=${event.channel} ts=${event.ts}`,
+  );
+
+  // Thread routing for the final reply:
+  //   - already in a thread -> reply in same thread
+  //   - direct mention at top level -> start a thread on that message
+  //   - inferred trigger at top level -> post to channel (no thread)
+  const replyThreadTs =
+    event.thread_ts || (trigger === 'direct' ? event.ts : undefined);
+
+  // --- RELAY PATH ---
+  // Fetch thread context first (needed for both relay and local).
+  const threadContext = await buildThreadContext(event);
+
+  const relayResult = await executeRelay({
+    event,
+    cleanedText,
+    threadContext,
+    intent,
+  });
+
+  if (relayResult) {
+    if (relayResult.skipped) return; // duplicate relay, silently exit
+
+    const safeAnswer = applyGuardrails(relayResult.answer);
+
+    const posted = await postToSlack({
+      channel: event.channel,
+      text: safeAnswer,
+      thread_ts: replyThreadTs,
+    });
+
+    if (relayResult.requestId) {
+      updateJob(relayResult.requestId, {
+        status: relayResult.fromRelay ? 'complete' : 'timeout',
+        finalPostTs: posted.ts || null,
+      });
+    }
+
+    console.log(
+      `replied (relay): fromRelay=${relayResult.fromRelay} ` +
+        `requestId=${relayResult.requestId} channel=${event.channel}`,
+    );
+    return;
+  }
+
+  // --- LOCAL CLAUDE PATH (relay disabled or skipped for this intent) ---
+
   const caps = getCapabilities();
   const capabilities = capabilitySummary(caps);
 
-  // Fetch all context sources in parallel
-  const [notionContext, calendarContext, threadContext] = await Promise.all([
+  const [notionContext, calendarContext] = await Promise.all([
     fetchContext(),
     fetchCalendarContext(),
-    buildThreadContext(event),
   ]);
 
-  // Build prompt with intent-specific rules and conversation history
   const systemPrompt = buildSystemPrompt({
     notionContext,
     calendarContext,
@@ -76,16 +124,8 @@ async function processEvent(body) {
     threadContext,
   });
 
-  // Call Claude
   const reply = await callClaude(systemPrompt, cleanedText);
   if (!reply || reply === '[SKIP]') return;
-
-  // Thread routing:
-  //   - already in a thread -> reply in same thread
-  //   - direct mention at top level -> start a thread on that message
-  //   - inferred trigger at top level -> post to channel (no thread)
-  const replyThreadTs =
-    event.thread_ts || (trigger === 'direct' ? event.ts : undefined);
 
   await postToSlack({
     channel: event.channel,
@@ -94,14 +134,14 @@ async function processEvent(body) {
   });
 
   console.log(
-    `replied: trigger=${trigger} intent=${intent} channel=${event.channel} thread=${!!replyThreadTs}`,
+    `replied (local): trigger=${trigger} intent=${intent} channel=${event.channel}`,
   );
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  // Slack retries when it doesn't get a fast 200.  If we see a retry
+  // Slack retries when it doesn't get a fast 200. If we see a retry
   // header, ACK and skip; the original invocation is still processing.
   if (req.headers['x-slack-retry-num']) {
     console.log(`ignoring slack retry #${req.headers['x-slack-retry-num']}`);

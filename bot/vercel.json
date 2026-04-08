@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/slack-events.js": { "maxDuration": 30 },
+    "api/slack-events.js": { "maxDuration": 60 },
     "api/cron/proactive-update.js": { "maxDuration": 30 }
   },
   "crons": [

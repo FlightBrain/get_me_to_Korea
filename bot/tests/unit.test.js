@@ -8,6 +8,18 @@ import { detectTrigger } from '../lib/trigger.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { toSlackMrkdwn } from '../lib/slack.js';
 import { buildSystemPrompt } from '../prompts/system.js';
+import { getRelayConfig } from '../lib/relay-config.js';
+import {
+  createJob,
+  updateJob,
+  getJob,
+  hasActiveJobForEvent,
+  _resetStore,
+} from '../lib/relay-store.js';
+import {
+  formatRelayRequest,
+  cleanRelayResponse,
+} from '../lib/relay.js';
 
 // ---------------------------------------------------------------------------
 // Dedup
@@ -378,25 +390,18 @@ describe('buildSystemPrompt', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Duplicate-response scenario (event-type guard)
+// Duplicate-response prevention (event-type guard)
 // ---------------------------------------------------------------------------
 
 describe('duplicate-response prevention', () => {
-  // This tests the logic documented in slack-events.js:
-  // A "message" event whose text contains <@BOT_ID> should be skipped
-  // because app_mention will handle it.
-
   it('message event with bot mention should be skippable', () => {
     const botUserId = 'U0BOT123';
     const eventText = '<@U0BOT123> what is this';
     const eventType = 'message';
-
-    // Simulate the guard condition from processEvent
     const shouldSkip =
       eventType === 'message' &&
       botUserId &&
       new RegExp(`<@${botUserId}>`).test(eventText);
-
     assert.equal(shouldSkip, true);
   });
 
@@ -404,12 +409,10 @@ describe('duplicate-response prevention', () => {
     const botUserId = 'U0BOT123';
     const eventText = '<@U0BOT123> what is this';
     const eventType = 'app_mention';
-
     const shouldSkip =
       eventType === 'message' &&
       botUserId &&
       new RegExp(`<@${botUserId}>`).test(eventText);
-
     assert.equal(shouldSkip, false);
   });
 
@@ -417,18 +420,16 @@ describe('duplicate-response prevention', () => {
     const botUserId = 'U0BOT123';
     const eventText = 'does ken have pigment covered?';
     const eventType = 'message';
-
     const shouldSkip =
       eventType === 'message' &&
       botUserId &&
       new RegExp(`<@${botUserId}>`).test(eventText);
-
     assert.equal(shouldSkip, false);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Low-confidence fallback behavior
+// Fallback behavior
 // ---------------------------------------------------------------------------
 
 describe('fallback behavior', () => {
@@ -447,7 +448,7 @@ describe('fallback behavior', () => {
 });
 
 // ---------------------------------------------------------------------------
-// No fake autobiographical claims
+// No fake identity claims
 // ---------------------------------------------------------------------------
 
 describe('no fake identity claims', () => {
@@ -476,5 +477,211 @@ describe('no fake identity claims', () => {
   it('guardrails block "170 named accounts"', () => {
     const result = applyGuardrails('i own 170 named accounts');
     assert.ok(!result.includes('170 named accounts'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Relay config
+// ---------------------------------------------------------------------------
+
+describe('getRelayConfig', () => {
+  it('defaults to disabled', () => {
+    delete process.env.RELAY_ENABLED;
+    const cfg = getRelayConfig();
+    assert.equal(cfg.enabled, false);
+  });
+
+  it('reads enabled flag from env', () => {
+    process.env.RELAY_ENABLED = 'true';
+    const cfg = getRelayConfig();
+    assert.equal(cfg.enabled, true);
+    delete process.env.RELAY_ENABLED;
+  });
+
+  it('defaults channel to C0AQCKR9M2S', () => {
+    delete process.env.RELAY_CHANNEL_ID;
+    const cfg = getRelayConfig();
+    assert.equal(cfg.channelId, 'C0AQCKR9M2S');
+  });
+
+  it('parses timeout as integer', () => {
+    process.env.RELAY_TIMEOUT_MS = '15000';
+    const cfg = getRelayConfig();
+    assert.equal(cfg.timeoutMs, 15000);
+    delete process.env.RELAY_TIMEOUT_MS;
+  });
+
+  it('parses bot user IDs as array', () => {
+    process.env.RELAY_BOT_USER_IDS = 'B001,B002';
+    const cfg = getRelayConfig();
+    assert.deepEqual(cfg.botUserIds, ['B001', 'B002']);
+    delete process.env.RELAY_BOT_USER_IDS;
+  });
+
+  it('returns empty array when bot user IDs not set', () => {
+    delete process.env.RELAY_BOT_USER_IDS;
+    const cfg = getRelayConfig();
+    assert.deepEqual(cfg.botUserIds, []);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Relay store
+// ---------------------------------------------------------------------------
+
+describe('relay store', () => {
+  beforeEach(() => _resetStore());
+
+  it('creates a job with received status', () => {
+    const event = { channel: 'C1', ts: '100.1', user: 'U1' };
+    const job = createJob('req-1', 'C1:100.1:U1', event);
+    assert.equal(job.status, 'received');
+    assert.equal(job.requestId, 'req-1');
+    assert.equal(job.originalChannel, 'C1');
+  });
+
+  it('updates job fields', () => {
+    const event = { channel: 'C1', ts: '100.2', user: 'U1' };
+    createJob('req-2', 'C1:100.2:U1', event);
+    updateJob('req-2', { status: 'relayed', relayMessageTs: '200.1' });
+    const job = getJob('req-2');
+    assert.equal(job.status, 'relayed');
+    assert.equal(job.relayMessageTs, '200.1');
+  });
+
+  it('detects active job for same event key', () => {
+    const event = { channel: 'C1', ts: '100.3', user: 'U1' };
+    createJob('req-3', 'C1:100.3:U1', event);
+    assert.equal(hasActiveJobForEvent('C1:100.3:U1'), true);
+  });
+
+  it('does not flag completed jobs as active', () => {
+    const event = { channel: 'C1', ts: '100.4', user: 'U1' };
+    createJob('req-4', 'C1:100.4:U1', event);
+    updateJob('req-4', { status: 'complete' });
+    assert.equal(hasActiveJobForEvent('C1:100.4:U1'), false);
+  });
+
+  it('does not flag timed-out jobs as active', () => {
+    const event = { channel: 'C1', ts: '100.5', user: 'U1' };
+    createJob('req-5', 'C1:100.5:U1', event);
+    updateJob('req-5', { status: 'timeout' });
+    assert.equal(hasActiveJobForEvent('C1:100.5:U1'), false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Relay request formatting
+// ---------------------------------------------------------------------------
+
+describe('formatRelayRequest', () => {
+  it('includes request_id and question', () => {
+    const msg = formatRelayRequest({
+      requestId: 'abc-123',
+      event: { channel: 'C1', ts: '1.1', user: 'U1' },
+      cleanedText: 'what is braintrust',
+      threadContext: '',
+      config: { requestPrefix: '[CLAUDESINGTON_RELAY_REQUEST]' },
+    });
+    assert.ok(msg.includes('request_id: abc-123'));
+    assert.ok(msg.includes('what is braintrust'));
+    assert.ok(msg.includes('[CLAUDESINGTON_RELAY_REQUEST]'));
+  });
+
+  it('includes context when provided', () => {
+    const msg = formatRelayRequest({
+      requestId: 'abc-456',
+      event: { channel: 'C1', ts: '1.2', user: 'U1' },
+      cleanedText: 'tell me more',
+      threadContext: '[nick]: we were discussing evals',
+      config: { requestPrefix: '[RELAY]' },
+    });
+    assert.ok(msg.includes('context:'));
+    assert.ok(msg.includes('[nick]: we were discussing evals'));
+  });
+
+  it('omits context section when empty', () => {
+    const msg = formatRelayRequest({
+      requestId: 'abc-789',
+      event: { channel: 'C1', ts: '1.3', user: 'U1' },
+      cleanedText: 'hello',
+      threadContext: '',
+      config: { requestPrefix: '[RELAY]' },
+    });
+    assert.ok(!msg.includes('context:'));
+  });
+
+  it('includes instructions with request_id', () => {
+    const msg = formatRelayRequest({
+      requestId: 'def-001',
+      event: { channel: 'C1', ts: '1.4', user: 'U1' },
+      cleanedText: 'test',
+      threadContext: '',
+      config: { requestPrefix: '[RELAY]' },
+    });
+    assert.ok(msg.includes('REQUEST_ID=def-001'));
+    assert.ok(msg.includes('under 6 sentences'));
+  });
+
+  it('includes original event metadata', () => {
+    const msg = formatRelayRequest({
+      requestId: 'def-002',
+      event: {
+        channel: 'CABC',
+        ts: '9.9',
+        thread_ts: '8.8',
+        user: 'UXYZ',
+      },
+      cleanedText: 'test',
+      threadContext: '',
+      config: { requestPrefix: '[RELAY]' },
+    });
+    assert.ok(msg.includes('original_channel: CABC'));
+    assert.ok(msg.includes('original_thread_ts: 8.8'));
+    assert.ok(msg.includes('original_message_ts: 9.9'));
+    assert.ok(msg.includes('original_user: UXYZ'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Relay response cleaning
+// ---------------------------------------------------------------------------
+
+describe('cleanRelayResponse', () => {
+  it('strips REQUEST_ID trailer', () => {
+    const text = 'braintrust does evals. REQUEST_ID=abc-123';
+    const cleaned = cleanRelayResponse(text, 'abc-123');
+    assert.equal(cleaned, 'braintrust does evals.');
+  });
+
+  it('strips relay markers', () => {
+    const text =
+      '[CLAUDESINGTON_RELAY_RESPONSE] here is the answer. REQUEST_ID=x';
+    const cleaned = cleanRelayResponse(text, 'x');
+    assert.equal(cleaned, 'here is the answer.');
+  });
+
+  it('strips echoed relay request markers', () => {
+    const text = '[CLAUDESINGTON_RELAY_REQUEST] some content';
+    const cleaned = cleanRelayResponse(text, 'none');
+    assert.equal(cleaned, 'some content');
+  });
+
+  it('returns fallback for empty response', () => {
+    const cleaned = cleanRelayResponse('', 'abc');
+    assert.ok(cleaned.length > 0);
+    assert.ok(cleaned.includes('try asking again'));
+  });
+
+  it('preserves normal answer content', () => {
+    const text = 'braintrust helps teams evaluate AI models at scale.';
+    const cleaned = cleanRelayResponse(text, 'no-match');
+    assert.equal(cleaned, text);
+  });
+
+  it('handles REQUEST_ID on its own line', () => {
+    const text = 'the answer is yes.\nREQUEST_ID=test-id-99';
+    const cleaned = cleanRelayResponse(text, 'test-id-99');
+    assert.equal(cleaned, 'the answer is yes.');
   });
 });
