@@ -3,7 +3,7 @@
 const FORBIDDEN_PHRASES = [
   /\blol nah\b/i,
   /\bidk man\b/i,
-  /\bthat'?s not my (world|problem|thing)\b/i,
+  /\bthat'?s not my (world|problem|thing|area)\b/i,
   /\bi'?m not a messenger service\b/i,
   /\bi'?m an sdr\b/i,
   /\bi own \d+ (named )?accounts\b/i,
@@ -15,7 +15,14 @@ const FORBIDDEN_PHRASES = [
   /\bask nate\b/i,
   /\bcooked\b/i,
   /\bykiyk\b/i,
+  /\bnot my (job|problem|circus)\b/i,
+  /\babove my pay\s*grade\b/i,
+  /\bthat'?s on you\b/i,
+  /\bgood luck with that\b/i,
 ];
+
+const SAFE_FALLBACK =
+  "i'm not sure on that one. happy to help if you can give me more context.";
 
 // Returns the reply unchanged if clean, or a safe fallback if it trips a rule.
 export function applyGuardrails(reply) {
@@ -24,16 +31,13 @@ export function applyGuardrails(reply) {
   for (const pattern of FORBIDDEN_PHRASES) {
     if (pattern.test(reply)) {
       console.warn(`guardrail tripped: ${pattern}`);
-      // Strip just the offending phrase rather than nuking the whole reply,
-      // unless the reply is very short (the phrase IS the reply).
-      if (reply.length < 30) {
-        return "i'm not sure on that one. happy to help if you can give me more context.";
-      }
+      // If the forbidden phrase IS the whole reply, replace entirely.
+      if (reply.length < 40) return SAFE_FALLBACK;
       reply = reply.replace(pattern, '').replace(/\s+/g, ' ').trim();
     }
   }
 
-  // Strip em dashes
+  // Strip em dashes (U+2014) -> comma
   reply = reply.replace(/\u2014/g, ',');
 
   return reply;

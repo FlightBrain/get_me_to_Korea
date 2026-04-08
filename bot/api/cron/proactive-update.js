@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     calendarContext,
     capabilities: capabilitySummary(caps),
     intent: 'general_qna',
+    threadContext: '',
   });
 
   const prompt = 'give a brief 1-2 sentence end-of-day update based on the notion context. casual and helpful. if nothing notable is in the context, respond with exactly: [SKIP]';
