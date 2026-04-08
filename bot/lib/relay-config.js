@@ -5,8 +5,8 @@ export function getRelayConfig() {
   return {
     enabled: process.env.RELAY_ENABLED === 'true',
     channelId: process.env.RELAY_CHANNEL_ID || 'C0AQCKR9M2S',
-    timeoutMs: parseInt(process.env.RELAY_TIMEOUT_MS || '20000', 10),
-    pollIntervalMs: parseInt(process.env.RELAY_POLL_INTERVAL_MS || '2000', 10),
+    timeoutMs: parseInt(process.env.RELAY_TIMEOUT_MS || '45000', 10),
+    pollIntervalMs: parseInt(process.env.RELAY_POLL_INTERVAL_MS || '3000', 10),
     requestPrefix:
       process.env.RELAY_REQUEST_PREFIX || '[CLAUDESINGTON_RELAY_REQUEST]',
     botUserIds: (process.env.RELAY_BOT_USER_IDS || '')
