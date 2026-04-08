@@ -1,29 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { applyGuardrails } from './guardrails.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-export async function callClaude(systemPrompt, userMessage, triggerType) {
-  const userContent = buildUserContent(userMessage, triggerType);
-
+export async function callClaude(systemPrompt, cleanedText) {
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 200,
+    max_tokens: 300,
     system: systemPrompt,
-    messages: [{ role: 'user', content: userContent }],
+    messages: [{ role: 'user', content: `slack message: "${cleanedText}"` }],
   });
 
   let reply = response.content[0]?.text ?? '';
+  reply = applyGuardrails(reply);
 
-  // Hard backstop: strip em dashes regardless of model output
-  reply = reply.replace(/\u2014/g, ',');
-
-  return reply.trim();
-}
-
-function buildUserContent(text, triggerType) {
-  if (triggerType === 'direct') {
-    return `someone in the channel said: "${text}"\n\nrespond helpfully as claudesington.`;
-  }
-  // inferred
-  return `someone asked something about the team, accounts, or needs a resource: "${text}"\n\nrespond helpfully as claudesington.`;
+  return reply.trim() || null;
 }
