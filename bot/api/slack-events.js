@@ -10,11 +10,11 @@ import { fetchContext } from '../lib/context.js';
 import { fetchCalendarContext } from '../lib/calendar.js';
 import { buildThreadContext } from '../lib/thread-context.js';
 import { buildSystemPrompt } from '../prompts/system.js';
-import { callClaude, logger } from '../lib/claude.js';
+import { callClaude } from '../lib/claude.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
-import { handleReaction } from '../lib/feedback.js';
+import { logBotReply, handleReaction } from '../lib/feedback.js';
 import { flush } from 'braintrust';
 
 export const config = {
@@ -28,7 +28,7 @@ async function processEvent(body) {
   // Handle reaction events for feedback tracking
   if (event.type === 'reaction_added') {
     console.log(`reaction: :${event.reaction}: on ${event.item?.channel}:${event.item?.ts}`);
-    await handleReaction(event);
+    handleReaction(event);
     return;
   }
 
@@ -93,28 +93,22 @@ async function processEvent(body) {
 
     const safeAnswer = applyGuardrails(relayResult.answer);
 
-    // Log relay responses to Braintrust too
-    const relaySpan = await logger.traced(
-      async (span) => {
-        span.log({
-          input: cleanedText,
-          output: safeAnswer,
-          metadata: { path: 'relay', intent, fromRelay: relayResult.fromRelay },
-          tags: ['slack-bot', 'relay'],
-        });
-        return span.id;
-      },
-      { name: 'slack-reply-relay' },
-    );
-
     const posted = await postToSlack({
       channel: event.channel,
       text: safeAnswer,
       thread_ts: replyThreadTs,
-      metadata: relaySpan
-        ? { event_type: 'braintrust_span', event_payload: { span_id: relaySpan } }
-        : undefined,
     });
+
+    if (posted?.ts) {
+      logBotReply({
+        channel: event.channel,
+        messageTs: posted.ts,
+        input: cleanedText,
+        output: safeAnswer,
+        intent,
+        path: 'relay',
+      });
+    }
 
     if (relayResult.requestId) {
       updateJob(relayResult.requestId, {
@@ -154,10 +148,19 @@ async function processEvent(body) {
     channel: event.channel,
     text: result.reply,
     thread_ts: replyThreadTs,
-    metadata: result.spanId
-      ? { event_type: 'braintrust_span', event_payload: { span_id: result.spanId } }
-      : undefined,
   });
+
+  if (posted?.ts) {
+    logBotReply({
+      channel: event.channel,
+      messageTs: posted.ts,
+      input: cleanedText,
+      output: result.reply,
+      intent,
+      path: 'local',
+      spanId: result.spanId,
+    });
+  }
 
   console.log(
     `replied (local): trigger=${trigger} intent=${intent} channel=${event.channel}`,

@@ -2,7 +2,10 @@ import Anthropic from '@anthropic-ai/sdk';
 import { initLogger, wrapAnthropic } from 'braintrust';
 import { applyGuardrails } from './guardrails.js';
 
-export const logger = initLogger({ projectName: 'claudesington-bot' });
+export const logger = initLogger({
+  projectName: 'claudesington-bot',
+  apiKey: process.env.BRAINTRUST_API_KEY,
+});
 
 const baseClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const client = wrapAnthropic(baseClient);
