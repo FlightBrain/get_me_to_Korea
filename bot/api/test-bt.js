@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name: 'claudesington-bot' }),
+      body: JSON.stringify({ name: 'Claudesington' }),
     });
     const data = await r.json();
     projectId = data.id;

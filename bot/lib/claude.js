@@ -3,7 +3,7 @@ import { initLogger, wrapAnthropic } from 'braintrust';
 import { applyGuardrails } from './guardrails.js';
 
 export const logger = initLogger({
-  projectName: 'claudesington-bot',
+  projectName: 'Claudesington',
   apiKey: process.env.BRAINTRUST_API_KEY,
 });
 
