@@ -1,28 +1,37 @@
-// Direct Braintrust API test - DELETE after confirming
-import { logTrace, logFeedback } from '../lib/braintrust.js';
-
+// Discover project ID and test logging
 export default async function handler(req, res) {
+  const apiKey = process.env.BRAINTRUST_API_KEY;
   const results = {};
 
-  // Test 1: Log a trace
-  const trace = await logTrace({
-    input: 'test from /api/test-bt',
-    output: 'if you see this, logging works',
-    metadata: { test: true, timestamp: new Date().toISOString() },
-    tags: ['test'],
+  // Step 1: Create or find the project
+  const createRes = await fetch('https://api.braintrust.dev/v1/project', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Claudesington' }),
   });
-  results.trace = trace;
+  const project = await createRes.json();
+  results.project = { id: project.id, name: project.name, org: project.org_name };
 
-  // Test 2: Log feedback on that trace
-  if (trace?.row_ids?.[0]) {
-    const fb = await logFeedback({
-      id: trace.row_ids[0],
-      scores: { thumbs: 1 },
-      comment: 'test feedback',
+  // Step 2: Insert a test log
+  if (project.id) {
+    const logRes = await fetch(`https://api.braintrust.dev/v1/project_logs/${project.id}/insert`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        events: [{
+          input: { message: 'test from /api/test-bt' },
+          output: { response: 'logging works!' },
+          metadata: { test: true, timestamp: new Date().toISOString() },
+        }],
+      }),
     });
-    results.feedback = fb;
+    const logData = await logRes.json();
+    results.log = { status: logRes.status, data: logData };
+    results.projectId = project.id;
+    results.message = logData.row_ids
+      ? `SUCCESS. Update PROJECT_ID in bot/lib/braintrust.js to: ${project.id}`
+      : 'Log insert failed';
   }
 
-  results.message = trace?.row_ids ? 'Check Braintrust dashboard for Claudesington project' : 'FAILED';
   return res.status(200).json(results);
 }
