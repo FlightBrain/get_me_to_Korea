@@ -15,7 +15,6 @@ import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
 import { logBotReply, handleReaction } from '../lib/feedback.js';
-import { flush } from 'braintrust';
 
 export const config = {
   api: { bodyParser: false },
@@ -28,7 +27,7 @@ async function processEvent(body) {
   // Handle reaction events for feedback tracking
   if (event.type === 'reaction_added') {
     console.log(`reaction: :${event.reaction}: on ${event.item?.channel}:${event.item?.ts}`);
-    handleReaction(event);
+    await handleReaction(event);
     return;
   }
 
@@ -100,7 +99,7 @@ async function processEvent(body) {
     });
 
     if (posted?.ts) {
-      logBotReply({
+      await logBotReply({
         channel: event.channel,
         messageTs: posted.ts,
         input: cleanedText,
@@ -151,14 +150,16 @@ async function processEvent(body) {
   });
 
   if (posted?.ts) {
-    logBotReply({
+    await logBotReply({
       channel: event.channel,
       messageTs: posted.ts,
       input: cleanedText,
       output: result.reply,
       intent,
       path: 'local',
-      spanId: result.spanId,
+      model: result.model,
+      tokens: result.tokens,
+      latencyMs: result.latencyMs,
     });
   }
 
@@ -191,6 +192,6 @@ export default async function handler(req, res) {
     return res.status(401).end();
   }
 
-  waitUntil(processEvent(body).finally(() => flush()));
+  waitUntil(processEvent(body));
   return res.status(200).end();
 }

@@ -1,77 +1,28 @@
-// Raw Braintrust API test - bypass the SDK entirely
+// Direct Braintrust API test - DELETE after confirming
+import { logTrace, logFeedback } from '../lib/braintrust.js';
+
 export default async function handler(req, res) {
-  const results = { steps: [] };
-  const apiKey = process.env.BRAINTRUST_API_KEY;
+  const results = {};
 
-  if (!apiKey) {
-    return res.status(200).json({ error: 'BRAINTRUST_API_KEY not set' });
+  // Test 1: Log a trace
+  const trace = await logTrace({
+    input: 'test from /api/test-bt',
+    output: 'if you see this, logging works',
+    metadata: { test: true, timestamp: new Date().toISOString() },
+    tags: ['test'],
+  });
+  results.trace = trace;
+
+  // Test 2: Log feedback on that trace
+  if (trace?.row_ids?.[0]) {
+    const fb = await logFeedback({
+      id: trace.row_ids[0],
+      scores: { thumbs: 1 },
+      comment: 'test feedback',
+    });
+    results.feedback = fb;
   }
 
-  // Step 1: Test the API key by listing projects
-  try {
-    const r = await fetch('https://api.braintrust.dev/v1/project', {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    const data = await r.json();
-    results.steps.push({
-      step: 'list_projects',
-      status: r.status,
-      projects: data.objects?.map(p => ({ id: p.id, name: p.name })) || data,
-    });
-  } catch (e) {
-    results.steps.push({ step: 'list_projects', error: e.message });
-  }
-
-  // Step 2: Create or find the project
-  let projectId = null;
-  try {
-    const r = await fetch('https://api.braintrust.dev/v1/project', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: 'Claudesington' }),
-    });
-    const data = await r.json();
-    projectId = data.id;
-    results.steps.push({
-      step: 'create_project',
-      status: r.status,
-      projectId: data.id,
-      name: data.name,
-    });
-  } catch (e) {
-    results.steps.push({ step: 'create_project', error: e.message });
-  }
-
-  // Step 3: Insert a log row directly via API
-  if (projectId) {
-    try {
-      const r = await fetch(`https://api.braintrust.dev/v1/project_logs/${projectId}/insert`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          events: [{
-            input: { message: 'direct API test' },
-            output: { response: 'if you see this, the API works' },
-            metadata: { test: true, timestamp: new Date().toISOString() },
-          }],
-        }),
-      });
-      const data = await r.json();
-      results.steps.push({
-        step: 'insert_log',
-        status: r.status,
-        response: data,
-      });
-    } catch (e) {
-      results.steps.push({ step: 'insert_log', error: e.message });
-    }
-  }
-
+  results.message = trace?.row_ids ? 'Check Braintrust dashboard for Claudesington project' : 'FAILED';
   return res.status(200).json(results);
 }

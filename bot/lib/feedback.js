@@ -1,14 +1,12 @@
 import crypto from 'crypto';
-import { logger } from './claude.js';
+import { logTrace, logFeedback } from './braintrust.js';
 
 const POSITIVE = new Set(['+1', 'thumbsup', 'white_check_mark', 'heavy_check_mark', 'heart']);
 const NEGATIVE = new Set(['-1', 'thumbsdown', 'x', 'no_entry_sign']);
 
-// Derive a deterministic UUID from channel + message ts
-// Same input always produces the same ID
-export function spanIdFromMessage(channel, ts) {
+// Deterministic ID from channel + message ts
+function traceId(channel, ts) {
   const hash = crypto.createHash('sha256').update(`${channel}:${ts}`).digest('hex');
-  // Format as UUID v4-like: xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx
   return [
     hash.slice(0, 8),
     hash.slice(8, 12),
@@ -18,21 +16,21 @@ export function spanIdFromMessage(channel, ts) {
   ].join('-');
 }
 
-// Call after posting a bot reply to log the trace
-export function logBotReply({ channel, messageTs, input, output, intent, path, spanId }) {
-  const id = spanIdFromMessage(channel, messageTs);
-  logger.log({
+// Log a bot reply to Braintrust
+export async function logBotReply({ channel, messageTs, input, output, intent, path, model, tokens, latencyMs }) {
+  const id = traceId(channel, messageTs);
+  const result = await logTrace({
     id,
     input,
     output,
-    metadata: { channel, messageTs, intent, path, originalSpanId: spanId },
+    metadata: { channel, messageTs, intent, path, model, tokens, latencyMs },
     tags: ['slack-bot', path || 'local'],
   });
-  console.log(`feedback: logged trace ${id} for ${channel}:${messageTs}`);
+  console.log(`bt: logged trace ${id} for ${channel}:${messageTs}`, result ? 'ok' : 'failed');
 }
 
-// Call when a reaction event arrives
-export function handleReaction(event) {
+// Log feedback from a Slack reaction
+export async function handleReaction(event) {
   try {
     const { reaction, item, user } = event;
     if (item?.type !== 'message') return;
@@ -41,17 +39,15 @@ export function handleReaction(event) {
     const isNegative = NEGATIVE.has(reaction);
     if (!isPositive && !isNegative) return;
 
-    const id = spanIdFromMessage(item.channel, item.ts);
-
-    logger.logFeedback({
+    const id = traceId(item.channel, item.ts);
+    const result = await logFeedback({
       id,
       scores: { thumbs: isPositive ? 1 : 0 },
-      comment: `Slack reaction :${reaction}: from ${user}`,
+      comment: `Slack :${reaction}: from ${user}`,
       metadata: { slack_user: user, reaction, channel: item.channel },
     });
-
-    console.log(`feedback: ${isPositive ? 'positive' : 'negative'} :${reaction}: -> ${id}`);
+    console.log(`bt: feedback ${isPositive ? '+' : '-'} :${reaction}: -> ${id}`, result ? 'ok' : 'failed');
   } catch (e) {
-    console.error(`feedback error: ${e.message}`);
+    console.error(`bt feedback error: ${e.message}`);
   }
 }
