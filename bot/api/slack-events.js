@@ -14,7 +14,7 @@ import { callClaude } from '../lib/claude.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
-import { logBotReply, handleReaction } from '../lib/feedback.js';
+import { handleReaction } from '../lib/feedback.js';
 
 export const config = {
   api: { bodyParser: false },
@@ -98,17 +98,6 @@ async function processEvent(body) {
       thread_ts: replyThreadTs,
     });
 
-    if (posted?.ts) {
-      await logBotReply({
-        channel: event.channel,
-        messageTs: posted.ts,
-        input: cleanedText,
-        output: safeAnswer,
-        intent,
-        path: 'relay',
-      });
-    }
-
     if (relayResult.requestId) {
       updateJob(relayResult.requestId, {
         status: relayResult.fromRelay ? 'complete' : 'timeout',
@@ -148,20 +137,6 @@ async function processEvent(body) {
     text: result.reply,
     thread_ts: replyThreadTs,
   });
-
-  if (posted?.ts) {
-    await logBotReply({
-      channel: event.channel,
-      messageTs: posted.ts,
-      input: cleanedText,
-      output: result.reply,
-      intent,
-      path: 'local',
-      model: result.model,
-      tokens: result.tokens,
-      latencyMs: result.latencyMs,
-    });
-  }
 
   console.log(
     `replied (local): trigger=${trigger} intent=${intent} channel=${event.channel}`,
