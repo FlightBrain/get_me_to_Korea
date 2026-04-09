@@ -1,102 +1,77 @@
-// Minimal Braintrust test endpoint - hit this to verify logging works
-// DELETE THIS FILE after confirming traces appear
-import Anthropic from '@anthropic-ai/sdk';
-import { initLogger, wrapAnthropic } from 'braintrust';
-
+// Raw Braintrust API test - bypass the SDK entirely
 export default async function handler(req, res) {
-  const results = { steps: [], errors: [] };
+  const results = { steps: [] };
+  const apiKey = process.env.BRAINTRUST_API_KEY;
 
-  // Step 1: Check env vars
-  const hasApiKey = !!process.env.BRAINTRUST_API_KEY;
-  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
-  results.steps.push({
-    step: 'env_check',
-    BRAINTRUST_API_KEY: hasApiKey ? `set (${process.env.BRAINTRUST_API_KEY.slice(0, 8)}...)` : 'MISSING',
-    ANTHROPIC_API_KEY: hasAnthropicKey ? 'set' : 'MISSING',
-    BRAINTRUST_SYNC_FLUSH: process.env.BRAINTRUST_SYNC_FLUSH || 'not set',
-  });
-
-  if (!hasApiKey) {
-    results.errors.push('BRAINTRUST_API_KEY is not set');
-    return res.status(200).json(results);
+  if (!apiKey) {
+    return res.status(200).json({ error: 'BRAINTRUST_API_KEY not set' });
   }
 
-  // Step 2: Init logger
-  let logger;
+  // Step 1: Test the API key by listing projects
   try {
-    logger = initLogger({
-      projectName: 'claudesington-bot',
-      apiKey: process.env.BRAINTRUST_API_KEY,
+    const r = await fetch('https://api.braintrust.dev/v1/project', {
+      headers: { Authorization: `Bearer ${apiKey}` },
     });
-    results.steps.push({ step: 'initLogger', status: 'ok' });
-  } catch (e) {
-    results.errors.push(`initLogger failed: ${e.message}`);
-    return res.status(200).json(results);
-  }
-
-  // Step 3: Manual log (no LLM call needed)
-  try {
-    logger.log({
-      input: 'test input from /api/test-bt',
-      output: 'test output - if you see this in Braintrust, logging works',
-      metadata: { test: true, timestamp: new Date().toISOString() },
-      tags: ['test'],
+    const data = await r.json();
+    results.steps.push({
+      step: 'list_projects',
+      status: r.status,
+      projects: data.objects?.map(p => ({ id: p.id, name: p.name })) || data,
     });
-    results.steps.push({ step: 'logger.log', status: 'ok' });
   } catch (e) {
-    results.errors.push(`logger.log failed: ${e.message}`);
+    results.steps.push({ step: 'list_projects', error: e.message });
   }
 
-  // Step 4: Traced span
+  // Step 2: Create or find the project
+  let projectId = null;
   try {
-    const spanResult = await logger.traced(
-      async (span) => {
-        span.log({
-          input: 'traced test input',
-          output: 'traced test output',
-          tags: ['test-traced'],
-        });
-        return { spanId: span.id };
+    const r = await fetch('https://api.braintrust.dev/v1/project', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
-      { name: 'test-span' },
-    );
-    results.steps.push({ step: 'logger.traced', status: 'ok', spanId: spanResult.spanId });
+      body: JSON.stringify({ name: 'claudesington-bot' }),
+    });
+    const data = await r.json();
+    projectId = data.id;
+    results.steps.push({
+      step: 'create_project',
+      status: r.status,
+      projectId: data.id,
+      name: data.name,
+    });
   } catch (e) {
-    results.errors.push(`logger.traced failed: ${e.message}`);
+    results.steps.push({ step: 'create_project', error: e.message });
   }
 
-  // Step 5: Flush - this is the critical step
-  try {
-    await logger.flush();
-    results.steps.push({ step: 'logger.flush', status: 'ok' });
-  } catch (e) {
-    results.errors.push(`logger.flush failed: ${e.message}`);
-  }
-
-  // Step 6: If Anthropic key exists, try a wrapped call too
-  if (hasAnthropicKey) {
+  // Step 3: Insert a log row directly via API
+  if (projectId) {
     try {
-      const client = wrapAnthropic(new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }));
-      const response = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 50,
-        messages: [{ role: 'user', content: 'Say "braintrust test ok" and nothing else.' }],
+      const r = await fetch(`https://api.braintrust.dev/v1/project_logs/${projectId}/insert`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          events: [{
+            input: { message: 'direct API test' },
+            output: { response: 'if you see this, the API works' },
+            metadata: { test: true, timestamp: new Date().toISOString() },
+          }],
+        }),
       });
-      const text = response.content[0]?.text || '';
-      results.steps.push({ step: 'wrapAnthropic call', status: 'ok', response: text });
-
-      // Flush again after the LLM call
-      await logger.flush();
-      results.steps.push({ step: 'post-llm flush', status: 'ok' });
+      const data = await r.json();
+      results.steps.push({
+        step: 'insert_log',
+        status: r.status,
+        response: data,
+      });
     } catch (e) {
-      results.errors.push(`wrapAnthropic call failed: ${e.message}`);
+      results.steps.push({ step: 'insert_log', error: e.message });
     }
   }
-
-  results.success = results.errors.length === 0;
-  results.message = results.success
-    ? 'All steps passed. Check Braintrust dashboard for claudesington-bot project.'
-    : 'Some steps failed. See errors.';
 
   return res.status(200).json(results);
 }
