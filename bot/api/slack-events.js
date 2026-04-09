@@ -27,7 +27,8 @@ async function processEvent(body) {
 
   // Handle reaction events for feedback tracking
   if (event.type === 'reaction_added') {
-    handleReaction(event);
+    console.log(`reaction: :${event.reaction}: on ${event.item?.channel}:${event.item?.ts}`);
+    await handleReaction(event);
     return;
   }
 
