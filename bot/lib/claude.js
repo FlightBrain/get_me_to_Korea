@@ -1,22 +1,36 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { initLogger, wrapAI } from 'braintrust';
+import { initLogger, wrapAI, currentSpan } from 'braintrust';
 import { applyGuardrails } from './guardrails.js';
 
-const logger = initLogger({ projectName: 'claudesington-bot' });
+export const logger = initLogger({ projectName: 'claudesington-bot' });
 
 const baseClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const client = wrapAI(baseClient);
 
 export async function callClaude(systemPrompt, cleanedText) {
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 400,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: `slack message: "${cleanedText}"` }],
-  });
+  const result = await logger.traced(
+    async (span) => {
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `slack message: "${cleanedText}"` }],
+      });
 
-  let reply = response.content[0]?.text ?? '';
-  reply = applyGuardrails(reply);
+      let reply = response.content[0]?.text ?? '';
+      reply = applyGuardrails(reply);
+      const trimmed = reply.trim() || null;
 
-  return reply.trim() || null;
+      span.log({
+        input: cleanedText,
+        output: trimmed,
+        tags: ['slack-bot'],
+      });
+
+      return { reply: trimmed, spanId: span.id };
+    },
+    { name: 'slack-reply' },
+  );
+
+  return result;
 }

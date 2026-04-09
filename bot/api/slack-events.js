@@ -14,6 +14,7 @@ import { callClaude } from '../lib/claude.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
+import { storeSpanId, handleReaction } from '../lib/feedback.js';
 import { flush } from 'braintrust';
 
 export const config = {
@@ -22,7 +23,15 @@ export const config = {
 
 async function processEvent(body) {
   const event = body?.event;
-  if (!event || !event.text) return;
+  if (!event) return;
+
+  // Handle reaction events for feedback tracking
+  if (event.type === 'reaction_added') {
+    handleReaction(event);
+    return;
+  }
+
+  if (!event.text) return;
 
   // Guard: never reply to bot messages (prevents loops)
   if (event.bot_id || event.subtype === 'bot_message') return;
@@ -120,14 +129,19 @@ async function processEvent(body) {
     threadContext,
   });
 
-  const reply = await callClaude(systemPrompt, cleanedText);
-  if (!reply || reply === '[SKIP]') return;
+  const result = await callClaude(systemPrompt, cleanedText);
+  if (!result?.reply || result.reply === '[SKIP]') return;
 
-  await postToSlack({
+  const posted = await postToSlack({
     channel: event.channel,
-    text: reply,
+    text: result.reply,
     thread_ts: replyThreadTs,
   });
+
+  // Store mapping so Slack reactions can be traced back to this span
+  if (posted?.ts && result.spanId) {
+    storeSpanId(event.channel, posted.ts, result.spanId);
+  }
 
   console.log(
     `replied (local): trigger=${trigger} intent=${intent} channel=${event.channel}`,
