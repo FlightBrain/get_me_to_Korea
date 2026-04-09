@@ -14,6 +14,7 @@ import { callClaude } from '../lib/claude.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
+import { flush } from 'braintrust';
 
 export const config = {
   api: { bodyParser: false },
@@ -157,6 +158,6 @@ export default async function handler(req, res) {
     return res.status(401).end();
   }
 
-  waitUntil(processEvent(body));
+  waitUntil(processEvent(body).finally(() => flush()));
   return res.status(200).end();
 }
