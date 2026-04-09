@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { initLogger, wrapAnthropic, currentSpan } from 'braintrust';
+import { initLogger, wrapAnthropic } from 'braintrust';
 import { applyGuardrails } from './guardrails.js';
 
 export const logger = initLogger({ projectName: 'claudesington-bot' });

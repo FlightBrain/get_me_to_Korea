@@ -10,7 +10,7 @@ import { fetchContext } from '../lib/context.js';
 import { fetchCalendarContext } from '../lib/calendar.js';
 import { buildThreadContext } from '../lib/thread-context.js';
 import { buildSystemPrompt } from '../prompts/system.js';
-import { callClaude } from '../lib/claude.js';
+import { callClaude, logger } from '../lib/claude.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
@@ -93,10 +93,27 @@ async function processEvent(body) {
 
     const safeAnswer = applyGuardrails(relayResult.answer);
 
+    // Log relay responses to Braintrust too
+    const relaySpan = await logger.traced(
+      async (span) => {
+        span.log({
+          input: cleanedText,
+          output: safeAnswer,
+          metadata: { path: 'relay', intent, fromRelay: relayResult.fromRelay },
+          tags: ['slack-bot', 'relay'],
+        });
+        return span.id;
+      },
+      { name: 'slack-reply-relay' },
+    );
+
     const posted = await postToSlack({
       channel: event.channel,
       text: safeAnswer,
       thread_ts: replyThreadTs,
+      metadata: relaySpan
+        ? { event_type: 'braintrust_span', event_payload: { span_id: relaySpan } }
+        : undefined,
     });
 
     if (relayResult.requestId) {
