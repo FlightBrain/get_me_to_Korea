@@ -1,5 +1,5 @@
 // Direct Braintrust API logging - bypasses broken SDK logger on Vercel
-const PROJECT_ID = 'e16229b4-c505-4362-a491-fd9f7d289cca';
+const PROJECT_ID = '9bba3cfb-9362-45df-baa1-d01f6296d856';
 const API_BASE = 'https://api.braintrust.dev/v1';
 
 async function btFetch(path, body) {
