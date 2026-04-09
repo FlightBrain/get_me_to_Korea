@@ -59,6 +59,7 @@ export async function postToSlack({ channel, text, thread_ts, metadata }) {
 
   const data = await res.json();
   if (!data.ok) console.error('Slack post failed:', data.error);
+  if (metadata && !data.ok) console.error('Slack metadata may have failed:', JSON.stringify(metadata));
   return data;
 }
 
@@ -66,15 +67,25 @@ export async function postToSlack({ channel, text, thread_ts, metadata }) {
 
 export async function fetchMessage(channel, ts) {
   try {
-    const params = new URLSearchParams({ channel, latest: ts, limit: '1', inclusive: 'true' });
+    const params = new URLSearchParams({
+      channel,
+      latest: ts,
+      limit: '1',
+      inclusive: 'true',
+      include_all_metadata: 'true',
+    });
     const res = await fetch(
       `https://slack.com/api/conversations.history?${params}`,
       { headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` } },
     );
     const data = await res.json();
-    if (!data.ok) return null;
+    if (!data.ok) {
+      console.error('fetchMessage failed:', data.error);
+      return null;
+    }
     return data.messages?.[0] || null;
-  } catch {
+  } catch (e) {
+    console.error('fetchMessage error:', e.message);
     return null;
   }
 }
