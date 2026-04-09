@@ -202,6 +202,9 @@ export function cleanRelayResponse(text, requestId) {
   // "Source: ..." line (alternate format)
   cleaned = cleaned.replace(/^Source:\s*.+$/gim, '');
 
+  // Strip Notion agent footer ("View agent in Notion" link)
+  cleaned = cleaned.replace(/\s*View\s+agent\s+in\s+Notion\s*/gi, '');
+
   // Clean up Slack emoji shortcodes -> strip the colons so they render
   // e.g. ":mag:" stays as-is (Slack renders these natively)
 
