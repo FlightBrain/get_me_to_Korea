@@ -73,6 +73,12 @@ const INTENT_PATTERNS = [
     /^(hey\s+)?(what['s]*\s*(up|good)|how['s]*\s*(it\s+going|you\s+doing|are\s+you)|what['s]*\s*good|how\s+are\s+(you|ya|things)|yo+\s+what['s]*\s*up|hey\s+there|howdy|hiya|wassup|whaddup|sup\s+dude|what['s]*\s*poppin|what['s]*\s*crackin)\s*[!?.]*$/i,
     /^(how['s]*\s+your\s+(day|morning|evening|night|week|weekend))\s*[!?.]*$/i,
     /^(thanks?|thank\s+you|ty|thx|appreciate\s+it|cheers)\s*[!?.]*$/i,
+    // Rhetorical / jokey questions about coworkers or everyday stuff
+    /\bhow\s+is\s+(it|that)\s+possible\b/i,
+    /\bwhy\s+(does|do|is|are)\s+\w+\s+(always|never|so\s+much|so\s+many)\b/i,
+    /\bexplain\s+(how|why)\s+\w+\s+(is|are|has|does)\b.*\b(so|always|never|every)\b/i,
+    /\bis\s+(it|that)\s+just\s+me\s+or\b/i,
+    /\bsomeone\s+(explain|tell\s+me\s+why)\b/i,
   ]},
 ];
 
