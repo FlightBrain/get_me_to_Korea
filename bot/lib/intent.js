@@ -69,6 +69,10 @@ const INTENT_PATTERNS = [
     /^(lol|haha|nice|yo|sup|hey|gm|gn|gg|fire|vibes|w+|dude|bro|facts|real|true|bet|word|nah|yep|yea|damn|wow|sheesh|goat|legend|king|queen|clutch|insane|wild|huge|big|massive|crazy|sick|lit|dope|clean|solid|tough|pain|rip|oof|bruh|fam|gang|squad|team|mood|same|dead|crying|stop|no\s*way)\s*[!?.]*$/i,
     /^(good\s+(morning|night|luck)|happy\s+\w+|congrats|lets?\s+go+|lfg|huge\s*w|big\s*w|w\s+w\s+w)\s*[!?.]*$/i,
     /^[\p{Emoji}\s!?.]+$/u,
+    // Greetings and casual openers that should NOT go to Notion
+    /^(hey\s+)?(what['s]*\s*(up|good)|how['s]*\s*(it\s+going|you\s+doing|are\s+you)|what['s]*\s*good|how\s+are\s+(you|ya|things)|yo+\s+what['s]*\s*up|hey\s+there|howdy|hiya|wassup|whaddup|sup\s+dude|what['s]*\s*poppin|what['s]*\s*crackin)\s*[!?.]*$/i,
+    /^(how['s]*\s+your\s+(day|morning|evening|night|week|weekend))\s*[!?.]*$/i,
+    /^(thanks?|thank\s+you|ty|thx|appreciate\s+it|cheers)\s*[!?.]*$/i,
   ]},
 ];
 
