@@ -38,13 +38,14 @@ export function toSlackMrkdwn(text) {
     .replace(/^-{3,}$/gm, '');
 }
 
-export async function postToSlack({ channel, text, thread_ts }) {
+export async function postToSlack({ channel, text, thread_ts, metadata }) {
   const formatted = toSlackMrkdwn(text);
 
   const body = {
     channel,
     text: formatted,
     ...(thread_ts && { thread_ts }),
+    ...(metadata && { metadata }),
   };
 
   const res = await fetch('https://slack.com/api/chat.postMessage', {
@@ -59,6 +60,23 @@ export async function postToSlack({ channel, text, thread_ts }) {
   const data = await res.json();
   if (!data.ok) console.error('Slack post failed:', data.error);
   return data;
+}
+
+// --- Single message fetch (for reading metadata on reactions) ---
+
+export async function fetchMessage(channel, ts) {
+  try {
+    const params = new URLSearchParams({ channel, latest: ts, limit: '1', inclusive: 'true' });
+    const res = await fetch(
+      `https://slack.com/api/conversations.history?${params}`,
+      { headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` } },
+    );
+    const data = await res.json();
+    if (!data.ok) return null;
+    return data.messages?.[0] || null;
+  } catch {
+    return null;
+  }
 }
 
 // --- Thread & channel history ---

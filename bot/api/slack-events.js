@@ -14,7 +14,7 @@ import { callClaude } from '../lib/claude.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
-import { storeSpanId, handleReaction } from '../lib/feedback.js';
+import { handleReaction } from '../lib/feedback.js';
 import { flush } from 'braintrust';
 
 export const config = {
@@ -136,12 +136,10 @@ async function processEvent(body) {
     channel: event.channel,
     text: result.reply,
     thread_ts: replyThreadTs,
+    metadata: result.spanId
+      ? { event_type: 'braintrust_span', event_payload: { span_id: result.spanId } }
+      : undefined,
   });
-
-  // Store mapping so Slack reactions can be traced back to this span
-  if (posted?.ts && result.spanId) {
-    storeSpanId(event.channel, posted.ts, result.spanId);
-  }
 
   console.log(
     `replied (local): trigger=${trigger} intent=${intent} channel=${event.channel}`,

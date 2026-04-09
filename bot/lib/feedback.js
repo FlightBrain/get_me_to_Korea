@@ -1,34 +1,24 @@
 import { logger } from './claude.js';
+import { fetchMessage } from './slack.js';
 
-// Maps "channel:messageTs" -> braintrust spanId
-// Persists within warm Vercel instances (good enough for near-real-time reactions)
-const spanMap = new Map();
-const MAX_ENTRIES = 500;
+const POSITIVE = new Set(['+1', 'thumbsup', 'white_check_mark', 'heavy_check_mark', 'heart']);
+const NEGATIVE = new Set(['-1', 'thumbsdown', 'x', 'no_entry_sign']);
 
-export function storeSpanId(channel, messageTs, spanId) {
-  if (!spanId) return;
-  // Evict oldest entries if map gets too large
-  if (spanMap.size >= MAX_ENTRIES) {
-    const oldest = spanMap.keys().next().value;
-    spanMap.delete(oldest);
-  }
-  spanMap.set(`${channel}:${messageTs}`, spanId);
-}
-
-export function handleReaction(event) {
+export async function handleReaction(event) {
   const { reaction, item, user } = event;
   if (item?.type !== 'message') return;
 
-  const key = `${item.channel}:${item.ts}`;
-  const spanId = spanMap.get(key);
-  if (!spanId) return;
-
-  const isPositive = ['+1', 'thumbsup', 'white_check_mark', 'heavy_check_mark', 'heart']
-    .includes(reaction);
-  const isNegative = ['-1', 'thumbsdown', 'x', 'no_entry_sign']
-    .includes(reaction);
-
+  const isPositive = POSITIVE.has(reaction);
+  const isNegative = NEGATIVE.has(reaction);
   if (!isPositive && !isNegative) return;
+
+  // Fetch the message to read the braintrust spanId from metadata
+  const msg = await fetchMessage(item.channel, item.ts);
+  const spanId = msg?.metadata?.event_payload?.span_id;
+  if (!spanId) {
+    console.log(`feedback: no spanId on message ${item.channel}:${item.ts}`);
+    return;
+  }
 
   logger.logFeedback({
     id: spanId,
