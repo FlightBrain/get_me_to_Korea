@@ -1,11 +1,9 @@
 import crypto from 'crypto';
 import { logTrace } from './braintrust.js';
-import { fetchMessage } from './slack.js';
 
 const POSITIVE = new Set(['+1', 'thumbsup', 'white_check_mark', 'heavy_check_mark', 'heart']);
 const NEGATIVE = new Set(['-1', 'thumbsdown', 'x', 'no_entry_sign']);
 
-// Deterministic ID from channel + message ts
 function traceId(channel, ts) {
   const hash = crypto.createHash('sha256').update(`${channel}:${ts}`).digest('hex');
   return [
@@ -17,32 +15,54 @@ function traceId(channel, ts) {
   ].join('-');
 }
 
-// Fetch the user's question that triggered the bot reply
-async function fetchUserQuestion(channel, botMessageTs) {
-  // Get 2 messages up to and including the bot reply
+const slackHeaders = () => ({
+  Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`,
+});
+
+// Fetch a single message by channel + ts
+async function getMessage(channel, ts) {
+  try {
+    const params = new URLSearchParams({ channel, latest: ts, limit: '1', inclusive: 'true' });
+    const res = await fetch(`https://slack.com/api/conversations.history?${params}`, {
+      headers: slackHeaders(),
+    });
+    const data = await res.json();
+    return data.ok ? data.messages?.[0] || null : null;
+  } catch {
+    return null;
+  }
+}
+
+// Find the user question that triggered a bot reply
+// Bot replies are threaded: thread_ts = the user's original message ts
+async function findUserQuestion(channel, botMsg) {
+  // If bot reply is in a thread, the thread parent is the user's question
+  if (botMsg?.thread_ts && botMsg.thread_ts !== botMsg.ts) {
+    const parent = await getMessage(channel, botMsg.thread_ts);
+    if (parent?.text) return parent.text;
+  }
+
+  // Fallback: get the message right before the bot reply in the channel
   try {
     const params = new URLSearchParams({
       channel,
-      latest: botMessageTs,
+      latest: botMsg?.ts || '0',
       limit: '2',
       inclusive: 'true',
     });
-    const res = await fetch(
-      `https://slack.com/api/conversations.history?${params}`,
-      { headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` } },
-    );
+    const res = await fetch(`https://slack.com/api/conversations.history?${params}`, {
+      headers: slackHeaders(),
+    });
     const data = await res.json();
     if (!data.ok) return null;
-    // messages[0] is the bot reply, messages[1] is the user question before it
     const msgs = data.messages || [];
-    const userMsg = msgs.find(m => m.ts !== botMessageTs && !m.bot_id);
+    const userMsg = msgs.find(m => m.ts !== botMsg?.ts && !m.bot_id);
     return userMsg?.text || null;
   } catch {
     return null;
   }
 }
 
-// Handle reaction: log full trace + feedback to Braintrust in one call
 export async function handleReaction(event) {
   try {
     const { reaction, item, user } = event;
@@ -54,30 +74,26 @@ export async function handleReaction(event) {
 
     const id = traceId(item.channel, item.ts);
 
-    // Fetch bot reply text and user question in parallel
-    const [botMsg, userQuestion] = await Promise.all([
-      fetchMessage(item.channel, item.ts),
-      fetchUserQuestion(item.channel, item.ts),
-    ]);
-
-    const botText = botMsg?.text || null;
+    // Fetch bot reply, then find user question
+    const botMsg = await getMessage(item.channel, item.ts);
+    const userQuestion = await findUserQuestion(item.channel, botMsg);
 
     const result = await logTrace({
       id,
-      input: userQuestion,
-      output: botText,
+      input: userQuestion || '[could not fetch question]',
+      output: botMsg?.text || '[could not fetch reply]',
       scores: { thumbs: isPositive ? 1 : 0 },
       metadata: {
         slack_user: user,
         reaction,
         channel: item.channel,
         messageTs: item.ts,
-        _comment: `Slack :${reaction}: from ${user}`,
+        threadTs: botMsg?.thread_ts || null,
       },
       tags: ['slack-bot'],
     });
 
-    console.log(`bt: ${isPositive ? '+' : '-'} :${reaction}: trace=${id}`, result?.row_ids ? 'ok' : 'failed');
+    console.log(`bt: ${isPositive ? '+' : '-'} :${reaction}: q="${(userQuestion || '').slice(0, 40)}" -> ${id}`, result?.row_ids ? 'ok' : 'failed');
   } catch (e) {
     console.error(`bt feedback error: ${e.message}`);
   }
