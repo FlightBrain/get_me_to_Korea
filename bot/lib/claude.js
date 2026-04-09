@@ -1,11 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { initLogger, wrapAI, currentSpan } from 'braintrust';
+import { initLogger, wrapAnthropic, currentSpan } from 'braintrust';
 import { applyGuardrails } from './guardrails.js';
 
 export const logger = initLogger({ projectName: 'claudesington-bot' });
 
 const baseClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const client = wrapAI(baseClient);
+const client = wrapAnthropic(baseClient);
 
 export async function callClaude(systemPrompt, cleanedText) {
   const result = await logger.traced(
