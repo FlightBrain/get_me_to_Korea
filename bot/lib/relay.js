@@ -120,7 +120,7 @@ export function formatRelayRequest({
   ];
 
   if (threadContext) {
-    lines.push('', 'context:', threadContext.slice(0, 500));
+    lines.push('', 'context:', threadContext.slice(0, 1500));
   }
 
   lines.push(

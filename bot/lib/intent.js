@@ -63,7 +63,7 @@ const INTENT_PATTERNS = [
     /\bwhat\s+(can|do)\s+you\b/i,
     /\bwho\s+are\s+you\b/i,
     /\bwhat\s+are\s+you\b/i,
-    /\bhelp\b/i,
+    /^help\s*[!?.]*$/i,
   ]},
   { intent: 'banter', patterns: [
     /^(lol|haha|nice|yo|sup|hey|gm|gn|gg|fire|vibes|w+|dude|bro|facts|real|true|bet|word|nah|yep|yea|damn|wow|sheesh|goat|legend|king|queen|clutch|insane|wild|huge|big|massive|crazy|sick|lit|dope|clean|solid|tough|pain|rip|oof|bruh|fam|gang|squad|team|mood|same|dead|crying|stop|no\s*way)\s*[!?.]*$/i,

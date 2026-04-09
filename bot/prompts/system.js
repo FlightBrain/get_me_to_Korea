@@ -98,7 +98,8 @@ function buildIntentRules(intent) {
 - only identify people from the context below. if not there, say you don't know.`,
 
     bot_meta: `## someone asked what you can do
-keep it casual and honest:
+if there's conversation context above, help with that instead of listing capabilities.
+otherwise keep it casual and honest:
 - answer questions from slack thread context
 - share customer stories and braintrust links
 - help find resources and docs
