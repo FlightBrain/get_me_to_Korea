@@ -3,16 +3,20 @@ import { applyGuardrails } from './guardrails.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-export async function callClaude(systemPrompt, cleanedText, { senderName } = {}) {
+export async function callClaude(systemPrompt, cleanedText, { senderName, intent } = {}) {
   const start = Date.now();
 
   const prefix = senderName
     ? `[${senderName}] says: "${cleanedText}"`
     : `slack message: "${cleanedText}"`;
 
+  // Banter should be short and punchy, not paragraphs.
+  const banterIntents = new Set(['banter', 'bot_meta']);
+  const maxTokens = banterIntents.has(intent) ? 150 : 400;
+
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 400,
+    max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: 'user', content: prefix }],
   });

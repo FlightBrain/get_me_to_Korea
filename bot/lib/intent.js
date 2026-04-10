@@ -43,7 +43,7 @@ const WORK_KEYWORDS = [
 const INTENT_PATTERNS = [
   // Feedback must be first: "feedback: you got this wrong" should not hit help_request.
   { intent: 'feedback', patterns: [
-    /^\s*feedback\s*[:\-]/i,
+    /^\s*feedback[\s:\-]/i,
     /\bthat\s+(was|is)\s+(wrong|incorrect|inaccurate|bad\s+info)\b/i,
     /\byou\s+got\s+(that|this|it)\s+wrong\b/i,
     /\bgood\s+(answer|response|job|bot)\b/i,

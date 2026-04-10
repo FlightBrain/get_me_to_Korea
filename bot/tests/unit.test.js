@@ -1277,6 +1277,14 @@ describe('feedback intent', () => {
   it('detects "not helpful"', () => {
     assert.equal(classifyIntent('not helpful at all'), 'feedback');
   });
+
+  it('detects "feedback @bot ..." without colon', () => {
+    assert.equal(classifyIntent('feedback @Claudesington Shaune asked about linkedin resets'), 'feedback');
+  });
+
+  it('detects "feedback the answer was wrong"', () => {
+    assert.equal(classifyIntent('feedback the answer was wrong'), 'feedback');
+  });
 });
 
 // ---------------------------------------------------------------------------

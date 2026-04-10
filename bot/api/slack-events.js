@@ -315,7 +315,7 @@ async function processEvent(body) {
     userContext,
   });
 
-  const result = await callClaude(systemPrompt, cleanedText, { senderName });
+  const result = await callClaude(systemPrompt, cleanedText, { senderName, intent });
   if (!result?.reply || result.reply === '[SKIP]') return;
 
   const posted = await postToSlack({
