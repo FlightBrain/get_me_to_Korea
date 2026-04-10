@@ -15,6 +15,7 @@ import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
 import { handleReaction } from '../lib/feedback.js';
+import { logTrace, traceId } from '../lib/braintrust.js';
 import { getUserProfile, getUserHistory, updateUserProfile, profileToPromptContext } from '../lib/user-profiles.js';
 import { createReminder, parseReminderTime, getUserReminders } from '../lib/reminders.js';
 
@@ -109,6 +110,27 @@ async function processEvent(body) {
         status: 'complete',
         finalPostTs: posted.ts || null,
       });
+    }
+
+    // Log to Braintrust with full context (fire-and-forget).
+    if (posted.ts) {
+      logTrace({
+        id: traceId(event.channel, posted.ts),
+        input: {
+          message: cleanedText,
+          notion_context: '[relay path - context in Notion agent]',
+          thread_context: threadContext || null,
+        },
+        output: { response: safeAnswer },
+        metadata: {
+          channel: event.channel,
+          slack_user: event.user || null,
+          thread_ts: replyThreadTs || null,
+          intent,
+          path: 'relay',
+        },
+        tags: ['slack-bot'],
+      }).catch(e => console.error('bt log failed:', e.message));
     }
 
     // Update user profile on relay path too (fire-and-forget).
@@ -208,6 +230,33 @@ async function processEvent(body) {
     text: result.reply,
     thread_ts: replyThreadTs,
   });
+
+  // Log to Braintrust with full context (fire-and-forget).
+  if (posted.ts) {
+    logTrace({
+      id: traceId(event.channel, posted.ts),
+      input: {
+        message: cleanedText,
+        notion_context: notionContext || null,
+        thread_context: threadContext || null,
+      },
+      output: {
+        response: result.reply,
+        model: result.model,
+        tokens: result.tokens,
+        latency_ms: result.latencyMs,
+      },
+      metadata: {
+        channel: event.channel,
+        slack_user: event.user || null,
+        sender_name: senderName || null,
+        thread_ts: replyThreadTs || null,
+        intent,
+        path: 'local',
+      },
+      tags: ['slack-bot'],
+    }).catch(e => console.error('bt log failed:', e.message));
+  }
 
   // Update user profile after successful interaction (fire-and-forget).
   if (event.user) {
