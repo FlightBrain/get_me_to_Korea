@@ -57,9 +57,11 @@ export async function logTrace({
   metadata,
   tags,
   scores,
+  startTime,
 }) {
   console.log(`bt: logTrace called, id=${id}, has_input=${!!input}, has_output=${!!output}`);
 
+  const now = new Date().toISOString();
   const event = {
     ...(id && { id }),
     input: typeof input === 'string' ? { message: input } : input,
@@ -67,6 +69,10 @@ export async function logTrace({
     ...(metadata && { metadata }),
     ...(tags && { tags }),
     ...(scores && { scores }),
+    metrics: {
+      start: startTime || now,
+      end: now,
+    },
   };
 
   const result = await btFetch(`/project_logs/${PROJECT_ID}/insert`, {

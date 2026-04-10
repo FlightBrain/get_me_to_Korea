@@ -25,6 +25,7 @@ export const config = {
 };
 
 async function processEvent(body) {
+  const processStart = new Date().toISOString();
   const event = body?.event;
   if (!event) return;
 
@@ -143,6 +144,7 @@ async function processEvent(body) {
             path: 'relay',
           },
           tags: ['slack-bot'],
+          startTime: processStart,
         });
         console.log(`bt: logged trace ${traceId(event.channel, posted.ts)}`, btResult?.row_ids ? 'ok' : 'failed');
       } catch (e) {
@@ -221,6 +223,7 @@ async function processEvent(body) {
             feedback_type: 'text',
           },
           tags: ['slack-bot', 'feedback'],
+          startTime: processStart,
         });
       }
       console.log(`bt feedback (text): ${senderName} -> ${feedbackText.slice(0, 80)}`, targetTraceId ? `attached to ${targetTraceId}` : 'standalone');
@@ -351,6 +354,7 @@ async function processEvent(body) {
           path: 'local',
         },
         tags: ['slack-bot'],
+        startTime: processStart,
       });
       console.log(`bt: logged trace ${traceId(event.channel, posted.ts)}`, btResult?.row_ids ? 'ok' : 'failed');
     } catch (e) {
