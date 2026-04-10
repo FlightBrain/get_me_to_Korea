@@ -4,12 +4,17 @@
 // 1. logTrace() - called at request time with full context (input, output, notion, etc.)
 // 2. logFeedback() - called on thumbs up/down reactions, attaches scores to existing trace
 
+import crypto from 'crypto';
+
 const PROJECT_ID = '9bba3cfb-9362-45df-baa1-d01f6296d856';
 const API_BASE = 'https://api.braintrust.dev/v1';
 
 async function btFetch(path, body) {
   const apiKey = process.env.BRAINTRUST_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    console.warn('bt: BRAINTRUST_API_KEY not set, skipping');
+    return null;
+  }
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -21,18 +26,18 @@ async function btFetch(path, body) {
       body: JSON.stringify(body),
     });
     const data = await res.json();
-    if (!res.ok) console.error('braintrust error:', data);
+    if (!res.ok) {
+      console.error('bt api error:', res.status, JSON.stringify(data).slice(0, 200));
+    }
     return data;
   } catch (e) {
-    console.error('braintrust fetch error:', e.message);
+    console.error('bt fetch error:', e.message);
     return null;
   }
 }
 
 // Generate a deterministic trace ID from channel + message timestamp.
 // This lets reactions (which come later) find and update the same trace.
-import crypto from 'crypto';
-
 export function traceId(channel, ts) {
   const hash = crypto.createHash('sha256').update(`${channel}:${ts}`).digest('hex');
   return [
@@ -53,21 +58,30 @@ export async function logTrace({
   tags,
   scores,
 }) {
-  return btFetch(`/project_logs/${PROJECT_ID}/insert`, {
-    events: [{
-      ...(id && { id }),
-      input: typeof input === 'string' ? { message: input } : input,
-      output: typeof output === 'string' ? { response: output } : output,
-      ...(metadata && { metadata }),
-      ...(tags && { tags }),
-      ...(scores && { scores }),
-    }],
+  console.log(`bt: logTrace called, id=${id}, has_input=${!!input}, has_output=${!!output}`);
+
+  const event = {
+    ...(id && { id }),
+    input: typeof input === 'string' ? { message: input } : input,
+    output: typeof output === 'string' ? { response: output } : output,
+    ...(metadata && { metadata }),
+    ...(tags && { tags }),
+    ...(scores && { scores }),
+  };
+
+  const result = await btFetch(`/project_logs/${PROJECT_ID}/insert`, {
+    events: [event],
   });
+
+  console.log(`bt: logTrace result:`, result ? (result.row_ids ? 'ok' : JSON.stringify(result).slice(0, 150)) : 'null');
+  return result;
 }
 
 // Attach feedback (thumbs up/down) to an existing trace by ID.
 export async function logFeedback({ id, scores, comment, metadata }) {
-  return btFetch(`/project_logs/${PROJECT_ID}/insert`, {
+  console.log(`bt: logFeedback called, id=${id}, thumbs=${scores?.thumbs}`);
+
+  const result = await btFetch(`/project_logs/${PROJECT_ID}/insert`, {
     events: [{
       id,
       scores,
@@ -75,4 +89,7 @@ export async function logFeedback({ id, scores, comment, metadata }) {
       ...(!comment && metadata && { metadata }),
     }],
   });
+
+  console.log(`bt: logFeedback result:`, result ? (result.row_ids ? 'ok' : JSON.stringify(result).slice(0, 150)) : 'null');
+  return result;
 }
