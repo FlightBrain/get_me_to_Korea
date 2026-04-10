@@ -112,25 +112,30 @@ async function processEvent(body) {
       });
     }
 
-    // Log to Braintrust with full context (fire-and-forget).
+    // Log to Braintrust with full context.
     if (posted.ts) {
-      logTrace({
-        id: traceId(event.channel, posted.ts),
-        input: {
-          message: cleanedText,
-          notion_context: '[relay path - context in Notion agent]',
-          thread_context: threadContext || null,
-        },
-        output: { response: safeAnswer },
-        metadata: {
-          channel: event.channel,
-          slack_user: event.user || null,
-          thread_ts: replyThreadTs || null,
-          intent,
-          path: 'relay',
-        },
-        tags: ['slack-bot'],
-      }).catch(e => console.error('bt log failed:', e.message));
+      try {
+        const btResult = await logTrace({
+          id: traceId(event.channel, posted.ts),
+          input: {
+            message: cleanedText,
+            notion_context: '[relay path - context in Notion agent]',
+            thread_context: threadContext || null,
+          },
+          output: { response: safeAnswer },
+          metadata: {
+            channel: event.channel,
+            slack_user: event.user || null,
+            thread_ts: replyThreadTs || null,
+            intent,
+            path: 'relay',
+          },
+          tags: ['slack-bot'],
+        });
+        console.log(`bt: logged trace ${traceId(event.channel, posted.ts)}`, btResult?.row_ids ? 'ok' : 'failed');
+      } catch (e) {
+        console.error('bt log failed:', e.message);
+      }
     }
 
     // Update user profile on relay path too (fire-and-forget).
@@ -231,31 +236,36 @@ async function processEvent(body) {
     thread_ts: replyThreadTs,
   });
 
-  // Log to Braintrust with full context (fire-and-forget).
+  // Log to Braintrust with full context.
   if (posted.ts) {
-    logTrace({
-      id: traceId(event.channel, posted.ts),
-      input: {
-        message: cleanedText,
-        notion_context: notionContext || null,
-        thread_context: threadContext || null,
-      },
-      output: {
-        response: result.reply,
-        model: result.model,
-        tokens: result.tokens,
-        latency_ms: result.latencyMs,
-      },
-      metadata: {
-        channel: event.channel,
-        slack_user: event.user || null,
-        sender_name: senderName || null,
-        thread_ts: replyThreadTs || null,
-        intent,
-        path: 'local',
-      },
-      tags: ['slack-bot'],
-    }).catch(e => console.error('bt log failed:', e.message));
+    try {
+      const btResult = await logTrace({
+        id: traceId(event.channel, posted.ts),
+        input: {
+          message: cleanedText,
+          notion_context: notionContext || null,
+          thread_context: threadContext || null,
+        },
+        output: {
+          response: result.reply,
+          model: result.model,
+          tokens: result.tokens,
+          latency_ms: result.latencyMs,
+        },
+        metadata: {
+          channel: event.channel,
+          slack_user: event.user || null,
+          sender_name: senderName || null,
+          thread_ts: replyThreadTs || null,
+          intent,
+          path: 'local',
+        },
+        tags: ['slack-bot'],
+      });
+      console.log(`bt: logged trace ${traceId(event.channel, posted.ts)}`, btResult?.row_ids ? 'ok' : 'failed');
+    } catch (e) {
+      console.error('bt log failed:', e.message);
+    }
   }
 
   // Update user profile after successful interaction (fire-and-forget).
