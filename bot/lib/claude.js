@@ -3,14 +3,18 @@ import { applyGuardrails } from './guardrails.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-export async function callClaude(systemPrompt, cleanedText) {
+export async function callClaude(systemPrompt, cleanedText, { senderName } = {}) {
   const start = Date.now();
+
+  const prefix = senderName
+    ? `[${senderName}] says: "${cleanedText}"`
+    : `slack message: "${cleanedText}"`;
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 400,
     system: systemPrompt,
-    messages: [{ role: 'user', content: `slack message: "${cleanedText}"` }],
+    messages: [{ role: 'user', content: prefix }],
   });
 
   const latencyMs = Date.now() - start;

@@ -1,6 +1,6 @@
 import { waitUntil } from '@vercel/functions';
 import getRawBody from 'raw-body';
-import { verifySlackSignature, postToSlack } from '../lib/slack.js';
+import { verifySlackSignature, postToSlack, resolveUser } from '../lib/slack.js';
 import { detectTrigger } from '../lib/trigger.js';
 import { isDuplicate } from '../lib/dedup.js';
 import { cleanSlackText } from '../lib/parse.js';
@@ -120,6 +120,9 @@ async function processEvent(body) {
   const caps = getCapabilities();
   const capabilities = capabilitySummary(caps);
 
+  // Resolve the current speaker's name so the model knows who it's talking to.
+  const senderName = event.user ? await resolveUser(event.user) : null;
+
   const [notionContext, calendarContext] = await Promise.all([
     fetchContext(),
     fetchCalendarContext(),
@@ -131,9 +134,10 @@ async function processEvent(body) {
     capabilities,
     intent,
     threadContext,
+    senderName,
   });
 
-  const result = await callClaude(systemPrompt, cleanedText);
+  const result = await callClaude(systemPrompt, cleanedText, { senderName });
   if (!result?.reply || result.reply === '[SKIP]') return;
 
   const posted = await postToSlack({

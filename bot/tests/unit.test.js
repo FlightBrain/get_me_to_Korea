@@ -362,7 +362,7 @@ describe('buildSystemPrompt', () => {
     assert.ok(prompt.includes('conversation context'));
   });
 
-  it('omits conversation context section when threadContext is empty', () => {
+  it('omits thread context block when threadContext is empty', () => {
     const prompt = buildSystemPrompt({
       notionContext: '',
       calendarContext: '',
@@ -370,7 +370,8 @@ describe('buildSystemPrompt', () => {
       intent: 'general_qna',
       threadContext: '',
     });
-    assert.ok(!prompt.includes('conversation context'));
+    // The dynamic "## conversation context" section with thread messages should not appear
+    assert.ok(!prompt.includes('don\'t re-ask what\'s already here'));
   });
 
   it('includes intent-specific rules for calendar questions', () => {
