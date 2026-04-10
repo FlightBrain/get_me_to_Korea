@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { isDuplicate, _resetDedup } from '../lib/dedup.js';
 import { cleanSlackText } from '../lib/parse.js';
-import { classifyIntent } from '../lib/intent.js';
+import { classifyIntent, hasWorkSignal } from '../lib/intent.js';
 import { detectTrigger } from '../lib/trigger.js';
 import { applyGuardrails } from '../lib/guardrails.js';
 import { toSlackMrkdwn } from '../lib/slack.js';
@@ -19,6 +19,7 @@ import {
 import {
   formatRelayRequest,
   cleanRelayResponse,
+  isNonAnswer,
 } from '../lib/relay.js';
 
 // ---------------------------------------------------------------------------
@@ -393,7 +394,7 @@ describe('buildSystemPrompt', () => {
       threadContext: '',
     });
     assert.ok(prompt.includes('someone asked what you can do'));
-    assert.ok(prompt.includes('can\'t access CRM'));
+    assert.ok(prompt.includes('tell jokes'));
   });
 
   it('never contains em dashes', () => {
@@ -744,5 +745,227 @@ describe('cleanRelayResponse', () => {
     const text = 'Answer: Today you have 3 meetings: standup at 9am, 1:1 at 11am, and team sync at 2pm.\nConfidence: high\nSources used: Multiple\nREQUEST_ID=full-test';
     const cleaned = cleanRelayResponse(text, 'full-test');
     assert.equal(cleaned, 'Today you have 3 meetings: standup at 9am, 1:1 at 11am, and team sync at 2pm.');
+  });
+
+  it('normalizes smart quotes in relay response', () => {
+    const text = 'here\u2019s the answer: \u201Cbraintrust does evals\u201D REQUEST_ID=enc-1';
+    const cleaned = cleanRelayResponse(text, 'enc-1');
+    assert.ok(!cleaned.includes('\u2019'));
+    assert.ok(!cleaned.includes('\u201C'));
+    assert.ok(!cleaned.includes('\u201D'));
+    assert.ok(cleaned.includes("here's the answer"));
+  });
+
+  it('normalizes em dashes in relay response', () => {
+    const text = 'braintrust \u2014 the eval platform REQUEST_ID=enc-2';
+    const cleaned = cleanRelayResponse(text, 'enc-2');
+    assert.ok(!cleaned.includes('\u2014'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Non-answer detection
+// ---------------------------------------------------------------------------
+
+describe('isNonAnswer', () => {
+  it('detects "I\'m not confident from the sources"', () => {
+    assert.equal(
+      isNonAnswer("I'm not confident from the sources I can access, there's nothing in Braintrust docs."),
+      true,
+    );
+  });
+
+  it('detects "I\'m not finding anything"', () => {
+    assert.equal(
+      isNonAnswer("I'm not finding anything in the Braintrust Notion/Slack context called a social marketing copy transformer."),
+      true,
+    );
+  });
+
+  it('detects "my search only turned up unrelated"', () => {
+    assert.equal(
+      isNonAnswer("my search only turned up unrelated marketing pages"),
+      true,
+    );
+  });
+
+  it('detects "nothing in the Braintrust Notion"', () => {
+    assert.equal(
+      isNonAnswer("nothing in the Braintrust Notion or Slack context about lunar bears"),
+      true,
+    );
+  });
+
+  it('detects "I don\'t have relevant information"', () => {
+    assert.equal(
+      isNonAnswer("I don't have relevant information about coconut water daily limits."),
+      true,
+    );
+  });
+
+  it('passes good answers through', () => {
+    assert.equal(
+      isNonAnswer('zapier improved accuracy from 50% to 90%+ by operationalizing evals.'),
+      false,
+    );
+  });
+
+  it('passes detailed answers through', () => {
+    assert.equal(
+      isNonAnswer('the SDR playbook says to prioritize phone outreach during 8-10am block.'),
+      false,
+    );
+  });
+
+  it('flags empty/null as non-answer', () => {
+    assert.equal(isNonAnswer(''), true);
+    assert.equal(isNonAnswer(null), true);
+  });
+
+  it('flags very short responses as non-answer', () => {
+    assert.equal(isNonAnswer('ok'), true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// New intent classifications
+// ---------------------------------------------------------------------------
+
+describe('new intent patterns', () => {
+  it('detects absurd/fictional questions as banter', () => {
+    assert.equal(classifyIntent('should we be worried about lunar bears'), 'banter');
+  });
+
+  it('detects personal non-work questions as banter', () => {
+    assert.equal(classifyIntent('how do i get more tan'), 'banter');
+  });
+
+  it('detects "how many X can I drink" as banter', () => {
+    assert.equal(classifyIntent('how many coconut waters can I drink in 1 day'), 'banter');
+  });
+
+  it('detects hypothetical identity questions as banter', () => {
+    assert.equal(classifyIntent('if you were copied perfectly which one is actually you'), 'banter');
+  });
+
+  it('detects "do better" as banter', () => {
+    assert.equal(classifyIntent('do better'), 'banter');
+  });
+
+  it('detects "tell me a joke" as banter', () => {
+    assert.equal(classifyIntent('tell me a joke'), 'banter');
+  });
+
+  it('detects "better joke or else" as banter', () => {
+    assert.equal(classifyIntent('better joke or else'), 'banter');
+  });
+
+  it('detects "i hate that joke" as banter', () => {
+    assert.equal(classifyIntent('i hate that joke'), 'banter');
+  });
+
+  it('detects sports references as banter', () => {
+    assert.equal(classifyIntent('did the warriors win last night'), 'banter');
+  });
+
+  it('detects "you are terrible" as banter', () => {
+    assert.equal(classifyIntent('you are terrible'), 'banter');
+  });
+
+  it('detects draft requests', () => {
+    assert.equal(classifyIntent('draft me a message inviting a prospect to Seattle AI Builders Night'), 'draft_request');
+  });
+
+  it('detects "write me an email" as draft request', () => {
+    assert.equal(classifyIntent('write me an email for the event'), 'draft_request');
+  });
+
+  it('detects social gpt/copy transformer as braintrust_resources', () => {
+    assert.equal(classifyIntent('can I get that social marketing copy transformer'), 'braintrust_resources');
+    assert.equal(classifyIntent('provide social gpt link now'), 'braintrust_resources');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Work signal detection
+// ---------------------------------------------------------------------------
+
+describe('hasWorkSignal', () => {
+  it('detects braintrust mention', () => {
+    assert.equal(hasWorkSignal('tell me about the braintrust trace event'), true);
+  });
+
+  it('detects meeting mention', () => {
+    assert.equal(hasWorkSignal('what meeting do we have today'), true);
+  });
+
+  it('detects pipeline mention', () => {
+    assert.equal(hasWorkSignal('how is pipeline looking this quarter'), true);
+  });
+
+  it('returns false for casual messages', () => {
+    assert.equal(hasWorkSignal('how many coconut waters can I drink'), false);
+  });
+
+  it('returns false for jokes', () => {
+    assert.equal(hasWorkSignal('should we be worried about lunar bears'), false);
+  });
+
+  it('returns false for empty input', () => {
+    assert.equal(hasWorkSignal(''), false);
+    assert.equal(hasWorkSignal(null), false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Smart quote normalization in parse
+// ---------------------------------------------------------------------------
+
+describe('cleanSlackText encoding', () => {
+  it('normalizes smart single quotes', () => {
+    const result = cleanSlackText('what\u2019s the deal');
+    assert.ok(result.includes("what's the deal"));
+    assert.ok(!result.includes('\u2019'));
+  });
+
+  it('normalizes smart double quotes', () => {
+    const result = cleanSlackText('search for \u201Cbraintrust\u201D');
+    assert.ok(result.includes('"braintrust"'));
+  });
+
+  it('normalizes em dashes', () => {
+    const result = cleanSlackText('evals \u2014 the key feature');
+    assert.ok(!result.includes('\u2014'));
+    assert.ok(result.includes('-'));
+  });
+
+  it('strips zero-width characters', () => {
+    const result = cleanSlackText('hello\u200Bworld');
+    assert.equal(result, 'helloworld');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Guardrails: canned deflection stripping
+// ---------------------------------------------------------------------------
+
+describe('guardrails canned deflections', () => {
+  it('replaces "I\'m not confident from the sources" short response', () => {
+    const result = applyGuardrails("I'm not confident from the sources I can access.");
+    assert.ok(!result.includes('not confident'));
+    assert.ok(result.includes('happy to help'));
+  });
+
+  it('strips deflection from longer response and keeps the rest', () => {
+    const input = "I'm not confident from the sources I can access. But zapier improved accuracy from 50% to 90%+.";
+    const result = applyGuardrails(input);
+    assert.ok(!result.includes('not confident'));
+    assert.ok(result.includes('zapier'));
+  });
+
+  it('strips Notion agent URLs', () => {
+    const result = applyGuardrails('here is the answer https://www.notion.so/agent/33cf785802898035a5ba0092a73b98bf?wfv=activity done');
+    assert.ok(!result.includes('notion.so/agent'));
+    assert.ok(result.includes('here is the answer'));
   });
 });

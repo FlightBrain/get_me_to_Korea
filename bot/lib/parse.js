@@ -33,8 +33,35 @@ export function cleanSlackText(text) {
   );
   cleaned = cleaned.replace(/<(https?:\/\/[^>]+)>/g, '$1');
 
-  // 5. Collapse whitespace.
+  // 5. Normalize encoding artifacts from macOS/mobile keyboards.
+  cleaned = normalizeInput(cleaned);
+
+  // 6. Collapse whitespace.
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
 
   return cleaned;
+}
+
+// Normalize special characters that come in from macOS/mobile keyboards
+// and cause downstream parsing issues or garbled model output.
+function normalizeInput(text) {
+  let out = text;
+
+  // Smart quotes -> straight quotes
+  out = out.replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+  out = out.replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+
+  // Em/en dashes -> plain dashes
+  out = out.replace(/[\u2014\u2013]/g, '-');
+
+  // Ellipsis -> three dots
+  out = out.replace(/\u2026/g, '...');
+
+  // Non-breaking space -> regular space
+  out = out.replace(/\u00A0/g, ' ');
+
+  // Zero-width chars
+  out = out.replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
+
+  return out;
 }

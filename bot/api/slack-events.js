@@ -4,7 +4,7 @@ import { verifySlackSignature, postToSlack } from '../lib/slack.js';
 import { detectTrigger } from '../lib/trigger.js';
 import { isDuplicate } from '../lib/dedup.js';
 import { cleanSlackText } from '../lib/parse.js';
-import { classifyIntent } from '../lib/intent.js';
+import { classifyIntent, hasWorkSignal } from '../lib/intent.js';
 import { getCapabilities, capabilitySummary } from '../lib/capabilities.js';
 import { fetchContext } from '../lib/context.js';
 import { fetchCalendarContext } from '../lib/calendar.js';
@@ -73,7 +73,10 @@ async function processEvent(body) {
     event.thread_ts || (trigger === 'direct' ? event.ts : undefined);
 
   // --- RELAY PATH ---
+  // Only relay when the intent genuinely needs grounded Notion/Calendar data.
+  // If relay returns a non-answer, it returns null and we fall through to local.
   const threadContext = await buildThreadContext(event);
+  const workSignal = hasWorkSignal(cleanedText);
 
   let relayResult = null;
   try {
@@ -82,6 +85,7 @@ async function processEvent(body) {
       cleanedText,
       threadContext,
       intent,
+      hasWorkSignal: workSignal,
     });
   } catch (e) {
     console.error(`relay error: ${e.message}`);
@@ -100,13 +104,13 @@ async function processEvent(body) {
 
     if (relayResult.requestId) {
       updateJob(relayResult.requestId, {
-        status: relayResult.fromRelay ? 'complete' : 'timeout',
+        status: 'complete',
         finalPostTs: posted.ts || null,
       });
     }
 
     console.log(
-      `replied (relay): fromRelay=${relayResult.fromRelay} channel=${event.channel}`,
+      `replied (relay): channel=${event.channel}`,
     );
     return;
   }

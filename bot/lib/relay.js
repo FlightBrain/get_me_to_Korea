@@ -14,13 +14,32 @@ const RELAY_TIMEOUT_MSG =
   "i couldn't get a grounded answer from the knowledge base in time. " +
   'try again in a bit, or ask in the relevant slack channel directly.';
 
-// Intents answered locally by Claude (no relay needed).
-// Everything else gets relayed for grounded Notion/Calendar answers.
-const LOCAL_ONLY_INTENTS = new Set([
-  'banter',           // casual chat, just vibe
-  'bot_meta',         // "what can you do" answered locally
-  'braintrust_resources', // hardcoded links, no relay needed
+// Intents that SHOULD be relayed for grounded Notion/Calendar answers.
+// Everything else stays local with Claude.
+const RELAY_INTENTS = new Set([
+  'calendar_whereabouts',
+  'identity_person_lookup',
+  'help_request',
+  'draft_request',
 ]);
+
+// Patterns that indicate the relay gave a non-answer (punt/deflection).
+// If matched, we fall back to local Claude instead of posting the punt.
+const NON_ANSWER_PATTERNS = [
+  /i'?m not confident/i,
+  /i'?m not finding/i,
+  /i don'?t have (enough )?(relevant |internal )?(?:information|guidance|context|data|access)/i,
+  /i couldn'?t find/i,
+  /i (didn'?t|don'?t) find/i,
+  /nothing in (the )?(braintrust )?(notion|slack|internal|knowledge)/i,
+  /no (relevant |internal )?(results|guidance|context|data|information)/i,
+  /didn'?t turn up/i,
+  /my search only turned up unrelated/i,
+  /i (searched|looked) .{0,40}(didn'?t|don'?t|couldn'?t|nothing|no results)/i,
+  /not (available|accessible) (in|from|through)/i,
+  /outside (of )?(my|the) (scope|context|knowledge|sources)/i,
+  /beyond (my|the) (scope|context|knowledge|sources)/i,
+];
 
 // ---- public entry point ----
 
@@ -29,12 +48,18 @@ export async function executeRelay({
   cleanedText,
   threadContext,
   intent,
+  hasWorkSignal,
 }) {
   const config = getRelayConfig();
   if (!config.enabled) return null;
 
-  // Some intents are better answered locally.
-  if (LOCAL_ONLY_INTENTS.has(intent)) return null;
+  // Only relay intents that need grounded data.
+  // For general_qna, relay only if the message has work-related keywords.
+  const shouldRelay =
+    RELAY_INTENTS.has(intent) ||
+    (intent === 'general_qna' && hasWorkSignal);
+
+  if (!shouldRelay) return null;
 
   // Never relay messages originating from the relay channel itself.
   if (event.channel === config.channelId) return null;
@@ -71,7 +96,7 @@ export async function executeRelay({
       error: `post failed: ${postResult.error}`,
     });
     console.error(`relay: post failed for ${requestId}: ${postResult.error}`);
-    return { requestId, answer: RELAY_TIMEOUT_MSG, fromRelay: false };
+    return null; // fall back to local Claude instead of posting error
   }
 
   const relayTs = postResult.ts;
@@ -85,7 +110,16 @@ export async function executeRelay({
   if (!response) {
     updateJob(requestId, { status: 'timeout' });
     console.log(`relay: timeout for ${requestId}`);
-    return { requestId, answer: RELAY_TIMEOUT_MSG, fromRelay: false };
+    return null; // fall back to local Claude instead of posting timeout msg
+  }
+
+  const cleanedAnswer = cleanRelayResponse(response.text, requestId);
+
+  // If the relay gave a non-answer, fall back to local Claude.
+  if (isNonAnswer(cleanedAnswer)) {
+    updateJob(requestId, { status: 'non_answer' });
+    console.log(`relay: non-answer detected for ${requestId}, falling back to local`);
+    return null;
   }
 
   updateJob(requestId, {
@@ -94,8 +128,20 @@ export async function executeRelay({
   });
   log(config, `matched response for ${requestId} at ts=${response.ts}`);
 
-  const cleanedAnswer = cleanRelayResponse(response.text, requestId);
   return { requestId, answer: cleanedAnswer, fromRelay: true };
+}
+
+// ---- non-answer detection ----
+
+export function isNonAnswer(text) {
+  if (!text) return true;
+  if (text.length < 15) return true; // too short to be useful
+
+  for (const pattern of NON_ANSWER_PATTERNS) {
+    if (pattern.test(text)) return true;
+  }
+
+  return false;
 }
 
 // ---- relay message formatting ----
@@ -129,6 +175,7 @@ export function formatRelayRequest({
     '- Answer only from grounded Braintrust Notion / Slack-connected context',
     '- Keep the answer under 6 sentences',
     '- If uncertain, say so plainly',
+    '- Use plain ASCII characters only. No smart quotes, no special unicode.',
     `- End your reply with: REQUEST_ID=${requestId}`,
   );
 
@@ -193,25 +240,57 @@ export function cleanRelayResponse(text, requestId) {
   cleaned = cleaned.replace(/\[CLAUDESINGTON_RELAY_REQUEST\]/gi, '');
 
   // Strip structured metadata labels from the Notion agent output.
-  // "Answer: ..." -> just the answer text
   cleaned = cleaned.replace(/^Answer:\s*/im, '');
-  // "Confidence: high|medium|low" line
   cleaned = cleaned.replace(/^Confidence:\s*(high|medium|low)\s*$/gim, '');
-  // "Sources used: ..." line
   cleaned = cleaned.replace(/^Sources\s+used:\s*.+$/gim, '');
-  // "Source: ..." line (alternate format)
   cleaned = cleaned.replace(/^Source:\s*.+$/gim, '');
 
   // Strip Notion agent footer ("View agent in Notion" link)
   cleaned = cleaned.replace(/\s*View\s+agent\s+in\s+Notion\s*/gi, '');
 
-  // Clean up Slack emoji shortcodes -> strip the colons so they render
-  // e.g. ":mag:" stays as-is (Slack renders these natively)
+  // Fix encoding artifacts from Notion/relay path.
+  cleaned = normalizeEncoding(cleaned);
 
   // Collapse excessive blank lines and trim.
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
 
   return cleaned || "i got a response but couldn't parse it. try asking again.";
+}
+
+// ---- encoding normalization ----
+
+function normalizeEncoding(text) {
+  let out = text;
+
+  // Smart quotes -> straight quotes
+  out = out.replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+  out = out.replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+
+  // Em/en dashes -> comma or hyphen
+  out = out.replace(/\u2014/g, ',');  // em dash -> comma
+  out = out.replace(/\u2013/g, '-');  // en dash -> hyphen
+
+  // Ellipsis character -> three dots
+  out = out.replace(/\u2026/g, '...');
+
+  // Non-breaking space -> regular space
+  out = out.replace(/\u00A0/g, ' ');
+
+  // Zero-width chars (joiners, non-joiners, BOM)
+  out = out.replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
+
+  // Fancy arrows -> plain
+  out = out.replace(/\u2192/g, '->');
+  out = out.replace(/\u2190/g, '<-');
+  out = out.replace(/\u2194/g, '<->');
+
+  // Bullet chars -> dash (for consistency in Slack mrkdwn)
+  out = out.replace(/[\u2022\u2023\u25E6\u2043]/g, '-');
+
+  // Strip any remaining control characters (except newline/tab)
+  out = out.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+  return out;
 }
 
 // ---- helpers ----
