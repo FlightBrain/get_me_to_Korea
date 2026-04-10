@@ -1,7 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import getRawBody from 'raw-body';
-import { verifySlackSignature, postToSlack, resolveUser } from '../lib/slack.js';
-import { detectTrigger } from '../lib/trigger.js';
+import { verifySlackSignature, postToSlack, resolveUser, fetchThreadMessages } from '../lib/slack.js';
+import { detectTrigger, isBotInThread } from '../lib/trigger.js';
 import { isDuplicate } from '../lib/dedup.js';
 import { cleanSlackText } from '../lib/parse.js';
 import { classifyIntent, hasWorkSignal } from '../lib/intent.js';
@@ -15,7 +15,7 @@ import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
 import { handleReaction } from '../lib/feedback.js';
-import { logTrace, traceId } from '../lib/braintrust.js';
+import { logTrace, traceId, logFeedback } from '../lib/braintrust.js';
 import { getUserProfile, getUserHistory, updateUserProfile, profileToPromptContext } from '../lib/user-profiles.js';
 import { createReminder, parseReminderTime, getUserReminders } from '../lib/reminders.js';
 
@@ -57,8 +57,19 @@ async function processEvent(body) {
     return;
   }
 
-  // Only respond to direct mentions or inferred questions
-  const trigger = detectTrigger(event.text);
+  // Only respond to direct mentions, inferred questions, or thread continuation
+  let trigger = detectTrigger(event.text);
+
+  // Thread continuation: if the bot is already in a thread and someone replies
+  // without @mentioning, treat it as an implicit trigger.
+  if (!trigger && event.thread_ts) {
+    const threadMsgs = await fetchThreadMessages(event.channel, event.thread_ts);
+    if (isBotInThread(threadMsgs, botUserId)) {
+      trigger = 'thread_continuation';
+      console.log('trigger: thread_continuation (bot already in thread)');
+    }
+  }
+
   if (!trigger) return;
 
   // Clean Slack markup before further processing
@@ -153,6 +164,80 @@ async function processEvent(body) {
     console.log(
       `replied (relay): channel=${event.channel}`,
     );
+    return;
+  }
+
+  // --- FEEDBACK HANDLING ---
+  // Text-based feedback gets logged to Braintrust with the thread context.
+  if (intent === 'feedback' && event.user) {
+    const senderName = await resolveUser(event.user);
+    const feedbackText = cleanedText.replace(/^\s*feedback\s*[:\-]\s*/i, '').trim();
+
+    // Find the bot's most recent reply in this thread to attach feedback to.
+    let targetTraceId = null;
+    if (event.thread_ts) {
+      const threadMsgs = await fetchThreadMessages(event.channel, event.thread_ts);
+      const botReplies = threadMsgs.filter(
+        (m) => m.user === botUserId && m.ts !== event.ts,
+      );
+      if (botReplies.length > 0) {
+        const lastBotReply = botReplies[botReplies.length - 1];
+        targetTraceId = traceId(event.channel, lastBotReply.ts);
+      }
+    }
+
+    // Determine sentiment from the message.
+    const isPositive = /\b(good|great|helpful|nice|correct|right|perfect|thanks)\b/i.test(feedbackText);
+    const isNegative = /\b(wrong|incorrect|bad|inaccurate|not helpful|unhelpful)\b/i.test(feedbackText);
+    const score = isPositive ? 1 : isNegative ? 0 : 0.5;
+
+    try {
+      if (targetTraceId) {
+        await logFeedback({
+          id: targetTraceId,
+          scores: { thumbs: score, text_feedback: 1 },
+          comment: feedbackText,
+          metadata: {
+            slack_user: event.user,
+            sender_name: senderName,
+            channel: event.channel,
+            feedback_type: 'text',
+          },
+        });
+      } else {
+        // No specific bot reply to attach to, log as standalone trace.
+        await logTrace({
+          id: traceId(event.channel, event.ts),
+          input: { message: feedbackText, feedback_from: senderName },
+          output: { response: '[text feedback]' },
+          scores: { thumbs: score, text_feedback: 1 },
+          metadata: {
+            channel: event.channel,
+            slack_user: event.user,
+            sender_name: senderName,
+            intent: 'feedback',
+            feedback_type: 'text',
+          },
+          tags: ['slack-bot', 'feedback'],
+        });
+      }
+      console.log(`bt feedback (text): ${senderName} -> ${feedbackText.slice(0, 80)}`);
+    } catch (e) {
+      console.error('bt text feedback failed:', e.message);
+    }
+
+    // Acknowledge the feedback.
+    const ack = isPositive
+      ? `appreciate that ${senderName}, logged it.`
+      : isNegative
+        ? `noted ${senderName}, i'll get better. logged it.`
+        : `got it ${senderName}, feedback logged.`;
+
+    await postToSlack({
+      channel: event.channel,
+      text: ack,
+      thread_ts: replyThreadTs,
+    });
     return;
   }
 

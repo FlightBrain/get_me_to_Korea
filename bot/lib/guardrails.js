@@ -79,6 +79,12 @@ export function applyGuardrails(reply) {
   // Strip Notion URLs the relay agent sometimes appends
   reply = reply.replace(/https:\/\/www\.notion\.so\/agent\/[^\s]*/g, '').trim();
 
+  // Strip raw Slack user IDs (U0APB2TTWKZ etc) that the model should never output.
+  // Replace with "someone" so the sentence still reads naturally.
+  reply = reply.replace(/\bU[A-Z0-9]{8,12}\b/g, 'someone');
+  // Clean up artifacts like "someone , someone" or double "someone someone"
+  reply = reply.replace(/\bsomeone\s+someone\b/g, 'someone');
+
   // Collapse double spaces and trim
   reply = reply.replace(/ {2,}/g, ' ').trim();
 

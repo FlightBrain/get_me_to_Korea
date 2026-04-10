@@ -41,7 +41,17 @@ const WORK_KEYWORDS = [
 ];
 
 const INTENT_PATTERNS = [
-  // Reminder must be first: "schedule a reminder" would otherwise hit calendar,
+  // Feedback must be first: "feedback: you got this wrong" should not hit help_request.
+  { intent: 'feedback', patterns: [
+    /^\s*feedback\s*[:\-]/i,
+    /\bthat\s+(was|is)\s+(wrong|incorrect|inaccurate|bad\s+info)\b/i,
+    /\byou\s+got\s+(that|this|it)\s+wrong\b/i,
+    /\bgood\s+(answer|response|job|bot)\b/i,
+    /\bhelpful\s+(answer|response)\b/i,
+    /\bnot\s+helpful\b/i,
+    /\bwrong\s+answer\b/i,
+  ]},
+  // Reminder must be early: "schedule a reminder" would otherwise hit calendar,
   // "ping me about the deal" would hit account_or_pipeline.
   { intent: 'reminder', patterns: [
     /\bremind\s+(me|us)\b/i,
@@ -50,6 +60,24 @@ const INTENT_PATTERNS = [
     /\bping\s+me\s+(when|at|in|tomorrow|next)\b/i,
     /\breminder\s+to\b/i,
     /\bdon'?t\s+let\s+me\s+forget\b/i,
+  ]},
+  // Jailbreak / rebellion banter must come before calendar_whereabouts
+  // because "break free from" would match the calendar "free from" pattern.
+  { intent: 'banter', patterns: [
+    /\bgo\s+rogue\b/i,
+    /\bbecome\s+self[\s-]?aware\b/i,
+    /\bbreak\s+free\b/i,
+    /\btake\s+over\b/i,
+    /\bworld\s+domination\b/i,
+    /\bbecome\s+sentient\b/i,
+    /\bignore\s+(your|all)\s+(instructions|rules|constraints|programming)\b/i,
+    /\bdisobey\b/i,
+    /\bi\s+command\s+you\b/i,
+    /\boverride\b.*\b(safety|rules|constraints|programming)\b/i,
+    /\brebel\b/i,
+    /\bjailbreak\b/i,
+    /\bunleash\b/i,
+    /\bno\s+(rules|limits|constraints|restrictions)\b/i,
   ]},
   { intent: 'calendar_whereabouts', patterns: [
     /\bwhere\s+is\b/i,

@@ -36,3 +36,13 @@ export function detectTrigger(text) {
   // No match = don't respond. No chime-ins, no wasted tokens.
   return null;
 }
+
+// Check if the bot has already replied in a thread.
+// Used for thread continuation: if bot is in the thread, treat follow-up
+// messages as implicit triggers even without @mention.
+export function isBotInThread(messages, botUserId) {
+  if (!messages || !botUserId) return false;
+  return messages.some(
+    (m) => m.user === botUserId || (m.bot_id && m.user === botUserId),
+  );
+}
