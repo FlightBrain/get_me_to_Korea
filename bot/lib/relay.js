@@ -39,6 +39,8 @@ const NON_ANSWER_PATTERNS = [
   /not (available|accessible) (in|from|through)/i,
   /outside (of )?(my|the) (scope|context|knowledge|sources)/i,
   /beyond (my|the) (scope|context|knowledge|sources)/i,
+  /i do not have any update from the sources/i,
+  /i also cannot .{0,30} because i do not have/i,
 ];
 
 // ---- public entry point ----

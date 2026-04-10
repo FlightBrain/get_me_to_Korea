@@ -15,7 +15,8 @@ import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
 import { handleReaction } from '../lib/feedback.js';
-import { getUserProfile, updateUserProfile, profileToPromptContext } from '../lib/user-profiles.js';
+import { getUserProfile, getUserHistory, updateUserProfile, profileToPromptContext } from '../lib/user-profiles.js';
+import { createReminder, parseReminderTime, getUserReminders } from '../lib/reminders.js';
 
 export const config = {
   api: { bodyParser: false },
@@ -127,15 +128,62 @@ async function processEvent(body) {
     return;
   }
 
+  // --- REMINDER HANDLING ---
+  if (intent === 'reminder' && event.user) {
+    const sName = await resolveUser(event.user);
+    const triggerAt = parseReminderTime(cleanedText);
+
+    if (triggerAt) {
+      // Extract what to remind about (strip the time/trigger words).
+      const aboutText = cleanedText
+        .replace(/\b(remind\s+me|set\s+a?\s*reminder|schedule\s+a?\s*reminder|ping\s+me|don'?t\s+let\s+me\s+forget)\s*/i, '')
+        .replace(/\b(in\s+\d+\s*\w+|at\s+\d+[:\d]*\s*(?:am|pm)?|tomorrow(?:\s+at\s+\d+[:\d]*\s*(?:am|pm)?)?|next\s+\w+|eod|end\s+of\s+day)\b/i, '')
+        .replace(/\s+/g, ' ').trim()
+        || cleanedText;
+
+      const reminder = await createReminder({
+        userId: event.user,
+        userName: sName,
+        channel: event.channel,
+        threadTs: replyThreadTs,
+        message: aboutText,
+        triggerAt,
+      });
+
+      const timeStr = triggerAt.toLocaleString('en-US', {
+        timeZone: 'America/Los_Angeles',
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      });
+
+      await postToSlack({
+        channel: event.channel,
+        text: `got it ${sName}, i'll ping you ${timeStr} PT: "${aboutText}"`,
+        thread_ts: replyThreadTs,
+      });
+
+      // Update profile
+      updateUserProfile(event.user, {
+        displayName: sName, message: cleanedText, intent, channel: event.channel,
+      }).catch(e => console.error('profile update failed:', e.message));
+
+      console.log(`reminder set: ${reminder.id} for ${sName} at ${timeStr}`);
+      return;
+    }
+    // If we couldn't parse a time, fall through to Claude to ask for clarification.
+  }
+
   // --- LOCAL CLAUDE PATH (relay disabled or skipped for this intent) ---
 
   const caps = getCapabilities();
   const capabilities = capabilitySummary(caps);
 
-  // Resolve the current speaker's name and load their profile.
+  // Resolve the current speaker's name and load their profile + history.
   const senderName = event.user ? await resolveUser(event.user) : null;
-  const userProfile = event.user ? await getUserProfile(event.user) : null;
-  const userContext = profileToPromptContext(userProfile);
+  const [userProfile, userHistory] = event.user
+    ? await Promise.all([getUserProfile(event.user), getUserHistory(event.user)])
+    : [null, []];
+  const userContext = profileToPromptContext(userProfile, userHistory);
 
   const [notionContext, calendarContext] = await Promise.all([
     fetchContext(),

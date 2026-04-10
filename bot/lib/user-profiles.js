@@ -1,12 +1,15 @@
 // Persistent user profile store backed by Vercel KV.
 // Learns about users over time: who they are, what they talk about,
 // how they interact with the bot, so responses can be personalized.
+// Stores full message history so the bot remembers everything.
 
 import { kv } from '@vercel/kv';
 
 const KEY_PREFIX = 'user:';
-const MAX_TOPICS = 15;       // keep the N most recent topics
-const MAX_INTERACTIONS = 10;  // recent interaction summaries
+const HISTORY_PREFIX = 'hist:';
+const MAX_TOPICS = 20;
+const MAX_INTERACTIONS = 15;
+const MAX_HISTORY = 50;  // full messages stored per user
 
 // Fallback: if KV isn't configured, use in-memory (survives warm instances only).
 const memoryFallback = new Map();
@@ -25,6 +28,20 @@ export async function getUserProfile(userId) {
   } catch (e) {
     console.error(`user-profiles: get failed for ${userId}:`, e.message);
     return memoryFallback.get(userId) || null;
+  }
+}
+
+// Get a user's full message history.
+export async function getUserHistory(userId) {
+  if (!userId) return [];
+  try {
+    if (kvAvailable) {
+      return (await kv.get(`${HISTORY_PREFIX}${userId}`)) || [];
+    }
+    return memoryFallback.get(`hist:${userId}`) || [];
+  } catch (e) {
+    console.error(`user-profiles: history get failed for ${userId}:`, e.message);
+    return memoryFallback.get(`hist:${userId}`) || [];
   }
 }
 
@@ -59,7 +76,6 @@ export async function updateUserProfile(userId, {
   // Extract and store topics from their messages
   const topics = extractTopics(message);
   for (const topic of topics) {
-    // Remove old instance if it exists, add to end (most recent)
     existing.recentTopics = existing.recentTopics.filter(t => t !== topic);
     existing.recentTopics.push(topic);
   }
@@ -83,11 +99,15 @@ export async function updateUserProfile(userId, {
   // Detect personality signals from how they talk to the bot
   updatePersonalitySignals(existing, message);
 
-  await saveProfile(userId, existing);
+  // Save profile and full message to history
+  await Promise.all([
+    saveProfile(userId, existing),
+    appendToHistory(userId, { message, intent, channel, timestamp: new Date().toISOString() }),
+  ]);
 }
 
 // Build a concise text block for the system prompt.
-export function profileToPromptContext(profile) {
+export function profileToPromptContext(profile, history) {
   if (!profile) return '';
 
   const lines = [];
@@ -104,7 +124,6 @@ export function profileToPromptContext(profile) {
     lines.push(`vibe: ${profile.personality.join(', ')}`);
   }
 
-  // Top intent (what they usually ask about)
   const topIntent = getTopIntent(profile.intentCounts);
   if (topIntent) {
     lines.push(`usually asks about: ${topIntent}`);
@@ -114,9 +133,16 @@ export function profileToPromptContext(profile) {
     lines.push(`recent topics: ${profile.recentTopics.slice(-5).join(', ')}`);
   }
 
-  if (profile.recentInteractions.length > 0) {
-    const last = profile.recentInteractions[profile.recentInteractions.length - 1];
-    lines.push(`last interaction: ${last.summary}`);
+  // Include recent message history so the bot remembers what they've said.
+  if (history && history.length > 0) {
+    const recent = history.slice(-8); // last 8 messages in prompt
+    lines.push('');
+    lines.push('their recent messages to you:');
+    for (const h of recent) {
+      const date = h.timestamp ? new Date(h.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      const msg = h.message?.length > 100 ? h.message.slice(0, 97) + '...' : h.message;
+      lines.push(`- ${date}: "${msg}"`);
+    }
   }
 
   return lines.length > 0 ? lines.join('\n') : '';
@@ -135,14 +161,13 @@ function createBlankProfile(userId) {
     intentCounts: {},
     recentTopics: [],
     recentInteractions: [],
-    personality: [],  // e.g. ["jokes around", "direct", "asks for links"]
+    personality: [],
   };
 }
 
 async function saveProfile(userId, profile) {
   try {
     if (kvAvailable) {
-      // TTL of 90 days - profiles expire if user goes quiet
       await kv.set(`${KEY_PREFIX}${userId}`, profile, { ex: 90 * 24 * 3600 });
     }
     memoryFallback.set(userId, profile);
@@ -152,15 +177,28 @@ async function saveProfile(userId, profile) {
   }
 }
 
+async function appendToHistory(userId, entry) {
+  if (!entry.message) return;
+  try {
+    const history = await getUserHistory(userId);
+    history.push(entry);
+    // Cap at MAX_HISTORY, drop oldest
+    while (history.length > MAX_HISTORY) history.shift();
+
+    if (kvAvailable) {
+      await kv.set(`${HISTORY_PREFIX}${userId}`, history, { ex: 90 * 24 * 3600 });
+    }
+    memoryFallback.set(`hist:${userId}`, history);
+  } catch (e) {
+    console.error(`user-profiles: history save failed for ${userId}:`, e.message);
+  }
+}
+
 // Extract meaningful topics from a message.
 const TOPIC_PATTERNS = [
-  // Company/product names (capitalized words that aren't common English)
   { re: /\b(zapier|notion|dropbox|retool|coursera|graphite|replit|navan|braintrust|langsmith|langfuse|arize)\b/gi, type: 'product' },
-  // Work topics
   { re: /\b(eval|evals|evaluation|observability|pipeline|sequence|cadence|outreach|demo|meeting|quota|territory|accounts?)\b/gi, type: 'work' },
-  // Features/tech
   { re: /\b(rag|llm|gpt|agent|agents|prompt|model|fine.?tun|embeddings?|vector|search|voice)\b/gi, type: 'tech' },
-  // Events
   { re: /\b(builders?\s*night|trace|summit|conference|event|dinner|warriors)\b/gi, type: 'event' },
 ];
 
@@ -178,13 +216,11 @@ function extractTopics(message) {
 
 function buildInteractionSummary(message, intent) {
   if (!message) return null;
-  // Truncate to keep storage lean
   const short = message.length > 80 ? message.slice(0, 77) + '...' : message;
   const intentLabel = intent === 'general_qna' ? '' : ` [${intent}]`;
   return `${short}${intentLabel}`;
 }
 
-// Detect personality traits from message patterns over time.
 const PERSONALITY_SIGNALS = [
   { trait: 'jokes around', re: /\b(lol|lmao|haha|joke|roast|funny|xd)\b/i },
   { trait: 'direct', re: /\b(give me|send me|now|asap|quick)\b/i },
@@ -209,7 +245,7 @@ function getTopIntent(intentCounts) {
   if (entries.length === 0) return null;
   entries.sort((a, b) => b[1] - a[1]);
   const [intent, count] = entries[0];
-  if (count < 2) return null; // need at least 2 to be a pattern
+  if (count < 2) return null;
   const label = intent.replace(/_/g, ' ');
   return label;
 }

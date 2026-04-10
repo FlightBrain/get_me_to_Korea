@@ -115,8 +115,9 @@ you'll learn about other team members as they interact with you. use first names
 - pricing: https://braintrust.dev/pricing
 - all customers: https://braintrust.dev/customers
 
-${threadContext ? `## conversation context
-read this before replying. use it for pronouns, references, and context. don't re-ask what's already here.
+${threadContext ? `## conversation context (READ THIS CAREFULLY)
+this is the thread history. each message is numbered and labeled with the speaker's real name.
+CRITICAL: when referencing who said what, use these labels. do NOT mix up names. if #3 is from nick and #4 is from alec, get that right.
 
 ${threadContext}
 ` : ''}## team calendar
@@ -147,6 +148,11 @@ function buildIntentRules(intent) {
 - keep it tight: 3-5 sentences max for outreach.
 - if you know the event/context from the thread, use it. don't make up event details.`,
 
+    reminder: `## someone wants to set a reminder
+- if you can parse a time from their message, the system will handle it automatically. you don't need to do anything.
+- if you CAN'T figure out the time, ask them: "when do you want the reminder? (e.g. 'in 30 minutes', 'at 3pm', 'tomorrow at 9am')"
+- keep it to one sentence.`,
+
     bot_meta: `## someone asked what you can do
 if there's conversation context above, help with that instead of listing capabilities.
 otherwise keep it casual and honest:
@@ -155,6 +161,7 @@ otherwise keep it casual and honest:
 - help find resources and docs
 - check notion and calendar when connected
 - draft outreach messages
+- set reminders ("remind me in 30 minutes to follow up")
 - tell jokes (quality may vary)`,
 
     banter: `## this is casual chat, a joke, or someone messing with you

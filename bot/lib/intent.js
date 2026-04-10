@@ -41,6 +41,16 @@ const WORK_KEYWORDS = [
 ];
 
 const INTENT_PATTERNS = [
+  // Reminder must be first: "schedule a reminder" would otherwise hit calendar,
+  // "ping me about the deal" would hit account_or_pipeline.
+  { intent: 'reminder', patterns: [
+    /\bremind\s+(me|us)\b/i,
+    /\bset\s+(a\s+)?reminder\b/i,
+    /\bschedule\s+(a\s+)?(reminder|ping|alert)\b/i,
+    /\bping\s+me\s+(when|at|in|tomorrow|next)\b/i,
+    /\breminder\s+to\b/i,
+    /\bdon'?t\s+let\s+me\s+forget\b/i,
+  ]},
   { intent: 'calendar_whereabouts', patterns: [
     /\bwhere\s+is\b/i,
     /\bwhere'?s\b/i,

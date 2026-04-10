@@ -23,10 +23,15 @@ import {
 } from '../lib/relay.js';
 import {
   getUserProfile,
+  getUserHistory,
   updateUserProfile,
   profileToPromptContext,
   _resetProfiles,
 } from '../lib/user-profiles.js';
+import {
+  parseReminderTime,
+  _resetReminders,
+} from '../lib/reminders.js';
 
 // ---------------------------------------------------------------------------
 // Dedup
@@ -1067,7 +1072,7 @@ describe('user profiles', () => {
     assert.ok(profile.personality.includes('jokes around'));
   });
 
-  it('generates prompt context from profile', async () => {
+  it('generates prompt context with history', async () => {
     await updateUserProfile('U006', {
       displayName: 'Kensington Belza',
       message: 'give me the zapier case study link now',
@@ -1081,13 +1086,123 @@ describe('user profiles', () => {
       channel: 'C2',
     });
     const profile = await getUserProfile('U006');
-    const context = profileToPromptContext(profile);
+    const history = await getUserHistory('U006');
+    const context = profileToPromptContext(profile, history);
     assert.ok(context.includes('Kensington Belza'));
     assert.ok(context.includes('2 messages'));
+    assert.ok(context.includes('their recent messages'));
+    assert.ok(context.includes('zapier case study'));
+  });
+
+  it('stores full message history', async () => {
+    await updateUserProfile('U007', {
+      displayName: 'Alec',
+      message: 'make a video of joe meade',
+      intent: 'banter',
+      channel: 'C1',
+    });
+    await updateUserProfile('U007', {
+      displayName: 'Alec',
+      message: 'that is gas',
+      intent: 'banter',
+      channel: 'C1',
+    });
+    const history = await getUserHistory('U007');
+    assert.equal(history.length, 2);
+    assert.equal(history[0].message, 'make a video of joe meade');
+    assert.equal(history[1].message, 'that is gas');
   });
 
   it('returns empty string for null profile', () => {
     const context = profileToPromptContext(null);
     assert.equal(context, '');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reminder time parsing
+// ---------------------------------------------------------------------------
+
+describe('parseReminderTime', () => {
+  it('parses "in 30 minutes"', () => {
+    const t = parseReminderTime('remind me in 30 minutes to follow up');
+    assert.ok(t);
+    const diff = t.getTime() - Date.now();
+    assert.ok(diff > 29 * 60 * 1000 && diff < 31 * 60 * 1000);
+  });
+
+  it('parses "in 2 hours"', () => {
+    const t = parseReminderTime('remind me in 2 hours about the meeting');
+    assert.ok(t);
+    const diff = t.getTime() - Date.now();
+    assert.ok(diff > 119 * 60 * 1000 && diff < 121 * 60 * 1000);
+  });
+
+  it('parses "at 3pm"', () => {
+    const t = parseReminderTime('ping me at 3pm to check slack');
+    assert.ok(t);
+    assert.equal(t.getHours(), 15);
+    assert.equal(t.getMinutes(), 0);
+  });
+
+  it('parses "at 9:30am"', () => {
+    const t = parseReminderTime('remind me at 9:30am');
+    assert.ok(t);
+    assert.equal(t.getHours(), 9);
+    assert.equal(t.getMinutes(), 30);
+  });
+
+  it('parses "tomorrow"', () => {
+    const t = parseReminderTime('remind me tomorrow to send the deck');
+    assert.ok(t);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    assert.equal(t.getDate(), tomorrow.getDate());
+  });
+
+  it('parses "tomorrow at 2pm"', () => {
+    const t = parseReminderTime('remind me tomorrow at 2pm');
+    assert.ok(t);
+    assert.equal(t.getHours(), 14);
+  });
+
+  it('parses "eod"', () => {
+    const t = parseReminderTime('remind me eod to update the tracker');
+    assert.ok(t);
+    assert.equal(t.getHours(), 17);
+  });
+
+  it('parses "next monday"', () => {
+    const t = parseReminderTime('remind me next monday about the standup');
+    assert.ok(t);
+    assert.equal(t.getDay(), 1); // Monday
+    assert.ok(t > new Date());
+  });
+
+  it('returns null for unparseable time', () => {
+    const t = parseReminderTime('remind me sometime maybe');
+    assert.equal(t, null);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reminder intent detection
+// ---------------------------------------------------------------------------
+
+describe('reminder intent', () => {
+  it('detects "remind me"', () => {
+    assert.equal(classifyIntent('remind me in 30 minutes to follow up'), 'reminder');
+  });
+
+  it('detects "set a reminder"', () => {
+    assert.equal(classifyIntent('set a reminder for 3pm'), 'reminder');
+  });
+
+  it('detects "ping me when"', () => {
+    assert.equal(classifyIntent('ping me at 5pm about the deal'), 'reminder');
+  });
+
+  it('detects "schedule a reminder"', () => {
+    assert.equal(classifyIntent('schedule a reminder for next monday'), 'reminder');
   });
 });
