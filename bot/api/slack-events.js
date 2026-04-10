@@ -19,6 +19,7 @@ import { logTrace, traceId } from '../lib/braintrust.js';
 import { getUserProfile, getUserHistory, updateUserProfile, profileToPromptContext } from '../lib/user-profiles.js';
 import { createReminder, parseReminderTime, getUserReminders } from '../lib/reminders.js';
 
+// v2 - force cold start after deploy
 export const config = {
   api: { bodyParser: false },
 };
