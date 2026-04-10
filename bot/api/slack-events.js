@@ -170,8 +170,10 @@ async function processEvent(body) {
   // --- FEEDBACK HANDLING ---
   // Text-based feedback gets logged to Braintrust with the thread context.
   if (intent === 'feedback' && event.user) {
-    const senderName = await resolveUser(event.user);
-    const feedbackText = cleanedText.replace(/^\s*feedback\s*[:\-]\s*/i, '').trim();
+    const resolved = await resolveUser(event.user);
+    // resolveUser returns the raw ID if the API call fails. Use "there" as fallback.
+    const senderName = resolved.startsWith('U') && resolved.length > 8 ? 'there' : resolved;
+    const feedbackText = cleanedText.replace(/^\s*feedback\s*[\s:\-]+/i, '').trim();
 
     // Find the bot's most recent reply in this thread to attach feedback to.
     let targetTraceId = null;
@@ -221,9 +223,9 @@ async function processEvent(body) {
           tags: ['slack-bot', 'feedback'],
         });
       }
-      console.log(`bt feedback (text): ${senderName} -> ${feedbackText.slice(0, 80)}`);
+      console.log(`bt feedback (text): ${senderName} -> ${feedbackText.slice(0, 80)}`, targetTraceId ? `attached to ${targetTraceId}` : 'standalone');
     } catch (e) {
-      console.error('bt text feedback failed:', e.message);
+      console.error('bt text feedback failed:', e.message, e.stack?.slice(0, 200));
     }
 
     // Acknowledge the feedback.
