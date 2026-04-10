@@ -68,12 +68,41 @@ export async function getUserReminders(userId) {
 // ---- parsing ----
 
 // Try to parse a natural-language time reference into a Date.
+// All times are interpreted as Pacific Time (America/Los_Angeles).
 // Handles: "in 30 minutes", "in 2 hours", "tomorrow at 9am",
 // "at 3pm", "in 1 hour", "next monday".
-export function parseReminderTime(text) {
-  const now = new Date();
 
-  // "in X minutes/hours/days"
+// Get current time in PT as a manipulable Date.
+function nowPT() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+}
+
+// Build a Date in PT and convert to UTC for storage.
+function ptToUTC(year, month, day, hours, minutes) {
+  // Create an ISO string in PT, then let Date parse it as local.
+  // Trick: build date string, parse it as if PT.
+  const dtStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+  // Use Intl to get the UTC offset for PT at this date
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  });
+  // Create a date in UTC, then adjust for PT offset
+  const utcGuess = new Date(dtStr + 'Z');
+  const ptParts = fmt.formatToParts(utcGuess);
+  const ptHour = parseInt(ptParts.find(p => p.type === 'hour').value);
+  const diff = ptHour - hours;
+  // Adjust: if PT shows a different hour than what we want, shift
+  return new Date(utcGuess.getTime() - diff * 3600 * 1000);
+}
+
+export function parseReminderTime(text) {
+  const now = new Date(); // real UTC now
+  const pt = nowPT();     // current time in PT
+
+  // "in X minutes/hours/days" - relative, no timezone issue
   const inMatch = text.match(/\bin\s+(\d+)\s*(min(?:ute)?s?|hours?|hrs?|days?)\b/i);
   if (inMatch) {
     const num = parseInt(inMatch[1]);
@@ -83,7 +112,7 @@ export function parseReminderTime(text) {
     if (unit.startsWith('d')) return new Date(now.getTime() + num * 86400 * 1000);
   }
 
-  // "at Xam/pm" or "at X:XXam/pm" (today or tomorrow if past)
+  // "at Xam/pm" or "at X:XXam/pm" (today or tomorrow if past) - PT
   const atMatch = text.match(/\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
   if (atMatch) {
     let hours = parseInt(atMatch[1]);
@@ -92,18 +121,16 @@ export function parseReminderTime(text) {
     if (ampm === 'pm' && hours !== 12) hours += 12;
     if (ampm === 'am' && hours === 12) hours = 0;
 
-    const target = new Date(now);
-    target.setHours(hours, minutes, 0, 0);
-    // If the time is already past today, push to tomorrow.
-    if (target <= now) target.setDate(target.getDate() + 1);
+    let target = ptToUTC(pt.getFullYear(), pt.getMonth(), pt.getDate(), hours, minutes);
+    if (target <= now) target = new Date(target.getTime() + 86400 * 1000);
     return target;
   }
 
-  // "tomorrow" (default 9am)
+  // "tomorrow" (default 9am PT)
   if (/\btomorrow\b/i.test(text)) {
-    const target = new Date(now);
-    target.setDate(target.getDate() + 1);
-    // Check if there's a time attached
+    const tmrw = new Date(pt);
+    tmrw.setDate(tmrw.getDate() + 1);
+
     const timeMatch = text.match(/tomorrow\s+(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
     if (timeMatch) {
       let h = parseInt(timeMatch[1]);
@@ -111,32 +138,28 @@ export function parseReminderTime(text) {
       const ap = timeMatch[3].toLowerCase();
       if (ap === 'pm' && h !== 12) h += 12;
       if (ap === 'am' && h === 12) h = 0;
-      target.setHours(h, m, 0, 0);
-    } else {
-      target.setHours(9, 0, 0, 0);
+      return ptToUTC(tmrw.getFullYear(), tmrw.getMonth(), tmrw.getDate(), h, m);
     }
-    return target;
+    return ptToUTC(tmrw.getFullYear(), tmrw.getMonth(), tmrw.getDate(), 9, 0);
   }
 
-  // "next monday/tuesday/..." (default 9am)
+  // "next monday/tuesday/..." (default 9am PT)
   const dayMatch = text.match(/\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
   if (dayMatch) {
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const targetDay = dayNames.indexOf(dayMatch[1].toLowerCase());
-    const target = new Date(now);
-    const currentDay = target.getDay();
+    const currentDay = pt.getDay();
     let daysAhead = targetDay - currentDay;
     if (daysAhead <= 0) daysAhead += 7;
+    const target = new Date(pt);
     target.setDate(target.getDate() + daysAhead);
-    target.setHours(9, 0, 0, 0);
-    return target;
+    return ptToUTC(target.getFullYear(), target.getMonth(), target.getDate(), 9, 0);
   }
 
-  // "end of day" / "eod"
+  // "end of day" / "eod" (5pm PT)
   if (/\b(eod|end\s+of\s+day)\b/i.test(text)) {
-    const target = new Date(now);
-    target.setHours(17, 0, 0, 0);
-    if (target <= now) target.setDate(target.getDate() + 1);
+    let target = ptToUTC(pt.getFullYear(), pt.getMonth(), pt.getDate(), 17, 0);
+    if (target <= now) target = new Date(target.getTime() + 86400 * 1000);
     return target;
   }
 

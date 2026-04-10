@@ -158,7 +158,9 @@ async function processEvent(body) {
 
   // --- REMINDER HANDLING ---
   if (intent === 'reminder' && event.user) {
-    const sName = await resolveUser(event.user);
+    const resolved = await resolveUser(event.user);
+    // resolveUser returns the raw ID if the API call fails. Use "there" as fallback.
+    const sName = resolved.startsWith('U') && resolved.length > 8 ? 'there' : resolved;
     const triggerAt = parseReminderTime(cleanedText);
 
     if (triggerAt) {
