@@ -15,6 +15,7 @@ import { applyGuardrails } from '../lib/guardrails.js';
 import { executeRelay } from '../lib/relay.js';
 import { updateJob } from '../lib/relay-store.js';
 import { handleReaction } from '../lib/feedback.js';
+import { getUserProfile, updateUserProfile, profileToPromptContext } from '../lib/user-profiles.js';
 
 export const config = {
   api: { bodyParser: false },
@@ -109,6 +110,17 @@ async function processEvent(body) {
       });
     }
 
+    // Update user profile on relay path too (fire-and-forget).
+    if (event.user) {
+      const name = await resolveUser(event.user);
+      updateUserProfile(event.user, {
+        displayName: name,
+        message: cleanedText,
+        intent,
+        channel: event.channel,
+      }).catch(e => console.error('profile update failed:', e.message));
+    }
+
     console.log(
       `replied (relay): channel=${event.channel}`,
     );
@@ -120,8 +132,10 @@ async function processEvent(body) {
   const caps = getCapabilities();
   const capabilities = capabilitySummary(caps);
 
-  // Resolve the current speaker's name so the model knows who it's talking to.
+  // Resolve the current speaker's name and load their profile.
   const senderName = event.user ? await resolveUser(event.user) : null;
+  const userProfile = event.user ? await getUserProfile(event.user) : null;
+  const userContext = profileToPromptContext(userProfile);
 
   const [notionContext, calendarContext] = await Promise.all([
     fetchContext(),
@@ -135,6 +149,7 @@ async function processEvent(body) {
     intent,
     threadContext,
     senderName,
+    userContext,
   });
 
   const result = await callClaude(systemPrompt, cleanedText, { senderName });
@@ -145,6 +160,16 @@ async function processEvent(body) {
     text: result.reply,
     thread_ts: replyThreadTs,
   });
+
+  // Update user profile after successful interaction (fire-and-forget).
+  if (event.user) {
+    updateUserProfile(event.user, {
+      displayName: senderName,
+      message: cleanedText,
+      intent,
+      channel: event.channel,
+    }).catch(e => console.error('profile update failed:', e.message));
+  }
 
   console.log(
     `replied (local): trigger=${trigger} intent=${intent} channel=${event.channel}`,

@@ -21,6 +21,12 @@ import {
   cleanRelayResponse,
   isNonAnswer,
 } from '../lib/relay.js';
+import {
+  getUserProfile,
+  updateUserProfile,
+  profileToPromptContext,
+  _resetProfiles,
+} from '../lib/user-profiles.js';
 
 // ---------------------------------------------------------------------------
 // Dedup
@@ -968,5 +974,120 @@ describe('guardrails canned deflections', () => {
     const result = applyGuardrails('here is the answer https://www.notion.so/agent/33cf785802898035a5ba0092a73b98bf?wfv=activity done');
     assert.ok(!result.includes('notion.so/agent'));
     assert.ok(result.includes('here is the answer'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// User profiles
+// ---------------------------------------------------------------------------
+
+describe('user profiles', () => {
+  beforeEach(() => _resetProfiles());
+
+  it('returns null for unknown user', async () => {
+    const profile = await getUserProfile('UUNKNOWN');
+    assert.equal(profile, null);
+  });
+
+  it('creates a profile on first interaction', async () => {
+    await updateUserProfile('U001', {
+      displayName: 'Joey Register',
+      message: 'tell me a joke',
+      intent: 'banter',
+      channel: 'C123',
+    });
+    const profile = await getUserProfile('U001');
+    assert.ok(profile);
+    assert.equal(profile.displayName, 'Joey Register');
+    assert.equal(profile.messageCount, 1);
+    assert.ok(profile.channels.includes('C123'));
+  });
+
+  it('accumulates message count across interactions', async () => {
+    await updateUserProfile('U002', {
+      displayName: 'Nick',
+      message: 'what is braintrust',
+      intent: 'general_qna',
+      channel: 'C1',
+    });
+    await updateUserProfile('U002', {
+      displayName: 'Nick',
+      message: 'tell me about evals',
+      intent: 'braintrust_resources',
+      channel: 'C1',
+    });
+    const profile = await getUserProfile('U002');
+    assert.equal(profile.messageCount, 2);
+  });
+
+  it('tracks intent distribution', async () => {
+    await updateUserProfile('U003', {
+      displayName: 'Keslar',
+      message: 'lol',
+      intent: 'banter',
+      channel: 'C1',
+    });
+    await updateUserProfile('U003', {
+      displayName: 'Keslar',
+      message: 'haha',
+      intent: 'banter',
+      channel: 'C1',
+    });
+    await updateUserProfile('U003', {
+      displayName: 'Keslar',
+      message: 'give me the link',
+      intent: 'help_request',
+      channel: 'C1',
+    });
+    const profile = await getUserProfile('U003');
+    assert.equal(profile.intentCounts.banter, 2);
+    assert.equal(profile.intentCounts.help_request, 1);
+  });
+
+  it('extracts topics from messages', async () => {
+    await updateUserProfile('U004', {
+      displayName: 'Sacha',
+      message: 'what do we say against langsmith for eval use cases',
+      intent: 'braintrust_resources',
+      channel: 'C1',
+    });
+    const profile = await getUserProfile('U004');
+    assert.ok(profile.recentTopics.includes('langsmith'));
+    assert.ok(profile.recentTopics.includes('eval'));
+  });
+
+  it('detects personality signals', async () => {
+    await updateUserProfile('U005', {
+      displayName: 'Chris',
+      message: 'lol tell me a joke haha',
+      intent: 'banter',
+      channel: 'C1',
+    });
+    const profile = await getUserProfile('U005');
+    assert.ok(profile.personality.includes('jokes around'));
+  });
+
+  it('generates prompt context from profile', async () => {
+    await updateUserProfile('U006', {
+      displayName: 'Kensington Belza',
+      message: 'give me the zapier case study link now',
+      intent: 'help_request',
+      channel: 'C1',
+    });
+    await updateUserProfile('U006', {
+      displayName: 'Kensington Belza',
+      message: 'send me the link for langsmith battlecard',
+      intent: 'help_request',
+      channel: 'C2',
+    });
+    const profile = await getUserProfile('U006');
+    const context = profileToPromptContext(profile);
+    assert.ok(context.includes('Kensington Belza'));
+    assert.ok(context.includes('2 messages'));
+  });
+
+  it('returns empty string for null profile', () => {
+    const context = profileToPromptContext(null);
+    assert.equal(context, '');
   });
 });
