@@ -155,6 +155,117 @@
 
 ---
 
+### 2026-04-03 - Hooks Activation (Jay's Guardrail System)
+
+**Duration:** ~15 min
+
+### What Was Done
+
+1. **Set up two automated hooks in `.claude/settings.local.json`** (from Jay Vermont's AE ops system)
+   - Em-dash guard: PreToolUse hook on Edit/Write. Scans content for em dashes, blocks if found. Enforces immutable rule #1.
+   - Drafts-only guard: PreToolUse hook on gmail_send_message. Blocks direct sends, forces gmail_create_draft. Safety net for prospect emails.
+
+2. **Created hook scripts** in `.claude/hooks/`
+   - `emdash_guard.sh` - parses tool input JSON, checks for em dash character, returns block/approve
+   - `drafts_only_guard.sh` - checks tool name, blocks gmail_send_message
+
+3. **Documented in workspace**
+   - `01_Memory/stable/HOOKS_SETUP.md` - full documentation of both hooks
+   - Notion page created: https://www.notion.so/338f78580289814784a9eb24bfd502d0
+
+### Key Decisions
+
+- Hooks adopted from Jay's ops system pattern (hooks as automated guardrails)
+- Both hooks are PreToolUse (block before execution, not after)
+- Scripts use bash + python3 for JSON parsing
+
+### Files Changed
+
+- `.claude/settings.local.json` - added hooks config
+- `.claude/hooks/emdash_guard.sh` - new
+- `.claude/hooks/drafts_only_guard.sh` - new
+- `01_Memory/stable/HOOKS_SETUP.md` - new
+
+---
+
+### 2026-04-03 — AE Ops + Apollo Email Enrichment + File System Overhaul
+
+**Duration:** ~6 hours
+**Participants:** Kensington (AI-assisted), 15+ parallel subagents
+
+### What Was Done
+
+1. **Created AE Meeting Notes in Notion** (3 pages)
+   - Dave: https://www.notion.so/337f78580289817dbf30dce356e9f27b
+   - Walton: https://www.notion.so/337f7858028981e7aa17d7d36deacd7f
+   - Jay: https://www.notion.so/337f785802898181b389fc2e57284b5a
+   - Populated with real action items from Slack DMs + territory channels
+   - Action items are tasks assigned TO Kensington by AEs/leadership
+
+2. **Set up Daily DM Recap scheduled agent**
+   - Runs Mon-Fri 5:30 PM PT
+   - Scans Slack DMs + territory channels for action items assigned to Kensington
+   - Updates the 3 AE Notion pages automatically
+   - Trigger: trig_01Acmp4jmQVP1aP9uV1udqZV
+   - Manage: https://claude.ai/code/scheduled/trig_01Acmp4jmQVP1aP9uV1udqZV
+
+3. **File system overhaul — unified memory**
+   - Migrated all 11 auto-memory files from `.claude/projects/.../memory/` into `get_me_to_Korea/01_Memory/`
+   - Rewrote home-dir MEMORY.md as a 72-line router pointing to `get_me_to_Korea/CLAUDE.md`
+   - Updated CLAUDE.md with AE Notion pages, territory Slack channels, memory system instructions, DM recap docs, excluded companies, account file reference
+   - Result: ONE system, ONE entry point. No more split brain.
+
+4. **Apollo Email Enrichment — 307 emails updated**
+   - Phase 1: 225 emails (73 enriched + 152 pattern matched) across ~40 Tier 1/2 accounts
+   - Phase 2: 82 more emails across sequences, remaining pages, and ~489 additional accounts
+   - Methods: Apollo bulk enrichment → pattern matching from company email formats → manual fixes
+   - 529 accounts swept total from Kensington_accounts.numbers
+   - 3 corrupted contacts fixed (Paradox), 1 bounced email fixed (OneMedical)
+   - ~40+ job change flags surfaced
+
+5. **"Other SDR Prospected" list — 204 Director+ contacts labeled in Apollo**
+   - Searched all key accounts for Director+ ICP contacts prospected by other SDRs
+   - 424 identified, 204 labeled as "Other SDR Prospected" in Apollo
+   - Richest accounts: Cloudera (56), Wells Fargo (54), RingCentral (26), ZoomInfo (24)
+   - Top contacts: Sunitha Velpula (VP Eng, Cloudera, 12 sequences), Cem Torun (Dir Product Eng, Commure, 11 seq)
+
+6. **Amazon Q&A prep — Hashique Thajudeen**
+   - Created AE notes page in Notion: https://www.notion.so/337f7858028981a693aad8a47d3d3a0f
+   - Full research brief: 21-yr career, LinkedIn articles on trust accrual + fine-tuning + agentic engineering
+   - Call strategy: Q&A/research session, share customer stories on eval feedback loops
+   - Meeting went "amazing" per Kensington
+
+7. **LinkedIn Workshop Posts**
+   - Created 3 LinkedIn posts for workshop series (Bringing Evals to Prod, Multi-Turn Scoring, Evals Are the New PRD)
+   - Notion page: https://www.notion.so/337f785802898146aeabdaa03107a5a6
+   - Saved social media writing rules to `05_Writing/tone/SOCIAL_MEDIA_RULES.md`
+
+### Key Decisions
+
+- DM recaps: action items only, no conversation summaries
+- Email enrichment: pattern match > enrichment (152 vs 73 in Phase 1). Always look at existing emails at same company first.
+- Excluded companies enforced: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X, SoFi
+- "Other SDR Prospected" list: Director+ only, must have sequence history
+- Use smaller models (Sonnet) for mechanical Apollo tasks
+
+### Insights
+
+- Pattern matching fills 2x more emails than Apollo enrichment alone
+- ZoomInfo had the biggest email gap (56 contacts pattern matched to first.last@zoominfo.com)
+- Block/Square have inconsistent email patterns — can't reliably pattern match
+- Many contacts flagged with job changes — need periodic cleanup pass
+- The "Other SDR Prospected" list is pre-warmed pipeline. 204 Director+ contacts that already know Braintrust.
+
+### Next Session Priorities
+
+1. Work the "Other SDR Prospected" list — prioritize top 20 ICP fits for re-engagement
+2. HumanX conference prep (Apr 7-8) — ghost notes for attendees
+3. Post Hashique call notes and next steps
+4. Expedia demo prep (Apr 10)
+5. Workshop LinkedIn posts — schedule and publish
+
+---
+
 ## Archive
 
 *Complete sessions will move here as we accumulate history. Keeping most recent 3-5 sessions live above for reference.*

@@ -16,6 +16,10 @@
 |---------|----------|-------|-------|------|-------|
 | [Example] | AI/ML | Series B+ | LLM reliability | 2026-04-01 | Add after research complete |
 
+## Customer Verticals Reference
+**File:** `CUSTOMER_VERTICALS.md` (created 2026-04-02)
+All 494 Braintrust customers categorized by vertical: Healthcare, Fintech, Enterprise, Dev Tools, AI/ML Native, E-commerce, Media/Entertainment, EdTech, Legal/Compliance, HR/Recruiting, Cybersecurity, Data/Analytics, Marketing/AdTech, Real Estate, Travel/Hospitality. Includes Tier 1 logo list and case study cheat sheet at the bottom. Use for fast name-drops in conversation.
+
 ## Braintrust Deep Research
 **File:** `BRAINTRUST_DEEP_RESEARCH.md` (created 2026-04-01)
 Full Notion knowledge pull covering: Product, ICP, Messaging, Customers, Competitive, Sales Process, Events, Objection Handling, What's Working. Source: 12 Notion pages.
@@ -122,5 +126,5 @@ Slack intelligence pull: wins (SoFi, Eve $500K, Gusto $521K, blitz day 69 meetin
 
 ---
 
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-02
 **Maintained By:** Kensington (SDR, Braintrust)

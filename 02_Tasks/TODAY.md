@@ -67,6 +67,14 @@
 
 ---
 
+## Thursday April 10 Reminders
+- [ ] **Text Sahil Faizal (AMD):** Still hasn't accepted Apr 14 invite. Text to confirm he's still good for 1:30 PT. Dave + Doug confirmed on our side.
+
+## Monday April 6 Reminder (add to next week's tasks)
+- [ ] **AE pre-meeting note to Sandeep Garg (Seismic):** Ask Dave Smith to send him a short note before the Apr 7 4:30pm PT intro call. Something like "looking forward to tomorrow" with a quick context line on what we will cover.
+
+---
+
 ## Carry-Forward from April 1
 Items not completed yesterday. If still not done by EOD, move to BACKLOG or THIS_WEEK with priority note.
 - ByteDance post-call logging

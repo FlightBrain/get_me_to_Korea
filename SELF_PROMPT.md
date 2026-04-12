@@ -200,6 +200,59 @@ These rules are non-negotiable. Check them before every piece of outreach.
 
 **Hook:** "Code AI needs evaluation just like any other AI. Graphite treats their suggestion engine like we treat code: rigorous feedback loops."
 
+### Retool (Copilot Observability)
+**Story:** AI copilot product. 25% accuracy improvement through observability and eval.
+**When to Use:**
+- Prospect builds AI copilot or assistant features
+- They need observability into copilot quality
+- Product/Engineering audience
+
+**Hook:** "Retool improved copilot accuracy 25% once they could see what was breaking. You're probably flying blind on the same issue."
+
+---
+
+### Navan (Voice AI)
+**Story:** Voice AI for travel. 0.9+ F1 score, hundreds of daily calls evaluated.
+**When to Use:**
+- VOICE USE CASES ONLY. Never for non-voice.
+- Prospect handles voice AI, phone bots, or conversational voice systems
+
+**Hook:** "Navan hit 0.9+ F1 score on voice eval across hundreds of daily calls. How are you measuring voice quality?"
+
+---
+
+### Replit (High Volume Observability)
+**Story:** Millions of coding sessions. Pattern detection at massive scale.
+**When to Use:**
+- Prospect has extremely high volume AI usage
+- They need observability across millions of sessions
+- They want pattern detection at scale
+
+**Hook:** "Replit processes millions of AI sessions and catches patterns humans can't. At your scale, manual QA stopped working a long time ago."
+
+---
+
+### Case Study Matching by Industry (Quick Reference)
+
+| Industry/Context | Customer | When to use |
+|---|---|---|
+| SaaS multi-product AI | Zapier | Multi-feature AI, accuracy improvement |
+| Large eng org, speed | Notion | Scaling eval across teams, regression detection |
+| Search/RAG/content AI | Dropbox | Search quality, fast eval cycles |
+| AI copilot, observability | Retool | Observability, copilot-style products |
+| Voice AI only | Navan | VOICE USE CASES ONLY |
+| Dev tools/code AI | Graphite | Code generation quality |
+| EdTech/feedback loops | Coursera | Learning, clinical feedback |
+| High volume/tokens | Fintool | Scale, data products, compliance |
+| Document extraction | Carta | Document AI, compliance |
+
+**Hard rules:**
+- Never use Navan for non-voice use cases
+- Healthcare/regulated: Notion (speed) or Coursera (feedback)
+- Fintech/compliance: Fintool (scale) or Zapier (accuracy)
+- Retail/e-commerce: Zapier (accuracy at scale)
+- Autonomous/ML: Notion (deploy speed)
+
 ---
 
 ## Section 5: Braintrust Key Stats (Ammunition)

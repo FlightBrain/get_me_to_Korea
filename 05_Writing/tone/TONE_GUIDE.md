@@ -51,37 +51,37 @@
 - **Occasionally vulnerable.** "We got this wrong..." builds more trust than "best practices are..."
 
 ### Dos
-- ✓ Use short, punchy language
+- ✓ Write sentences with enough weight and context to feel like real thoughts, not a highlight reel
+- ✓ Combine related ideas into longer, flowing sentences when the meaning benefits
 - ✓ Start with a hook (question, surprising stat, contrary take)
 - ✓ Share specific numbers when possible
 - ✓ Admit uncertainty or mistakes
 - ✓ End with a genuine question or call to reflect
-- ✓ Use line breaks for readability
+- ✓ Use paragraph breaks (not line breaks) for readability
+- ✓ Use contractions to keep writing natural
 - ✓ Tag relevant people sparingly (not everyone you mention)
 - ✓ Respond to early comments within 1 hour
+- ✓ Keep posts concise overall: fewer sentences that each carry more weight
 
 ### Don'ts
 - ✗ Inspiration porn ("If you're reading this, you're a winner!")
 - ✗ Performative vulnerability ("Honestly, I almost gave up...")
-- ✗ Hashtag overload (#grateful #blessed #linkedinlife)
+- ✗ Any hashtags, ever
+- ✗ "It's not X, it's Y" or "It isn't just X, it's Y" constructions
+- ✗ Short, punchy, fragmented sentences that read like a highlight reel
 - ✗ Fishing for comments ("Drop a 🔥 if you agree!")
 - ✗ Corporate speak
 - ✗ Humble bragging ("Excited to announce I've been alive for 30 years!")
 - ✗ Posting without proofreading
 - ✗ Engagement bait unrelated to your actual expertise
+- ✗ Links anywhere except as the final CTA at the bottom
 
 ### Example LinkedIn Post (Good)
-"We shipped 47 AI features last year.
+"We shipped 47 AI features last year, and we caught quality issues on exactly three of them before customers reported them.
 
-Guess how many we caught quality issues on before customers reported them?
+The other 44 had problems that slipped to production, ranging from minor latency spikes to expensive hallucinations that confused our users.
 
-Three.
-
-The other 44 had problems that slipped to production. Some were minor (latency spikes). Some were expensive (hallucinations that confused our users).
-
-This year we're building eval infrastructure so that number isn't 'luck.'
-
-Anyone else dealing with this? How are you catching quality issues before production?"
+This year we're building eval infrastructure so that number comes from a system, not luck. Anyone else dealing with this, and how are you catching quality issues before production?"
 
 ### Example LinkedIn Post (Bad)
 "Excited to announce we're revolutionizing the AI space! 🚀 Our platform is the best in the industry and our customers love us. If you're interested in joining the future of technology, check us out today! #AI #Innovation #StartupLife #Grateful #Blessed"
@@ -92,7 +92,7 @@ Anyone else dealing with this? How are you catching quality issues before produc
 
 ### Core Principles
 - **Hot takes are fine; bad faith isn't.** Controversial ≠ wrong. Be opinionated but fair.
-- **Concise and punchy.** Every word earns its place.
+- **Casual but smart.** Confident, conversational, clear without sounding stiff.
 - **Permissive of casual language.** X is conversational. Email is professional.
 - **Reply and engage.** It's a conversation, not a broadcast.
 
@@ -100,14 +100,17 @@ Anyone else dealing with this? How are you catching quality issues before produc
 - ✓ Lead with the hottest take (not the nuance)
 - ✓ Use threads to expand on nuance
 - ✓ Engage with others' posts (ratio: 1 original, 5 replies)
-- ✓ Use short sentences and line breaks
+- ✓ Use line breaks for pacing and emphasis
 - ✓ Retweet + add value (don't just retweet)
-- ✓ Be playful, use casual language
+- ✓ Be playful, use casual language and contractions
 - ✓ Make strong claims (and back them up in thread)
 - ✓ Post when you have energy to engage
+- ✓ Put links in a separate tweet within the thread, never inline
 
 ### Don'ts
 - ✗ Vague post fishing for engagement
+- ✗ Any hashtags, ever
+- ✗ "It's not X, it's Y" or "It isn't just X, it's Y" constructions
 - ✗ Dunking on people (mockery without intellectual substance)
 - ✗ Very long single tweets (use threads)
 - ✗ Posting politics/religion if not your domain
@@ -119,9 +122,7 @@ Anyone else dealing with this? How are you catching quality issues before produc
 ### Example X Post (Good)
 "everyone talks about 'agentic AI' but very few teams have figured out how to actually measure if it works
 
-the ones who did are shipping features 3x faster
-
-measurement is the lock on the door, not the key you're trying to forge"
+the ones who did are shipping features 3x faster because they built measurement into the workflow from the start, not as an afterthought"
 
 ### Example X Post (Bad)
 "check out our new AI evaluation platform! It's the best in the industry. Click the link to learn more. #AI #innovation"
@@ -211,5 +212,25 @@ Either way, let me know if a conversation makes sense. Otherwise, all good."
 
 ---
 
-**Last Updated:** 2026-04-01
+---
+
+## Kensington's Approved Outbound Email Formula
+
+This is the specific structure for 1-off outbound emails (not sequences):
+
+1. **Their recent AI/GenAI release or signal** (shows homework)
+2. **1-line relevant case study** (matched to their industry/role, see SELF_PROMPT Section 4)
+3. **Link to braintrust.dev/customers** (let the page sell, not the email)
+4. **Discovery question about pain point** (how they're doing evals, biggest challenge, what's broken)
+5. **"Best," + HTML signature** (see USER_PREFERENCES.md)
+
+**Rules:**
+- Every email must be uniquely worded. No two emails should read the same, even within the same account.
+- Subject lines: internal/casual, not salesy. Lowercase. Problem-first.
+- Under 100 words body.
+- No em dashes ever.
+- The disco question is the CTA, not "want to chat?"
+- Always use `contentType: "text/html"` with the HTML signature.
+
+**Last Updated:** 2026-04-02
 **Review Schedule:** Quarterly or after major campaign

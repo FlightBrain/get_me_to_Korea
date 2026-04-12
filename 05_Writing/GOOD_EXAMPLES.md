@@ -6,6 +6,97 @@
 
 ---
 
+## Bryan Cox Ghost Notes (Approved Examples)
+
+*These were submitted to Bryan and sent without pushback or with minor tweaks. Gold standard for ghost note quality.*
+
+---
+
+### Slingshot / Adrian (LinkedIn DM) — March 2026
+
+**Sender:** Bryan Cox
+**Channel:** LinkedIn DM
+**Pattern:** Cold DM with warm bridge
+
+**The Note:**
+```
+Hi Adrian,
+
+Tim mentioned we should connect with you directly. I lead worldwide sales at Braintrust.
+We help AI teams at Microsoft, Netflix, Instacart, Airbnb, Stripe, OpenAI, Perplexity,
+Replit, and many more scale LLM evals and production observability.
+
+Given that Slingshot launched TALOS and Agatha wanted to share how we can help improve
+agent quality and reliability.
+
+Would love 20 minutes to swap notes on how you are doing this today.
+
+Best,
+Bryan
+```
+
+**Why It Worked:**
+- Warm bridge (Tim) opens with relationship context, not cold pitch
+- Strong logo list (10 names, all recognizable to an AI buyer)
+- Specific trigger: TALOS product launch — proves homework
+- Pain is role-specific: "agent quality and reliability"
+- CTA is low-friction: "swap notes" not "schedule demo"
+- Bryan sent without any feedback — just "@Drew Boisen can help" on sender routing
+
+**Replicable Pattern:** warm bridge + self-intro + logos + specific trigger + pain + swap notes CTA
+
+---
+
+### Korn Ferry / Bryan Ackermann (LinkedIn DM, HumanX event) — April 2026
+
+**Sender:** Bryan Cox
+**Channel:** LinkedIn DM
+**Pattern:** Event hook with Ameya briefing offer
+
+**The Note:**
+```
+Hi Bryan,
+
+I'm Bryan and lead the GTM team at Braintrust and have been following Korn Ferry's AI
+strategy and transformation work. Will you or your team be at HumanX?
+
+I'll be hosting Executive Briefings with our Field CTO, Ameya Bhatawdekar.
+
+Topics I thought you might be interested in:
+- Trends we are seeing across the industry
+- Common failure modes with agents and how teams are improving them
+- Aligning product, engineering, and business teams around measurable AI quality
+
+AI teams at OpenAI, Netflix, Lovable, Microsoft, Instacart, Robinhood, Ramp, Stripe,
+Airtable, Notion, and more use Braintrust to ship higher quality AI features faster.
+
+Are you open to meeting us there?
+```
+
+**Why It Worked:**
+- Line 1 personalization: "Korn Ferry's AI strategy and transformation work" (specific, not generic)
+- Event hook creates natural reason for outreach
+- Ameya credibility adds weight (Field CTO = peer-level for a Chief AI Officer)
+- Topic bullets are role-matched (CAO cares about org alignment and agent quality)
+- Logos are strong and broad
+- Bryan launched same day without any edits ("nothing would please me more" / "launched")
+
+**Replicable Pattern:** specific AI initiative + event hook + Ameya briefing + matched topics + logos + "open to meeting?"
+
+---
+
+### HackerOne / Pawan (what NOT to do) — March 2026
+
+**Bryan's feedback:** "you might want to share more about the logos we work with or how we are solving the pain?"
+
+**Lesson:** Even when Bryan is willing to send, he will push back if the note lacks:
+1. Logo social proof
+2. Clear pain tied to the prospect's role
+
+This is the only explicit negative feedback Bryan has given. Treat these two elements as mandatory requirements.
+
+---
+
 ## Best Emails
 
 *Format: Brief one-liner, metric, date sent, context, key extract/approach, why it worked*

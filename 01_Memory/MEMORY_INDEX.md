@@ -21,6 +21,8 @@ Rarely changes. Foundational knowledge about Kensington, communication style, an
 - **GOALS.md** — Long-term targets: quota, skill development, career trajectory, knowledge building
 - **DECISION_LOG.md** — Record of important decisions with reasoning and outcomes
 - **LESSONS_LEARNED.md** — Rules of thumb, what works, what doesn't, surprises discovered
+- **HOOKS_SETUP.md** — Automated guardrails: em-dash guard + drafts-only guard (from Jay's system)
+- **feedback_sweep_rules.md** — Sweep skip list (Amazon = Opp, Sutter Health = drip), sent inbox + DM scan rules, AE notes format pointer
 
 ### 2. WORKING LAYER
 Current context. Lives and dies within a session or work cycle.
@@ -77,3 +79,20 @@ Learned behaviors and workflows. Emerges from episodic data and gets abstracted 
 ## Notes
 
 This system assumes Kensington is building an AI-augmented sales practice at Braintrust. Memory is shared across agents and sessions. Treat all files as source of truth for operational context, not just reference material.
+
+---
+
+## Migration Log
+
+**2026-04-02:** Migrated 11 auto-memory files from `/Users/kensington/.claude/projects/-Users-kensington/memory/` into this system:
+- `feedback_warm_intros.md` -> LESSONS_LEARNED.md (Prospect Research section)
+- `feedback_email_format.md` -> LESSONS_LEARNED.md (Messaging section) + TONE_GUIDE.md (appended formula)
+- `feedback_outreach_rules.md` -> LESSONS_LEARNED.md (Prospecting section, 8 rules)
+- `feedback_dm_recaps.md` -> LESSONS_LEARNED.md (Rules of Thumb #9)
+- `feedback_email_signature.md` -> USER_PREFERENCES.md (Email Signature section)
+- `feedback_excluded_companies.md` -> USER_PREFERENCES.md (IC Exclusion list)
+- `reference_kensington_accounts.md` -> USER_PREFERENCES.md (Master Account List section)
+- `project_walton_accounts.md` -> Already covered in WALTON_ACCOUNTS_APRIL_BLITZ.md (no merge needed)
+- `project_walton_blitz_intel.md` -> Already covered in WALTON_ACCOUNTS_APRIL_BLITZ.md account sections (no merge needed)
+- `project_event_calendar.md` -> ACTIVE_CONTEXT.md (Summer 2026 events + event rules added)
+- `reference_case_study_matching.md` -> SELF_PROMPT.md Section 4 (added Retool, Navan, Replit entries + industry matching table)

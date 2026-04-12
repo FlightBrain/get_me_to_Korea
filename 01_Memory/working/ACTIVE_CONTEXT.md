@@ -2,7 +2,7 @@
 
 **Purpose:** Snapshot of current priorities, open loops, pending decisions, and upcoming dates. Live document—update weekly or as context shifts.
 
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-03
 **Owner:** Kensington
 **How to Use:** Check this before starting any work. Update at end of each session. Move resolved items to SESSION_LOG.md.
 **Related Files:** PROJECTS_INDEX.md, SESSION_LOG.md, GOALS.md
@@ -12,9 +12,9 @@
 ## Current Focus
 
 **Primary - Sales Pipeline in Motion:**
-- **Amazon:** Q&A rescheduled to Fri 4/3 1:30-2pm. Good ICP fit confirmed.
+- **Amazon (Hashique Thajudeen):** Q&A held 4/4, went "amazing." Hashique is Engineering Leader, 21 yrs experience. Wants to learn how BT customers close eval feedback loops + self-healing systems. Internal work is classified. Also attending Seattle dinner 4/22 (3 other Amazon people too). AE notes: https://www.notion.so/337f7858028981a693aad8a47d3d3a0f
 - **Expedia:** Demo scheduled 4/10 at 7:30am. Prospect: Ragavan Ambighananthan (Dir SW Eng). Using Slack chatbots + Glean. Kensington nurturing via LinkedIn.
-- **Pigment:** PRIORITY. CEO speaking at HumanX. Trey has CEO connection. Carta champion (Jayant) loves BT—should connect. Kensington wrote 3 ghost notes, landed meeting. Jay praised as exemplary PG work.
+- **Pigment:** PRIORITY. CEO Eléonore Crespo speaking at HumanX. Jay sent 2 emails (Apr 1 + Apr 3) to Eléonore + EA Michelle Boeve to schedule Ameya meeting. No reply yet. Trey double-tapping on LinkedIn Apr 3. Jayant (Carta champion) intro is next play after meeting locks.
 - **ByteDance:** Intro call TODAY (Apr 1) at 4pm.
 - **Audible:** Kensington posted PG win today—Eng Director (Razib Rahman) via LinkedIn outreach.
 - **Intel:** Director-level engagement, on-prem LLM infrastructure needs. Technical deep dive next week.
@@ -24,7 +24,7 @@
 - **Coinbase:** High-confidence target list, LinkedIn requests sent. Need LangSmith differentiators. Org chart from Brendan.
 - **Commure:** Trying to lock down Q&A or VP meeting. Game plan needed.
 - **Cerebras:** Abhi Sharma target. Two orgs, BT collaborated with them.
-- **Cloudera:** Neelabh Pant (PhD). May need JV touch.
+- **Cloudera:** Meeting held 4/2 with Neelabh Pant. Jay posted deep account brief. Two opps: closed-lost ($75K) + new S0 ($75K, close 9/26). Using Arize Phoenix OSS, unhappy with it. Air-gapped/hybrid deployment relevant. Need debrief notes + next steps.
 - **Sutter Health:** Email follow-up needed next week.
 - **8x8:** VP of Product follow-up (VP hung up previously, mostly low-level IC contacts).
 - **Roadblocks:** Previous opp closed (competing priorities). Shifting to bottom-up IC strategy. Need 15 exec + 20-30 IC contacts.
@@ -44,7 +44,7 @@
 | ByteDance intro call | Self | Today (4pm) | Opportunity activation | First-touch intro, critical for pipeline |
 | Sutter Health email follow-up | Self | This week (by 4/7) | Reactivate warm lead | Jerry Young—PM Workshop, schedule call |
 | Overdue LinkedIn connects (9 contacts) | Self | This week | Pipeline hygiene | 19-37 days overdue; see CONTACTS_INDEX |
-| Sandeep Garg (Seismic) next step | Self | URGENT | 3 weeks, no action | Meeting booked, need to log next step |
+| Sandeep Garg (Seismic) AE pre-note | Self | Apr 6 | Apr 6 (day before meeting) | Meeting confirmed Apr 7 4:30pm PT. AE to send pre-meeting note Apr 6. |
 | LangSmith differentiators for Coinbase | Jay Vermont | By 4/8 | Coinbase positioning | Needed before full outreach sequence |
 | Org chart (Coinbase) | Brendan | By 4/8 | Targeting precision | Already sent from Jay |
 | Roadblocks IC target list (35 contacts) | Walton Stephens | By 4/10 | IC strategy execution | 15 exec + 20-30 IC contacts sourced |
@@ -56,7 +56,7 @@
 
 | Item | Context | Owner | Due | Decision Required |
 |------|---------|-------|-----|-------------------|
-| Pigment multi-touch strategy | CEO at HumanX, Trey connection, Jayant (Carta) loves BT | Kensington | By 4/5 | Confirm Trey intro path + Jayant connection timeline |
+| Pigment meeting confirmation | Jay emailed twice, Trey LI nudge sent. Waiting on Eléonore/Michelle reply. | Jay/Trey | By 4/5 | If no reply by 4/4, escalate with another channel |
 | Commure game plan | Been nurturing, stuck on Q&A/VP access | Kensington | By 4/5 | Escalation path? Bottom-up pivot? |
 | 8x8 approach | VP hung up, mostly IC contacts | Kensington | By 4/5 | Full pivot to bottom-up? Abandon? |
 | Roadblocks IC strategy | Previous exec opp closed; shifting to IC | Walton Stephens | By 4/10 | List sourcing + sequencing plan |
@@ -83,7 +83,7 @@
 1. **ByteDance intro call** (TODAY 4pm) — First-touch activation
 2. **HumanX Blitz** (TODAY Apr 1) — Outreach blitz, track meeting/registration points
 3. **Pigment next steps** — Confirm Trey CEO intro + Jayant (Carta) connection path
-4. **Sandeep Garg (Seismic)** — URGENT: Meeting booked 3 weeks ago, log next step
+4. **Sandeep Garg (Seismic):** CONFIRMED. Meeting Apr 7, 4:30 PM PT. Reminder: AE sends pre-meeting note Apr 6 (Monday).
 5. **Sutter Health email** — Jerry Young PM Workshop follow-up, lock down call
 
 **SHOULD DO (Apr 1-5):**
@@ -111,7 +111,23 @@
 | **4/10 (Thu)** | Expedia demo | Virtual | Booked | Kensington | 7:30am, Ragavan Ambighananthan (Dir SW Eng) |
 | **4/8-10** | AI Engineer Europe | London | TBD | TBD | Virtual option? |
 | **4/16** | Voice Builders Night | SF | TBD | Kensington | Attendee identification needed |
-| **4/22** | AI Leaders Dinner Seattle | Canlis, Seattle | TBD | Kensington | Walton involvement? |
+| **4/22** | AI Leaders Dinner Seattle | Canlis, Seattle | TBD | Kensington | Walton involvement? 22 registered, 4 spots left as of 4/2. Leaders from Amazon, Oracle, Ford, AWS, Optimizely. Penthouse, cocktails 7pm, dinner 7:30. |
+
+### Summer 2026 Events (Nomination Required via Phil Bates)
+
+| Date | Event | Notes |
+|------|-------|-------|
+| May 1-3 | F1 Miami | VP+ tease as secondary hook |
+| Jun 25 | FIFA World Cup (Paraguay vs Australia) | VP+ nomination |
+| Jul 1 | FIFA World Cup | VP+ nomination |
+| Jul 7-14 | Wimbledon | VP+ nomination |
+
+**Event Rules:**
+- Event invites for economic buyers and champions ONLY (immutable rule)
+- Summer events require nomination through Phil Bates
+- Seattle dinner: VPs get dinner invite, Directors get Builders Night
+- Don't invite non-local contacts to local events (check geography first)
+- Soft CTA: "happy to flag your name" or "want me to hold a spot?"
 
 ---
 

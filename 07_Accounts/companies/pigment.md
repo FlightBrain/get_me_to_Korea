@@ -37,14 +37,18 @@ Native AI/ML integration within financial modeling and forecasting workflows. En
 
 | Name | Title | LinkedIn | Notes | Relationship |
 |------|-------|----------|-------|--------------|
-| [CEO] | CEO | [TBD] | Speaking at HumanX | Warm (via event) |
-| Jayant | Head of Product/Champion | [TBD] | Carta champion, loves BT | Warm (secondary) |
+| Eléonore Crespo | CEO | linkedin.com/in/eleonore-crespo | Speaking at HumanX, responded to Trey on LI, asked for CTO meeting | Warm (via Trey) |
+| Michelle Boeve | EA/Scheduling Coordinator | | Jay emailed her to coordinate Ameya meeting | Contacted |
+| Jayant | Champion (Carta) | [TBD] | Carta champion, loves BT. Future intro to Pigment. | Warm (secondary) |
 | | | | | |
 
 ## Recent Signals
+- **2026-04-03:** Jay sent follow-up email to Eléonore + Michelle Boeve (EA) to lock in Ameya meeting at HumanX. No reply yet. Trey double-tapping on LinkedIn.
+- **2026-04-01:** Jay sent initial email (Braintrust x Pigment: Modeler Agent Meeting at HumanX) to Eléonore + Michelle, cc Ameya + Trey + Kensington.
 - **2026-04-01:** CEO speaking at HumanX conference
 - **2026-03-28:** Landing via 3 ghost notes + multi-angle approach confirmed effective
 - **2026-03-15:** Carta connection identified (Jayant as advocate)
+- **2026-03-04:** Kensington cold emailed Eléonore + Romain Niccoli (subject: "genai evals from braintrust?")
 
 ## Messaging Hypotheses
 1. **Carta Playbook Angle:** "We helped Carta solve enterprise data/AI governance with [product]. You're facing the same eval challenge with agent-based workflows."
@@ -67,19 +71,32 @@ Native AI/ML integration within financial modeling and forecasting workflows. En
 
 ## Conversation History
 
-**2026-03-28 - Outreach**
+**2026-03-04 - Cold Outreach**
+Method: Email to Eléonore Crespo + Romain Niccoli
+Subject: "genai evals from braintrust?"
+Response: No direct reply
+
+**2026-03-28 - Ghost Notes**
 Method: 3 ghost notes + multi-angle approach
 Response: CEO identified speaking at HumanX
 Tone: Receptive (via event signal)
 
-**2026-04-01 - Next Steps**
-Pre-meeting: Prepare HumanX CEO meeting materials
-Secondary: Coordinate Jayant (Carta champ) connection to Pigment
+**2026-03 - Trey LinkedIn Connection**
+Trey Bertram (BT recruiter, ex-sales, ex-Carta office of CFO) connected with Eléonore on LinkedIn. She responded warmly, asked to set up meeting with BT CTO re: Pigment's Modeler Agent. Trey directed her to jay@braintrust.dev.
+
+**2026-04-01 - Jay Email #1**
+Jay emailed Eléonore + Michelle Boeve (EA) proposing Ameya Bhatawdekar (field CTO) meeting at HumanX. CC: Ameya, Trey, Kensington.
+
+**2026-04-03 - Jay Email #2 (Follow-up)**
+Jay followed up, asked Michelle Boeve to help coordinate scheduling. No reply yet.
+
+**2026-04-03 - Trey LinkedIn Double-Tap**
+Kensington drafted LinkedIn DM for Trey to nudge Eléonore to check Jay's email before HumanX.
 
 ## Next Actions
-- [ ] Confirm HumanX CEO meeting date/time (target: 2026-04-07)
+- [ ] Get reply from Eléonore/Michelle Boeve to lock in Ameya meeting at HumanX (Jay + Trey double-tapping)
 - [ ] Draft HumanX meeting deck with Carta case study as social proof
-- [ ] Get Jayant intro from Carta to Pigment PM/Product leadership
+- [ ] Get Jayant intro from Carta to Pigment PM/Product leadership (Jay confirmed this is the play)
 - [ ] Research Pigment org chart for additional finance data/AI decision makers
 - [ ] Prepare for meeting by 2026-04-06
 
@@ -96,6 +113,6 @@ Secondary: Coordinate Jayant (Carta champ) connection to Pigment
 
 ---
 
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-03
 **Owner:** Kensington
 **AE:** Jay Vermont

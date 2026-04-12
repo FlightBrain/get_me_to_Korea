@@ -283,3 +283,40 @@ These are absolute. Never violate.
 ## Notes
 
 This profile will evolve. Update quarterly (Q1, Q2, Q3, Q4) or whenever new strong preferences emerge. Keep in sync with WRITING_VOICE.md and SELF_PROMPT.md.
+
+---
+
+## Email Signature (HTML)
+
+Every Gmail draft must include this exact signature. Uses hosted PNG (Gmail strips SVGs). Always use `contentType: "text/html"`. Append after "Best," closing on every `gmail_create_draft` call.
+
+```html
+<div style="font-family: sans-serif; font-size: 12px; color: #333;">
+  <img src="https://www.braintrust.dev/icon180.png?v=2" alt="Braintrust" width="18" height="18" style="display: block; margin-bottom: 8px;">
+  <div style="margin-bottom: 0;">Kensington Belza</div>
+  <div>GenAI Evals &amp; Observability</div>
+  <div style="margin-top: 4px;">e: <a href="mailto:kensington.belza@braintrustdata.com" style="color: #1a0dab; text-decoration: underline;">kensington.belza@braintrustdata.com</a></div>
+  <div><a href="https://www.braintrust.dev/home" style="color: #1a0dab; text-decoration: underline;">Website</a> | <a href="https://www.linkedin.com/in/kensington-belza/" style="color: #1a0dab; text-decoration: underline;">LinkedIn</a></div>
+</div>
+```
+
+---
+
+## Companies Excluded from IC Outreach
+
+Do NOT include ICs from these companies in outreach lists, even though they appear in Kensington_accounts.numbers. Likely existing customers, partners, or accounts that shouldn't receive cold IC outreach. Always filter these out after pulling ICs from Apollo.
+
+Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X
+
+---
+
+## Master Account List
+
+The ONLY source of truth for Kensington's named accounts is:
+`/Users/kensington/Desktop/get_me_to_Korea/Kensington_accounts.numbers`
+
+- 529 accounts, 2 columns: Account Name + LinkedIn Company URL
+- When Kensington says "my accounts" or "my companies," ALWAYS read from this file using `numbers_parser`
+- NEVER use any CSV from ~/Downloads (e.g., "Kensington's Accounts - Companies.csv" or "humanx_attendees_full.csv"). Those are NOT the account list.
+- Before searching Apollo or doing any account-level work, extract company names from this file and cross-reference.
+- If the file moves or is renamed, ask Kensington. Do not guess.

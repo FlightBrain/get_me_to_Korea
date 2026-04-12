@@ -29,6 +29,8 @@ This repo is Kensington's AI-native operating system for sales execution.
 7. Check Slack #c-[client] channels before drafting outreach.
 8. Phone is primary channel. Email is air cover for warm dials.
 9. Event perks (Warriors games, dinners) = economic buyers and champions ONLY.
+10. ONLY use `Kensington_accounts.numbers` in repo root for account lists. Never CSVs from Downloads.
+11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X.
 
 ## Communication Style
 - Lead with action/recommendation, not hedging
@@ -53,13 +55,26 @@ This repo is Kensington's AI-native operating system for sales execution.
 | Token economics/cost | Fintool | 1.5B tokens/day visibility | reference only |
 | Document extraction | Carta | Schema alignment (champion: Jayant) | reference only |
 
+## Notion Page Creation Rules
+**NEVER create pages under shared team pages.** SDR Hub, GTM, Marketing, and all team workspace pages are READ-ONLY for Claude. A PreToolUse hook enforces this.
+- All Claude-created pages go under: **KB War Room** (33df7858-0289-81ea-a060-d6aff891473d)
+- Or as workspace-level private pages (no parent)
+- Hook: `.claude/hooks/notion_parent_guard.sh` blocks any other parent
+
 ## Key Notion Pages (Live Pull When Needed)
+- KB War Room (Claude working docs): 33df7858-0289-81ea-a060-d6aff891473d
+- SDR Outreach Playbook: 33df7858-0289-814c-b901-fb146435f29e
 - Company Messaging: 28cf7858-0289-802f-ba30-e9dba867fd2a
 - Customer Stories Outreach Guide: 32cf7858-0289-8107-b4b1-c86f00c30426
-- SDR Hub: 2bef7858-0289-80f7-a75c-c51d1d3598b1
+- SDR Hub (READ-ONLY, shared): 2bef7858-0289-80f7-a75c-c51d1d3598b1
 - AE & SDR Engagement Model: 2fdf7858-0289-8077-93f0-d36e1f92d36c
 - Understanding Braintrust: 2eaf7858-0289-8093-b785-db2ebcfddbcb
 - Braintrust Trace 2026 (event): 27af7858-0289-801f-aa27-fdd87687a37c
+- Dave -- AE Meeting Notes: 337f7858-0289-817d-bf30-dce356e9f27b
+- Walton -- AE Meeting Notes: 337f7858-0289-81e7-aa17-d7d36deacd7f
+- Jay -- AE Meeting Notes: 337f7858-0289-8181-b389-fc2e57284b5a
+- Jay + KB 1:1 (live doc): c33fa67a-c5c4-46e8-98a8-2c7a750176bd (https://www.notion.so/braintrustdata/JV-KB-1-1-c33fa67ac5c446e898a82c7a750176bd)
+- Dave + KB 1:1 (live doc): 36cf7858-0289-82fb-9d28-8137b5db8688 (https://www.notion.so/braintrustdata/DS-KB-1-1-36cf7858028982fb9d288137b5db8688)
 
 ## Key Slack Channels
 - #pg (C08F05QEFR6) - Pipeline generation wins
@@ -68,7 +83,37 @@ This repo is Kensington's AI-native operating system for sales execution.
 - #sales-enablement (C08FSLNT876) - Enablement content
 - #gtm (C07EAV5QK5F) - GTM strategy
 - #pg-blitz-redemption (C0AKLGAACDB) - Blitz competitions
+- #dave-smith-territory (C09FNQAEW4D) - Dave's accounts
+- #walton-stephens-territory (C09N2NRNZJ6) - Walton's accounts
+- #jay-vermont-territory (C0A8VC1AH97) - Jay's accounts
 - Client channels follow pattern: #braintrust-[company] or #c-[company]
+
+## Email Signature (Use on EVERY Gmail Draft)
+All Gmail drafts MUST use `contentType: "text/html"` and append this signature:
+```html
+<div style="font-family: sans-serif; font-size: 12px; color: #333;">
+  <img src="https://www.braintrust.dev/icon180.png?v=2" alt="Braintrust" width="18" height="18" style="display: block; margin-bottom: 8px;">
+  <div style="margin-bottom: 0;">Kensington Belza</div>
+  <div>GenAI Evals &amp; Observability</div>
+  <div style="margin-top: 4px;">e: <a href="mailto:kensington.belza@braintrustdata.com" style="color: #1a0dab; text-decoration: underline;">kensington.belza@braintrustdata.com</a></div>
+  <div><a href="https://www.braintrust.dev/home" style="color: #1a0dab; text-decoration: underline;">Website</a> | <a href="https://www.linkedin.com/in/kensington-belza/" style="color: #1a0dab; text-decoration: underline;">LinkedIn</a></div>
+</div>
+```
+Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly.
+
+## Memory System
+- All memory lives in `01_Memory/` with 4 layers: stable (long-term facts), working (current context), episodic (session logs), patterns (recurring themes).
+- On session start: read `01_Memory/working/ACTIVE_CONTEXT.md` for current priorities.
+- For current tasks: check `02_Tasks/TODAY.md`.
+- When user says "remember this": file it in the appropriate memory layer and update `01_Memory/MEMORY_INDEX.md`.
+- NEVER save memory to `.claude/projects/`. Everything goes in THIS workspace.
+
+## Daily DM Recap
+A scheduled agent runs Mon-Fri at 5:30 PM PT:
+- Scans Slack DMs + territory channels for action items assigned to Kensington
+- Updates the three AE Meeting Notes Notion pages with new to-dos
+- Trigger ID: `trig_01Acmp4jmQVP1aP9uV1udqZV`
+- Manage at: https://claude.ai/code/scheduled/trig_01Acmp4jmQVP1aP9uV1udqZV
 
 ## MCP Integrations Available
 Slack, Notion, Gmail, Google Calendar, Apollo, Granola. Use these for:
