@@ -114,6 +114,13 @@ get_me_to_Korea/
 │   ├── monthly_metrics.md             # Pipeline, conversion rates, activity metrics
 │   └── performance_log.md             # Raw data: outreach count, calls, conversions by date
 │
+├── 10_Wiki/
+│   ├── WIKI_INDEX.md                  # Master index of all wiki entities
+│   ├── accounts/                      # Synthesized account pages (compound over time)
+│   ├── contacts/                      # Per-person relationship pages
+│   ├── concepts/                      # Objections, use cases, talk tracks
+│   └── competitors/                   # Battle cards: LangSmith, Arize, W&B
+│
 ├── 99_archive/
 │   ├── completed_deals/
 │   │   └── [year]/

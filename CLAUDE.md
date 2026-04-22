@@ -17,6 +17,7 @@ This repo is Kensington's AI-native operating system for sales execution.
 - `07_Accounts/` - Company files, people files, opportunity tracking
 - `08_Ops/` - Conventions, file naming, memory policy
 - `09_Templates/` - Reusable templates
+- `10_Wiki/` - Compounding wiki layer (accounts, contacts, concepts, competitors)
 - `99_Archive/` - Closed/historical
 
 ## Immutable Rules (Non-Negotiable)
@@ -30,7 +31,7 @@ This repo is Kensington's AI-native operating system for sales execution.
 8. Phone is primary channel. Email is air cover for warm dials.
 9. Event perks (Warriors games, dinners) = economic buyers and champions ONLY.
 10. ONLY use `Kensington_accounts.numbers` in repo root for account lists. Never CSVs from Downloads.
-11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X.
+11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe (existing customer, AE-owned).
 
 ## Communication Style
 - Lead with action/recommendation, not hedging
@@ -108,12 +109,72 @@ Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly.
 - When user says "remember this": file it in the appropriate memory layer and update `01_Memory/MEMORY_INDEX.md`.
 - NEVER save memory to `.claude/projects/`. Everything goes in THIS workspace.
 
+## Wiki System
+`10_Wiki/` is the compounding knowledge layer. Every new signal (call transcript, research file, event intel, warm lead update) should update entity pages rather than create isolated files. Raw sources stay in `07_Accounts/` and `04_Research/`. The wiki synthesizes across them and compounds over time.
+
+**Structure:**
+- `10_Wiki/accounts/` - one synthesized page per company (richer than 07_Accounts/companies/, updated over time)
+- `10_Wiki/contacts/` - one page per person (relationship log, what resonates, best opener)
+- `10_Wiki/concepts/` - objections, use cases, talk tracks with real examples from calls
+- `10_Wiki/competitors/` - LangSmith, Arize, W&B battle cards with live account intel
+- `10_Wiki/WIKI_INDEX.md` - master index of all entities
+
+**Ingest workflow** (trigger: `/ingest [source]`):
+1. Read the source (Granola transcript, research file, warm lead update, event CSV, Slack thread)
+2. Identify which entities are mentioned (accounts, contacts, concepts, competitors)
+3. Update every relevant wiki page with new signals, conversation history, or intel
+4. Add new rows to `10_Wiki/WIKI_INDEX.md` if new entities are created
+5. Report a summary of what changed and what pages were updated
+
+**Lint workflow** (trigger: `/lint wiki`):
+1. Scan all wiki pages for contradictions between entries
+2. Flag pages with no update in 30+ days (stale claim risk)
+3. Find pages with no cross-references (orphans)
+4. Report by severity: critical (contradiction), warn (stale), info (orphan)
+
+**Auto-updates:** After `/calls`, `/prospect`, `/prep`, and `/recap` complete, update the relevant wiki account and contact pages as the final step. The wiki is always up to date after any research or call work.
+
+## Wiki Auto-Ingest (Nightly)
+A scheduled agent runs every night at 11pm PT:
+- Sweeps Granola transcripts, Gong call emails, sent/received Gmail, Google Calendar bookings, and territory Slack channels
+- Updates 10_Wiki/ account, contact, concept, and competitor pages automatically
+- Commits and pushes changes to the repo (run `git pull` in the morning to sync)
+- Trigger ID: `trig_01XX4LPxwGTyyXDfHPunJaiN`
+- Manage at: https://claude.ai/code/routines/trig_01XX4LPxwGTyyXDfHPunJaiN
+- Note: cron runs at 6am UTC (= 11pm PDT). Shifts to 7pm UTC in winter (PST).
+
 ## Daily DM Recap
 A scheduled agent runs Mon-Fri at 5:30 PM PT:
 - Scans Slack DMs + territory channels for action items assigned to Kensington
 - Updates the three AE Meeting Notes Notion pages with new to-dos
 - Trigger ID: `trig_01Acmp4jmQVP1aP9uV1udqZV`
 - Manage at: https://claude.ai/code/scheduled/trig_01Acmp4jmQVP1aP9uV1udqZV
+
+## Context Management
+- Use `/clear` between unrelated tasks. Don't let unrelated context pile up.
+- For heavy research (account deep dives, multi-channel Slack scans), prefer subagents or `context: fork` skills so the main window stays clean.
+- When compacting, always preserve: AE relationships (Jay/Walton/Dave), active account names, immutable rules (no em dashes, lowercase subjects, info drops), and any in-progress draft content.
+- If context is above 70%, run `/compact` proactively before starting new work.
+
+## Request Routing
+When Kensington describes a task without specifying a skill, route to the best match:
+- New prospect or company research: `/prospect`
+- Draft outreach (contact + context already known): `/draft`
+- Deal gone quiet, need to re-engage: `/unstick`
+- Rank or prioritize accounts for dials: `/score`
+- AE 1:1 prep: `/prep`
+- Morning kickoff, what's on today: `/briefing`
+- Competitor intel, market moves: `/watchlist`
+- Weekly forecast for Nathan: `/forecast`
+- Add a task: `/todo`
+- Execute Claude-tagged tasks from Notion: `/do-mine`
+- End-of-day recap: `/recap`
+- Batch task intake: `/sweep`, then `/dispatch`
+- AE handoff briefing: `/handoff`
+- Format availability times: `/aetime`
+- Process Gong calls and Nooks reminders: `/calls`
+
+If the request spans multiple skills, chain them. Example: "research and draft for Acme" runs `/prospect`. "Score Jay's accounts then draft the top 3" runs `/score` then `/draft` for the winners.
 
 ## MCP Integrations Available
 Slack, Notion, Gmail, Google Calendar, Apollo, Granola. Use these for:
