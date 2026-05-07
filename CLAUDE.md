@@ -31,7 +31,10 @@ This repo is Kensington's AI-native operating system for sales execution.
 8. Phone is primary channel. Email is air cover for warm dials.
 9. Event perks (Warriors games, dinners) = economic buyers and champions ONLY.
 10. ONLY use `Kensington_accounts.numbers` in repo root for account lists. Never CSVs from Downloads.
-11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe (existing customer, AE-owned).
+11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, LiveRamp, Mercado Libre, Visa, NEC X, NEC Corporation, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe, ZoomInfo, Dialpad, Rivian, Activision, Adobe (existing customer, AE-owned), Commure, Pigment, Salesforce, Cloudflare, LinkedIn, Netflix, Supabase, Replit, McAfee, Mercor, Asana, Bill.com, Flapping Airplanes, AppsFlyer, Robinhood, SoFi, PayPal, Redfin, GitHub, DBT Labs, InvestCloud.
+12. IC outreach = email and LinkedIn only. No cold calls, no meeting CTAs. Goal is a reply, a resource share, or a referral up to their VP. VP+ outreach = Nooks dial first, email is air cover. Exception: IC who publicly posted about evals, agents, or observability in the last 30 days gets one warm dial attempt.
+13. Never send the same case study to the same contact twice within a sequence. If Notion was Touch 1, Touch 3 must be Zapier, Retool, Graphite, or another customer. Notion is not a default. Rotate by signal match, not convenience.
+14. When a prospect raises DIY or open source eval solutions as an alternative, lead with Brainstore: 80x faster than rolling your own, runs in your infrastructure, no maintenance burden as models update. This is the answer to the build vs buy objection.
 
 ## Communication Style
 - Lead with action/recommendation, not hedging
@@ -45,16 +48,21 @@ This repo is Kensington's AI-native operating system for sales execution.
 ## Case Study Quick Reference
 | Signal | Customer | Stat | Link |
 |--------|----------|------|------|
-| Scaling AI across large eng org | Notion | <24hr model deploy, 70 engineers | braintrust.dev/customers/notion |
+| Scaling AI across large eng org | Notion | <24hr model deploy, 70 engineers, 80% of AI work from BT traces | braintrust.dev/customers/notion |
 | AI accuracy too low | Zapier | 50% to 90%+ accuracy in 2-3 months | braintrust.dev/customers/zapier |
-| Search/RAG/conversational AI | Dropbox | 10K+ tests, <10min eval per PR | braintrust.dev/customers/dropbox |
-| AI copilot, need observability | Retool | 25% accuracy improvement, log analysis in minutes | braintrust.dev/customers/retool |
-| Voice AI | Navan | 0.9+ F1 score, hundreds of daily calls | braintrust.dev/customers/navan |
-| Dev tools/code AI | Graphite | 5% reduction in negative rules, 90%+ acceptance | braintrust.dev/customers/graphite |
-| EdTech/AI grading | Coursera | 45x more feedback, 90% satisfaction | braintrust.dev/customers/coursera |
-| High volume observability | Replit | Millions of sessions, pattern detection | braintrust.dev/customers/replit |
-| Token economics/cost | Fintool | 1.5B tokens/day visibility | reference only |
+| Search/RAG/conversational AI | Dropbox | 10K+ tests, 150 pre-merge smoke tests, real-time regression detection | braintrust.dev/customers/dropbox |
+| AI copilot, need observability | Retool | 23% accuracy improvement, classifier 72% to 95%, weeks to minutes for log analysis | braintrust.dev/customers/retool |
+| Voice AI (ONLY) | Navan | 0.9+ F1 score, 0.56 to 0.89 improvement, hundreds of daily calls | braintrust.dev/customers/navan |
+| Dev tools/code AI | Graphite | 90%+ acceptance rate, 5% reduction in negative rules | braintrust.dev/customers/graphite |
+| EdTech/AI grading | Coursera | 45x more feedback, 90% satisfaction, 16.7% course completion increase, 1-min turnaround | braintrust.dev/customers/coursera |
+| High volume observability | Replit | Millions of sessions, pattern detection, real-time traces | braintrust.dev/customers/replit |
+| Token economics/cost/financial AI | Fintool | 1.5B tokens/day, 70M document chunks | reference only |
+| Agentic/browser agents | Browserbase | Combined browser + model observability | braintrust.dev/customers/browserbase |
+| PM/SME-driven iteration, faster deploys | Portola | 4x faster iteration, 0 engineering handoffs | braintrust.dev/customers/portola |
 | Document extraction | Carta | Schema alignment (champion: Jayant) | reference only |
+
+## Document Creation Rule
+All documents, handover briefs, research summaries, and workspace outputs must be created as **Notion pages** (under KB War Room or as private workspace pages), NOT as local markdown files. After creating, send the link directly to #kensington-belza (C0AQCKR9M2S).
 
 ## Notion Page Creation Rules
 **NEVER create pages under shared team pages.** SDR Hub, GTM, Marketing, and all team workspace pages are READ-ONLY for Claude. A PreToolUse hook enforces this.
@@ -88,6 +96,8 @@ This repo is Kensington's AI-native operating system for sales execution.
 - #walton-stephens-territory (C09N2NRNZJ6) - Walton's accounts
 - #jay-vermont-territory (C0A8VC1AH97) - Jay's accounts
 - Client channels follow pattern: #braintrust-[company] or #c-[company]
+- #kensington-belza (C0AQCKR9M2S) - KB's private working channel. **Claude may SEND directly here (no draft required).** Use for delivering links, summaries, and outputs.
+- #kensington-belza-helpdesk (C0ASG5AUW72) - public helpdesk channel
 
 ## Email Signature (Use on EVERY Gmail Draft)
 All Gmail drafts MUST use `contentType: "text/html"` and append this signature:
@@ -108,6 +118,15 @@ Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly.
 - For current tasks: check `02_Tasks/TODAY.md`.
 - When user says "remember this": file it in the appropriate memory layer and update `01_Memory/MEMORY_INDEX.md`.
 - NEVER save memory to `.claude/projects/`. Everything goes in THIS workspace.
+
+## Wiki-First Lookup Protocol
+Before any `/draft`, `/prospect`, `/prep`, `/score`, `/handoff`, or `/unstick`:
+1. Check `10_Wiki/accounts/[company].md` for existing intel, conversation history, last touch, current signals
+2. Check `10_Wiki/contacts/[person].md` for relationship log, what resonated, best opener
+3. Pull from wiki first. Don't rebuild intel that already exists.
+4. After completing work, update relevant wiki pages with any new signals found.
+
+If no wiki page exists for the account or contact, proceed with research as normal and create the page as a final step.
 
 ## Wiki System
 `10_Wiki/` is the compounding knowledge layer. Every new signal (call transcript, research file, event intel, warm lead update) should update entity pages rather than create isolated files. Raw sources stay in `07_Accounts/` and `04_Research/`. The wiki synthesizes across them and compounds over time.
@@ -134,6 +153,23 @@ Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly.
 
 **Auto-updates:** After `/calls`, `/prospect`, `/prep`, and `/recap` complete, update the relevant wiki account and contact pages as the final step. The wiki is always up to date after any research or call work.
 
+## Task Creation Rules (enforced by sweep agent and all auto-ingest)
+
+**Full ruleset:** See `02_Tasks/TASK_CAPTURE_RULES.md`. Read it before creating any task.
+
+**Core rules (memorize these):**
+- **Dedup against Done tasks:** Before creating any task, query the Task Tracker for tasks with the same person + company in Status = Done (14-day lookback). If found: SKIP unless clearly a distinct new action.
+- **Dedup against open tasks:** Also check Status != Done for the same person + company. If exists: SKIP.
+- **LinkedIn notifications = never a task.** "Accepted your connection request", "sent you a message on LinkedIn", "viewed your profile" - all filtered out. No exceptions.
+- **Already done in thread = skip:** If KB replied "Done", "Sent", "Handled" etc. in the SAME thread as the request, the task is done. Do not create.
+- **Blocked company outreach = skip.** See immutable rules list. Never queue outreach for blocked companies.
+- **Ambiguous request = ask first.** If unclear what to do, post a question to #kensington-belza before creating a vague task.
+- **Gmail check for outreach tasks:** Before creating "Email/Call [person] at [company]", search Gmail for that person's name. If email sent in last 7 days, add "(check: email sent recently)" note to task body.
+
+**PREP tasks**: Only create a "Prep for [meeting]" task when the prospect has accepted the calendar invite (attendee status = "accepted"). No response or tentative = route to TO BOOK flow, not prep queue.
+
+**TO BOOK tasks**: Any person in Meeting Tracker with status REBOOK, NEED TO CONFIRM CAL, or TO BOOK, and any person in Warm Leads with Source = "TO BOOK", gets exactly one linked to-do task. The task title is the specific next action (e.g. "Rebook: Aditya at PowerSchool, Apr 30") and the task description includes a direct Notion link to their Meeting Tracker or Warm Leads row. No orphan tasks. No duplicates.
+
 ## Wiki Auto-Ingest (Nightly)
 A scheduled agent runs every night at 11pm PT:
 - Sweeps Granola transcripts, Gong call emails, sent/received Gmail, Google Calendar bookings, and territory Slack channels
@@ -149,6 +185,17 @@ A scheduled agent runs Mon-Fri at 5:30 PM PT:
 - Updates the three AE Meeting Notes Notion pages with new to-dos
 - Trigger ID: `trig_01Acmp4jmQVP1aP9uV1udqZV`
 - Manage at: https://claude.ai/code/scheduled/trig_01Acmp4jmQVP1aP9uV1udqZV
+
+## Daily Calendar Planner (Noon PT)
+A scheduled agent runs Mon-Fri at noon PT:
+- Reads tomorrow's Notion task queue, warm leads, meeting rebooks, and new marketing events
+- Resolves contact timezones (EU at 7am, East at 9am, West at 11am PT)
+- Creates private Google Calendar blocks for call time, email air cover, task blocks, and event PG blocks
+- Watches Notion events page + Slack #events for new dinners/webinars and auto-creates PG blocks
+- Posts a summary to #kensington-belza when done
+- Trigger ID: `trig_0151uxHEqdDYcYVrLiixBUjm`
+- Manage at: https://claude.ai/code/routines/trig_0151uxHEqdDYcYVrLiixBUjm
+- Note: cron runs at 7pm UTC (= noon PDT). Shifts to 8pm UTC in winter (PST).
 
 ## Context Management
 - Use `/clear` between unrelated tasks. Don't let unrelated context pile up.
