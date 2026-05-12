@@ -88,6 +88,9 @@ Tasks like "Identify [Person]'s full name and title", "Find LinkedIn URL for X",
 **Warm Leads DB (do NOT create tasks from it, desynced 2026-05-12):**
 The Warm Leads Notion DB (`collection://73dbb977-0916-4d73-ad5a-b309ff8b39de`) is no longer a task source. Do not pull from it. Do not create "TO BOOK" tasks from it. KB will manually create tasks via /todo when he wants to act on a warm lead. This applies to cadence-sync, sweep, day-planner, and any other agent.
 
+**Bounced emails and wrong contacts (NEW, 2026-05-12, do NOT create tasks):**
+If a Gmail scan finds a Mail Delivery Subsystem bounce, an Apollo bad-email flag, or KB's own note that a contact is the wrong person, DO NOT create a Task Tracker entry. Instead, append a row to the Notion page "Bounced Emails + Wrong Contacts to Fix" (id `35ef7858-0289-81a4-b4c2-fb5bd6fc5125`, https://www.notion.so/35ef7858028981a4b4c2fb5bd6fc5125) under the Open table. Format: `| YYYY-MM-DD | Company | Contact | Issue | Source |`. NEVER use Apollo to enrich or look up correct emails in the sweep. KB will fix these in batch on his own schedule.
+
 **Blocked companies (skip outreach tasks entirely):**
 Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X, NEC Corporation, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe, ZoomInfo, Dialpad, Rivian, Activision, Adobe, Commure, Pigment, Salesforce, Cloudflare, LinkedIn, Netflix, Supabase, Replit, McAfee, Mercor, Asana, Bill.com, Flapping Airplanes, AppsFlyer, Robinhood, SoFi, PayPal, Redfin, GitHub, DBT Labs, InvestCloud
 
