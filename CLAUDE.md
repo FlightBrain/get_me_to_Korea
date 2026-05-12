@@ -30,8 +30,12 @@ This repo is Kensington's AI-native operating system for sales execution.
 7. Check Slack #c-[client] channels before drafting outreach.
 8. Phone is primary channel. Email is air cover for warm dials.
 9. Event perks (Warriors games, dinners) = economic buyers and champions ONLY.
-10. ONLY use `Kensington_accounts.numbers` in repo root for account lists. Never CSVs from Downloads.
-11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, LiveRamp, Mercado Libre, Visa, NEC X, NEC Corporation, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe, ZoomInfo, Dialpad, Rivian, Activision, Adobe (existing customer, AE-owned), Commure, Pigment, Salesforce, Cloudflare, LinkedIn, Netflix, Supabase, Replit, McAfee, Mercor, Asana, Bill.com, Flapping Airplanes, AppsFlyer, Robinhood, SoFi, PayPal, Redfin, GitHub, DBT Labs, InvestCloud.
+10. Notion "Kensington Territory Intelligence" DB is the SOURCE OF TRUTH for accounts. ID: 0f62663a46e14fd3ad2981cee5fdf872 (data source: 8979d944-1889-4ef4-b63c-a2e1a8a4a177). Use this DB for all account lookups, ICP/AI signal pulls, AE ownership, and prospecting filters. Kensington_accounts.csv in repo root is a stale snapshot. Never use CSVs from Downloads.
+11. Never include these companies in IC outreach: Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, LiveRamp, Mercado Libre, Visa, NEC X, NEC Corporation, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe, ZoomInfo, Dialpad, Rivian, Activision, Adobe (existing customer, AE-owned), Commure, Athelas (Commure entity), Memora Health (Commure-owned), Pigment, Salesforce, Cloudflare, LinkedIn, Netflix, Supabase, Replit, McAfee, Mercor, Asana, Bill.com, Flapping Airplanes, AppsFlyer, Robinhood, SoFi, PayPal, Redfin, GitHub, DBT Labs, InvestCloud, Tegra118 (InvestCloud entity), Finantix (InvestCloud entity), Wells Fargo, AMD, ResMed, Dexcom, Fyxer AI, Block, Square, Cash App, OctoML, Gretel (NVIDIA-owned, open opp), Gamma.
+
+**Subsidiary rule:** If a blocked company acquires another company, that subsidiary is also blocked. Especially for NVIDIA, Salesforce, Adobe, Cisco, Microsoft, Stripe, Databricks (all have open opps or AE-managed deals). Examples: Gretel (NVIDIA), Frame.io (Adobe), Reclaim.ai (Dropbox), TaxJar (Stripe), Tabular (Databricks), Athelas + Memora (Commure), Tegra118 + Finantix (InvestCloud), Cisco ThousandEyes + Acacia (Cisco), Square + Cash App (Block). Before adding any new company to a sequence, check if it has been acquired by a blocked parent.
+
+**Job change rule:** When a contact has moved companies (Apollo, LinkedIn, Nooks, or any tool flags "no longer at X"), check their NEW employer against the blocked list before deciding what to do. If their new company is blocked, mark them PERMANENT SKIP and remove from all active sequences and lists. Do not just quietly drop them from one account search. Example: Adrianne Martinson left TikTok and moved to Meta (blocked). She should be flagged as permanently off-limits, not silently filtered out of a TikTok search.
 12. IC outreach = email and LinkedIn only. No cold calls, no meeting CTAs. Goal is a reply, a resource share, or a referral up to their VP. VP+ outreach = Nooks dial first, email is air cover. Exception: IC who publicly posted about evals, agents, or observability in the last 30 days gets one warm dial attempt.
 13. Never send the same case study to the same contact twice within a sequence. If Notion was Touch 1, Touch 3 must be Zapier, Retool, Graphite, or another customer. Notion is not a default. Rotate by signal match, not convenience.
 14. When a prospect raises DIY or open source eval solutions as an alternative, lead with Brainstore: 80x faster than rolling your own, runs in your infrastructure, no maintenance burden as models update. This is the answer to the build vs buy objection.
@@ -102,7 +106,7 @@ All documents, handover briefs, research summaries, and workspace outputs must b
 ## Email Signature (Use on EVERY Gmail Draft)
 All Gmail drafts MUST use `contentType: "text/html"` and append this signature:
 ```html
-<div style="font-family: sans-serif; font-size: 12px; color: #333;">
+<div style="font-family: sans-serif; font-size: 12px; color: #000;">
   <img src="https://www.braintrust.dev/icon180.png?v=2" alt="Braintrust" width="18" height="18" style="display: block; margin-bottom: 8px;">
   <div style="margin-bottom: 0;">Kensington Belza</div>
   <div>GenAI Evals &amp; Observability</div>
@@ -110,7 +114,7 @@ All Gmail drafts MUST use `contentType: "text/html"` and append this signature:
   <div><a href="https://www.braintrust.dev/home" style="color: #1a0dab; text-decoration: underline;">Website</a> | <a href="https://www.linkedin.com/in/kensington-belza/" style="color: #1a0dab; text-decoration: underline;">LinkedIn</a></div>
 </div>
 ```
-Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly.
+Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly: keep the `<img>` tag (logo MUST render), keep `color: #000` (text MUST be black, never `#333` or grey).
 
 ## Memory System
 - All memory lives in `01_Memory/` with 4 layers: stable (long-term facts), working (current context), episodic (session logs), patterns (recurring themes).
@@ -120,13 +124,18 @@ Do NOT pull signature from Gmail (logo breaks). Use this HTML exactly.
 - NEVER save memory to `.claude/projects/`. Everything goes in THIS workspace.
 
 ## Wiki-First Lookup Protocol
-Before any `/draft`, `/prospect`, `/prep`, `/score`, `/handoff`, or `/unstick`:
+Before any `/draft`, `/prospect`, `/prep`, `/score`, `/handoff`, `/unstick`, `/booked`, `/briefing`, or `/watchlist`:
 1. Check `10_Wiki/accounts/[company].md` for existing intel, conversation history, last touch, current signals
 2. Check `10_Wiki/contacts/[person].md` for relationship log, what resonated, best opener
 3. Pull from wiki first. Don't rebuild intel that already exists.
 4. After completing work, update relevant wiki pages with any new signals found.
 
 If no wiki page exists for the account or contact, proceed with research as normal and create the page as a final step.
+
+**Wiki is canonical.** `10_Wiki/accounts/` outranks `07_Accounts/companies/`. The latter is for raw research dumps that have not yet been synthesized into the wiki. If both exist, the wiki is source of truth and updates go to the wiki.
+
+## History-First Preflight (mandatory)
+Every outreach skill (`/draft`, `/prospect`, `/unstick`, `/handoff`, `/booked`, `/briefing`, `/prep`) must run the full preflight at `06_Playbooks/HISTORY_FIRST_PREFLIGHT.md` BEFORE producing any draft. The preflight pulls Gmail, Slack DMs + territory + #c-company, Notion Meeting Tracker + Account Tracker, wiki pages, Granola transcripts, and SFDC-via-Slack search, and produces a PRIOR HISTORY block that drives every choice in the draft (case study rotation, link rotation, opener angle). No exceptions.
 
 ## Wiki System
 `10_Wiki/` is the compounding knowledge layer. Every new signal (call transcript, research file, event intel, warm lead update) should update entity pages rather than create isolated files. Raw sources stay in `07_Accounts/` and `04_Research/`. The wiki synthesizes across them and compounds over time.
@@ -168,7 +177,17 @@ If no wiki page exists for the account or contact, proceed with research as norm
 
 **PREP tasks**: Only create a "Prep for [meeting]" task when the prospect has accepted the calendar invite (attendee status = "accepted"). No response or tentative = route to TO BOOK flow, not prep queue.
 
-**TO BOOK tasks**: Any person in Meeting Tracker with status REBOOK, NEED TO CONFIRM CAL, or TO BOOK, and any person in Warm Leads with Source = "TO BOOK", gets exactly one linked to-do task. The task title is the specific next action (e.g. "Rebook: Aditya at PowerSchool, Apr 30") and the task description includes a direct Notion link to their Meeting Tracker or Warm Leads row. No orphan tasks. No duplicates.
+**TO BOOK tasks**: Any person in Meeting Tracker with status REBOOK, NEED TO CONFIRM CAL, or TO BOOK gets exactly one linked to-do task. The task title is the specific next action (e.g. "Rebook: Aditya at PowerSchool, Apr 30") and the task description includes a direct Notion link to their Meeting Tracker row. No orphan tasks. No duplicates.
+
+**Warm Leads are NOT synced to the Task Tracker** (desynced 2026-05-12). Do not auto-create tasks from the Warm Leads DB. Warm Leads stays a standalone tracker. If KB wants action on a warm lead, he creates the task manually via /todo.
+
+**AE ownership + thread-direction rules (added 2026-05-12, see `02_Tasks/TASK_CAPTURE_RULES.md` PART 2):**
+- Messages directed at Jay, Walton, Dave, or Nathan in territory channels are NOT KB tasks. KB only owns it when explicitly named or when KB volunteered in-thread.
+- Post-meeting follow-ups when an AE attended belong to the AE, not KB.
+- "Identify name", "find LinkedIn", "confirm title" research items are inline lookups, never to-dos.
+- Out-of-domain alerts (security, infra, IT, HR) are skipped unless KB owns the domain.
+- Always read the latest Gmail thread message before creating a "confirm with X" task. If the contact already confirmed in-thread, skip.
+- Blocked-company tasks are a HARD skip across ALL task types, not just outreach. Includes subsidiaries (Commure, Microsoft, Adobe, etc.).
 
 ## Wiki Auto-Ingest (Nightly)
 A scheduled agent runs every night at 11pm PT:
@@ -204,7 +223,16 @@ A scheduled agent runs Mon-Fri at noon PT:
 - If context is above 70%, run `/compact` proactively before starting new work.
 
 ## Request Routing
-When Kensington describes a task without specifying a skill, route to the best match:
+
+**Behavior rules (enforced):**
+1. **Always scan available skills FIRST.** When Kensington describes a task, check the skill list before doing manual work. Available skills are surfaced in the system reminder at session start.
+2. **Invoke directly when a skill exactly matches.** Don't ask permission first, just run it.
+3. **Offer when a skill is close but not perfect.** Phrase: "this looks like /X territory, want me to run that or take a different angle?"
+4. **Chain when the request spans multiple skills.** E.g. "research and draft Acme" runs `/prospect` then `/draft`.
+5. **Promote repeat patterns to skills.** If Kensington asks for the same kind of task 2+ times (this session OR per memory), propose creating a new skill. Don't wait for the 3rd ask.
+6. **Never silently do manual work when a skill exists.** It wastes the work that built the skill and produces inconsistent output.
+
+**Routing table (best-match by intent):**
 - New prospect or company research: `/prospect`
 - Draft outreach (contact + context already known): `/draft`
 - Deal gone quiet, need to re-engage: `/unstick`
@@ -220,14 +248,40 @@ When Kensington describes a task without specifying a skill, route to the best m
 - AE handoff briefing: `/handoff`
 - Format availability times: `/aetime`
 - Process Gong calls and Nooks reminders: `/calls`
+- Sales channel pulse (what's working, last 14 days): `/pulse`
+- Handle a specific objection on the spot: `/obj`
+- Multi-thread an account across stakeholders: `/multi`
+- Follow-up to a Braintrust event attendee: `/event-followup`
+- Demo or discovery meeting prep doc: `/demo-prep`
+- Watch a deal channel for risk signals: `/threadwatch`
+- Post-call follow-up email with verbatim quotes: `/post-call`
+- Audit the wiki for stale or contradictory pages: `/lint-wiki`
+- Pre-meeting confirmation email to prospect: `/booked-confirm`
+- Ingest LinkedIn connections paste into Notion DB: `/connections`
+- Ghost note (warm intro email under Bryan Cox's name): `/ghost`
 
 If the request spans multiple skills, chain them. Example: "research and draft for Acme" runs `/prospect`. "Score Jay's accounts then draft the top 3" runs `/score` then `/draft` for the winners.
 
 ## MCP Integrations Available
-Slack, Notion, Gmail, Google Calendar, Apollo, Granola. Use these for:
+Slack, Notion, Gmail, Google Calendar, Apollo, Granola, Google Drive, Vercel, Zapier. Use these for:
 - Post-call follow-up emails: Paste call notes, draft email, stage as Gmail draft
 - Warm follow-ups: Context + Gmail draft
 - LinkedIn messages: Draft for copy/paste (no send API)
 - Calendar events: Create directly via Google Calendar
 - Prospect research: Apollo search + enrich
 - Meeting notes: Pull from Granola
+
+**No native MCP for these systems (use workarounds):**
+- **Salesforce:** Native MCP available but not yet installed. Setup steps in `06_Playbooks/MCP_SETUP_QUEUE.md`. Until installed, query via Slack search across `#sales` (C05RCTFNS5N), `#sales-team-west` (C09DM7N1KM4), `#pg` (C08F05QEFR6), and any `#sfdc-*` notification channels.
+- **Gong:** Native MCP available but not yet installed (`brownbrawh/gong-mcp-server`). Setup steps in `06_Playbooks/MCP_SETUP_QUEUE.md`. Until installed, email-only ingestion via Gmail (`from:do-not-reply@gong.io`).
+- **Nooks:** No public MCP yet. Email-only ingestion via Gmail (`from:ai-assistant@nooks.in`). Used by `/calls` and `/briefing` for callback reminders.
+
+## Skill Model Strategy
+Skills now specify a `model` field in frontmatter to optimize cost vs. quality:
+- **Opus 4.7** (heavy strategic reasoning): /draft, /prospect, /score, /prep, /briefing, /calls, /sdr-weekly-sync, /forecast, /unstick, /handoff, /pulse, /multi, /demo-prep, /threadwatch, /post-call, /connections, /ghost
+- **Sonnet 4.6** (balanced): /booked, /watchlist, /ingest, /do-mine, /recap, /obj, /event-followup, /lint-wiki, /booked-confirm
+- **Haiku 4.5** (fast utility): /aetime, /todo, /dispatch, /sweep
+
+Skills inherit the session model if no field is set. Override only when you have a strong reason.
+
+**History-first preflight:** All seven of these data sources (Gmail, Slack territory + DM + #c-company + SFDC channels, Notion Meeting Tracker + Account Tracker, wiki, Granola) get pulled in parallel by every outreach skill. Canonical protocol: `06_Playbooks/HISTORY_FIRST_PREFLIGHT.md`.

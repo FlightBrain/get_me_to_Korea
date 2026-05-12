@@ -55,6 +55,39 @@ Capture a task when ANY of the following happen:
 **Already-completed in same thread (skip):**
 - If Kensington replied "Done", "Sent", "Handled", "Sent it", "Did it", "All set", "Taken care of" in the SAME Slack thread, the task is done. Do not create.
 
+**Directed at a different AE (HARD SKIP, no exceptions):**
+KB has 3 AE partners: Jay Vermont, Walton Stephens, Dave Smith. Many Slack/email messages in territory channels are addressed at the AE, not at KB. If a message is directed at an AE other than KB, do NOT create a task for KB. Specifically:
+- Message starts with "@walton", "@jay", "@dave", "@nathan", "Walton,", "Jay,", "Dave,", "Nathan," and the action verb is about THEM doing it. Skip.
+- Message asks the AE to do something (e.g. "Jay, can you check in with Vik?", "Walton, can you cover the OOO doc?", "Dave, follow up on this"). Skip even if KB is in the channel.
+- Posts in #jay-vermont-territory, #walton-stephens-territory, #dave-smith-territory that name the channel-owning AE in the ask. Default to AE owns it unless KB is explicitly the assignee.
+- KB ownership ONLY when: message says "@kensington", "@kb", "Kensington,", "KB,", or KB volunteers ("I'll handle it", "On it", "Got it") in the thread.
+
+**Post-meeting follow-ups (HARD SKIP, AE owns these):**
+- KB does NOT own post-call follow-up emails when an AE was on the meeting. AE owns the follow-up.
+- If a Granola transcript / Gong recording / Google Calendar event has KB + an AE as attendees, the follow-up task belongs to the AE, not KB.
+- KB's role on these meetings: warm intro, get them in the room, briefing notes. Not the follow-up email.
+- The only post-meeting tasks KB owns: KB-only prospect meetings (no AE on the invite), AE-requested deliverable that KB explicitly took ("KB will send the case study link", "KB will book the dinner").
+
+**Blocked companies (NEVER source ANY task type, not just outreach):**
+The blocked list in CLAUDE.md applies to ALL task creation, not just outreach. Includes subsidiaries. If a task title or description contains a blocked company (Commure, Microsoft, Adobe, Cisco, Databricks, NVIDIA, etc. plus their subsidiaries), SKIP entirely. Do not "soft-skip" with a flag. Do not create the task at all.
+
+**Generic research / data-completion items (skip, route to a tool not a task):**
+Tasks like "Identify [Person]'s full name and title", "Find LinkedIn URL for X", "Confirm title of Y", "Enrich Z's record" are NOT to-dos. They are Apollo / LinkedIn lookups KB does inline when he needs to. Do not create them.
+
+**Out-of-domain alerts / non-KB-relevant pings (skip):**
+- Security alerts from CEOs of other tools KB doesn't own (e.g. "Rotate AI provider keys from Ankur") are not KB tasks unless KB is the security owner.
+- DevOps / infra / engineering alerts unrelated to KB's SDR role.
+- IT or HR pings unless explicitly assigned to KB.
+
+**Already-confirmed-in-thread (READ THE EMAIL CHAIN FIRST, skip):**
+- Before creating any "Confirm with [contact]", "Follow up to confirm", "Check if [contact] still on for X" task: read the latest message in the Gmail thread.
+- If the contact thanked KB, said "see you then", "confirmed", "looking forward", or any acceptance language in the most recent message: the meeting/action is confirmed. Skip the task.
+- If KB or the contact already exchanged confirmation in the thread, do not surface a "still need to confirm" task. Read past the subject line.
+- Example pattern (KB hit this 2026-05-12): Kieun Lee thanked KB for confirming the demo. A task to "confirm with Kieun Lee" should never have been created.
+
+**Warm Leads DB (do NOT create tasks from it, desynced 2026-05-12):**
+The Warm Leads Notion DB (`collection://73dbb977-0916-4d73-ad5a-b309ff8b39de`) is no longer a task source. Do not pull from it. Do not create "TO BOOK" tasks from it. KB will manually create tasks via /todo when he wants to act on a warm lead. This applies to cadence-sync, sweep, day-planner, and any other agent.
+
 **Blocked companies (skip outreach tasks entirely):**
 Cisco, Meta, HSBC, Slack, Dropbox, Splunk, Tableau, Instagram, Carta, Databricks, Informatica, Venmo, Facebook, Intel, LiveRamp, Mercado Libre, Visa, NEC X, NEC Corporation, Audible, NVIDIA, Tao Digital Solutions, Microsoft, Stripe, ZoomInfo, Dialpad, Rivian, Activision, Adobe, Commure, Pigment, Salesforce, Cloudflare, LinkedIn, Netflix, Supabase, Replit, McAfee, Mercor, Asana, Bill.com, Flapping Airplanes, AppsFlyer, Robinhood, SoFi, PayPal, Redfin, GitHub, DBT Labs, InvestCloud
 
