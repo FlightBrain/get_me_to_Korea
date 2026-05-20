@@ -5,10 +5,11 @@ cd "$(dirname "$0")/../deeper"
 
 echo "== syntax =="
 node --check app.js
+node --check content-packs.js
 python3 -m json.tool vercel.json >/dev/null
 
 echo "== required files =="
-for file in index.html app.js styles.css vercel.json README.md; do
+for file in index.html app.js content-packs.js styles.css vercel.json README.md; do
   test -f "$file" || { echo "missing $file"; exit 1; }
 done
 
@@ -52,6 +53,20 @@ missing = sorted(selectors - ids)
 if missing:
     raise SystemExit("missing ids: " + ", ".join(missing))
 print("selectors ok")
+PY
+
+echo "== module imports =="
+python3 - <<'PY'
+import re
+from pathlib import Path
+js = Path("app.js").read_text(encoding="utf-8")
+missing = []
+for path in re.findall(r'from "(\./[^"]+)"', js):
+    if not Path(path[2:]).exists():
+        missing.append(path)
+if missing:
+    raise SystemExit("missing imports: " + ", ".join(missing))
+print("imports ok")
 PY
 
 echo "== css braces =="

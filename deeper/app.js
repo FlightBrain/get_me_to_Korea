@@ -1,3 +1,5 @@
+import { DEEPER_BODY_LINES, DEEPER_CONTENT_PACKS, DEEPER_EVENT_LINES, DEEPER_WHISPER_LINES } from "./content-packs.js";
+
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
@@ -347,6 +349,17 @@ const accents = [
   ["#ffd36a", "#ff6fd8"]
 ];
 
+Object.entries(DEEPER_CONTENT_PACKS).forEach(([mode, pack]) => {
+  if (!banks[mode]) return;
+  ["places", "beings", "objects", "rules", "signals"].forEach((key) => {
+    banks[mode][key] = [...banks[mode][key], ...(pack[key] || [])];
+  });
+});
+
+DEEPER_WHISPER_LINES.forEach((line) => {
+  universal.whispers.push(line.text);
+});
+
 const achievements = [
   { id: "first_threshold", title: "First Threshold", test: (save) => save.stats.roomsVisited >= 1 },
   { id: "deep_diver", title: "Deep Diver", test: (save) => save.stats.maxDepth >= 10 },
@@ -466,6 +479,11 @@ function makeItem(object, mode, seed, code) {
   };
 }
 
+function pickModeLine(rng, lines, mode) {
+  const matching = lines.filter((line) => line.mode === mode);
+  return matching.length ? pick(rng, matching).text : pick(rng, lines).text;
+}
+
 function buildExaminations(rng, object, being, signal) {
   return [
     `The ${object} shows a reflection of ${being}, but the reflection is three rooms ahead.`,
@@ -547,6 +565,9 @@ function buildBody({ rng, safeMode, title, being, sceneObject, depth, spark, tra
   if (safeMode === "liminal") {
     lines.push("Somewhere overhead, a speaker calls your number in a voice that has never seen a face.");
   }
+  if (rng() > 0.35) {
+    lines.push(pickModeLine(rng, DEEPER_BODY_LINES, safeMode));
+  }
   const stratum = getStratum(depth);
   if (stratum.min > 0) {
     lines.push(`You have entered the ${stratum.name}. The site feels less optional now.`);
@@ -564,13 +585,14 @@ function buildArtifact(rng, object, being) {
   return pick(rng, templates);
 }
 
-function buildWhisper(rng, being, object, rule, signal) {
+function buildWhisper(rng, being, object, rule, signal, mode) {
   const templates = [
     () => `"${pick(rng, universal.whispers)}"`,
     () => `"The ${object} repeats: ${pick(rng, universal.endings)}."`,
     () => `"${being} says: ${rule.toLowerCase()}"`,
     () => `"${signal} signal: ${pick(rng, universal.whispers).toLowerCase()}"`
   ];
+  if (rng() > 0.45) return `"${pickModeLine(rng, DEEPER_WHISPER_LINES, mode)}"`;
   return pick(rng, templates)();
 }
 
@@ -664,6 +686,11 @@ function milestoneOverride(depth, save) {
   return milestones[depth] || null;
 }
 
+function rollRoomEvent(rng, mode) {
+  if (rng() < 0.72) return null;
+  return pickModeLine(rng, DEEPER_EVENT_LINES, mode);
+}
+
 function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
   const safeMode = banks[mode] ? mode : "dream";
   const bank = banks[safeMode];
@@ -720,8 +747,12 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
   if (isLoop) {
     body += " You have been here before, but the furniture has moved one inch closer to the exit.";
   }
+  const roomEvent = rollRoomEvent(rng, safeMode);
+  if (roomEvent) {
+    body += ` ${roomEvent}`;
+  }
   const artifact = buildArtifact(rng, foundObject, being);
-  const whisper = milestone?.whisper || buildWhisper(rng, being, foundObject, rule, signal);
+  const whisper = milestone?.whisper || buildWhisper(rng, being, foundObject, rule, signal, safeMode);
   const finalRule = milestone?.rule || rule;
   const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule: finalRule, signal, being, item, trail, isLoop });
   const examinations = buildExaminations(rng, foundObject, being, signal);
@@ -758,7 +789,8 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     item,
     examinations,
     secretExit,
-    isLoop
+    isLoop,
+    roomEvent
   };
 }
 
