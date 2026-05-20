@@ -7,7 +7,9 @@ const MAX_INVENTORY = 12;
 const TOAST_MS = 2200;
 const STORAGE_KEYS = {
   saved: "deeper.savedPlaces.v1",
-  save: "deeper.save.v1"
+  save: "deeper.save.v1",
+  journal: "deeper.journal.v1",
+  lastUrl: "deeper.lastUrl.v1"
 };
 
 const elements = {
@@ -17,11 +19,16 @@ const elements = {
   launchForm: $("#launchForm"),
   sparkInput: $("#sparkInput"),
   modeHelper: $("#modeHelper"),
+  continueButton: $("#continueButton"),
   randomPortalButton: $("#randomPortalButton"),
   savedButton: $("#savedButton"),
+  journalButton: $("#journalButton"),
   savedDialog: $("#savedDialog"),
+  journalDialog: $("#journalDialog"),
   closeSavedButton: $("#closeSavedButton"),
+  closeJournalButton: $("#closeJournalButton"),
   savedList: $("#savedList"),
+  journalList: $("#journalList"),
   depthValue: $("#depthValue"),
   modeValue: $("#modeValue"),
   signalValue: $("#signalValue"),
@@ -38,9 +45,11 @@ const elements = {
   ruleHeading: $("#ruleHeading"),
   whisperHeading: $("#whisperHeading"),
   artifactText: $("#artifactText"),
+  artifactSecretText: $("#artifactSecretText"),
   ruleText: $("#ruleText"),
   whisperText: $("#whisperText"),
   takeItemButton: $("#takeItemButton"),
+  examineArtifactButton: $("#examineArtifactButton"),
   choiceGrid: $("#choiceGrid"),
   rerollButton: $("#rerollButton"),
   savePlaceButton: $("#savePlaceButton"),
@@ -376,6 +385,14 @@ function makeItem(object, mode, seed, code) {
   };
 }
 
+function buildExaminations(rng, object, being, signal) {
+  return [
+    `The ${object} shows a reflection of ${being}, but the reflection is three rooms ahead.`,
+    `A ${signal} line appears along its edge: ${pick(rng, universal.whispers).toLowerCase()}`,
+    `When you turn it over, the underside says: ${pick(rng, universal.endings)}.`
+  ];
+}
+
 function getParams() {
   const params = new URLSearchParams(window.location.search);
   const mode = banks[params.get("mode")] ? params.get("mode") : "dream";
@@ -469,7 +486,7 @@ function buildWhisper(rng, being, object, rule, signal) {
   return pick(rng, templates)();
 }
 
-function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, being, item, trail }) {
+function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, being, item, trail, isLoop }) {
   const allModes = Object.keys(banks);
   const exitTypes = ["place", "being", "object", "rule", "signal"];
   const choices = Array.from({ length: 4 }, (_, index) => {
@@ -503,6 +520,15 @@ function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, bein
     };
   }
 
+  if (isLoop) {
+    choices[1] = {
+      label: "Break the loop before it learns your route",
+      hint: `The room blinks first. Layer ${depth + 1}.`,
+      seed: slugify(`${seed}:break-loop:${depth}:${reroll}`),
+      nextMode: mode
+    };
+  }
+
   return choices;
 }
 
@@ -521,6 +547,7 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
   const code = hashString(seed || randomSeed("empty")).toString(16).slice(0, 6).padStart(6, "0");
   const tier = rollTier(seed, depth, reroll);
   const item = makeItem(foundObject, safeMode, seed, code);
+  const isLoop = trail.includes(title) || seed.includes("loop");
   const titlePatterns = [
     () => `The ${titleCase(mood)} ${titleCase(place)}`,
     () => `The ${titleCase(place)} Where ${titleCase(being)} Wait`,
@@ -543,12 +570,22 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     signal = "legendary";
     accent = ["#ffd36a", "#8dffb3"];
   }
+  if (isLoop) {
+    type = "loop room";
+    signal = "looped";
+    accent = ["#ff9f6e", "#ffd36a"];
+  }
 
   const nextTrail = [...trail, title].slice(-MAX_TRAIL);
-  const body = buildBody({ rng, safeMode, title, being, sceneObject, depth, spark, trail, pocket, tier });
+  let body = buildBody({ rng, safeMode, title, being, sceneObject, depth, spark, trail, pocket, tier });
+  if (isLoop) {
+    body += " You have been here before, but the furniture has moved one inch closer to the exit.";
+  }
   const artifact = buildArtifact(rng, foundObject, being);
   const whisper = buildWhisper(rng, being, foundObject, rule, signal);
-  const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule, signal, being, item, trail });
+  const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule, signal, being, item, trail, isLoop });
+  const examinations = buildExaminations(rng, foundObject, being, signal);
+  const secretExit = hashString(`secret:${seed}:${depth}`) % 5 === 0;
 
   if (tier === "rare" || tier === "legendary") {
     choices.push({
@@ -571,13 +608,17 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     code,
     signal,
     tier,
+    reroll,
     body,
     artifact,
     rule,
     whisper,
     choices,
     accent,
-    item
+    item,
+    examinations,
+    secretExit,
+    isLoop
   };
 }
 
@@ -662,6 +703,7 @@ function renderFromUrl(options = {}) {
     elements.homePanel.classList.remove("hidden");
     elements.explorePanel.classList.add("hidden");
     document.title = "Deeper | Infinite Curiosity Machine";
+    updateContinueButton();
     return;
   }
 
@@ -685,6 +727,9 @@ function renderPlace(place, options = {}) {
   elements.artifactText.textContent = place.artifact;
   elements.ruleText.textContent = place.rule;
   elements.whisperText.textContent = place.whisper;
+  elements.artifactSecretText.classList.add("hidden");
+  elements.artifactSecretText.textContent = "";
+  elements.examineArtifactButton.textContent = "examine";
   elements.takeItemButton.disabled = save.inventory.some((item) => item.id === place.item.id) || save.inventory.length >= MAX_INVENTORY;
   elements.takeItemButton.textContent = save.inventory.some((item) => item.id === place.item.id) ? "artifact kept" : "take artifact";
 
@@ -701,6 +746,7 @@ function renderPlace(place, options = {}) {
   document.documentElement.style.setProperty("--depth-factor", Math.min(place.depth / 20, 1).toFixed(2));
 
   elements.placeCard.className = `place-card tier-${place.tier}`;
+  if (place.isLoop) elements.placeCard.classList.add("is-loop");
   if (!prefersReducedMotion()) {
     elements.placeCard.classList.remove("is-entering");
     void elements.placeCard.offsetWidth;
@@ -710,6 +756,8 @@ function renderPlace(place, options = {}) {
   renderTrail(place.trail);
   renderChoices(place);
   recordRoomVisit(place);
+  rememberLastUrl();
+  appendJournal(place);
   updateProgressUi();
   elements.routeAnnouncer.textContent = `${place.title}, ${place.depth} layers down.`;
 
@@ -738,6 +786,19 @@ function renderChoices(place) {
     button.addEventListener("click", () => chooseExit(place, choice));
     elements.choiceGrid.appendChild(button);
   });
+}
+
+function revealSecretExit(place) {
+  if (!place.secretExit || place.choices.some((choice) => choice.secret)) return;
+  place.choices.push({
+    label: "Crawl through the small door under the artifact",
+    hint: `A secret path opens. Layer ${place.depth + 1}.`,
+    seed: slugify(`${place.seed}:artifact-secret:${place.code}`),
+    nextMode: place.mode,
+    secret: true
+  });
+  renderChoices(place);
+  showToast("secret exit revealed");
 }
 
 function chooseExit(place, choice) {
@@ -782,6 +843,7 @@ function showToast(message) {
 }
 
 function safeSameOriginPath(url) {
+  if (!url) return null;
   try {
     const parsed = new URL(url, window.location.origin);
     if (parsed.origin !== window.location.origin) return null;
@@ -863,6 +925,71 @@ function renderSavedPlaces() {
   });
 }
 
+function getJournalEntries() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.journal) || "[]");
+    return Array.isArray(parsed) ? parsed.slice(-80).reverse() : [];
+  } catch {
+    return [];
+  }
+}
+
+function appendJournal(place) {
+  const safeUrl = safeSameOriginPath(window.location.href);
+  if (!safeUrl) return;
+  const entries = getJournalEntries().reverse();
+  const entryId = `${place.code}:${place.depth}:${safeUrl}`;
+  if (entries.at(-1)?.id === entryId) return;
+  entries.push({
+    id: entryId,
+    title: place.title,
+    depth: place.depth,
+    mode: place.mode,
+    tier: place.tier,
+    url: safeUrl,
+    visitedAt: new Date().toISOString()
+  });
+  localStorage.setItem(STORAGE_KEYS.journal, JSON.stringify(entries.slice(-80)));
+}
+
+function renderJournal() {
+  const entries = getJournalEntries();
+  elements.journalList.innerHTML = "";
+  if (entries.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No rooms in the journal yet. Open a door and the machine will start taking notes.";
+    elements.journalList.appendChild(empty);
+    return;
+  }
+
+  entries.forEach((entry) => {
+    const item = document.createElement("div");
+    item.className = "saved-item";
+    const text = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = entry.title;
+    const meta = document.createElement("span");
+    meta.textContent = `${entry.mode} mode, ${entry.depth} layers down${entry.tier !== "common" ? `, ${entry.tier}` : ""}`;
+    const link = document.createElement("a");
+    link.href = entry.url;
+    link.textContent = "reopen";
+    text.append(title, meta);
+    item.append(text, link);
+    elements.journalList.appendChild(item);
+  });
+}
+
+function rememberLastUrl() {
+  const safeUrl = safeSameOriginPath(window.location.href);
+  if (safeUrl) localStorage.setItem(STORAGE_KEYS.lastUrl, safeUrl);
+}
+
+function updateContinueButton() {
+  const lastUrl = localStorage.getItem(STORAGE_KEYS.lastUrl);
+  elements.continueButton.classList.toggle("hidden", !safeSameOriginPath(lastUrl));
+}
+
 function takeCurrentItem() {
   if (!currentPlace) return;
   updateSave((save) => {
@@ -879,6 +1006,17 @@ function takeCurrentItem() {
     showToast(`${currentPlace.item.name} added to your pockets`);
   });
   renderPlace(currentPlace);
+}
+
+function examineCurrentArtifact() {
+  if (!currentPlace) return;
+  const index = clampNumber(elements.examineArtifactButton.dataset.index || "0", 0, 99);
+  const line = currentPlace.examinations[index % currentPlace.examinations.length];
+  elements.artifactSecretText.textContent = line;
+  elements.artifactSecretText.classList.remove("hidden");
+  elements.examineArtifactButton.dataset.index = String(index + 1);
+  elements.examineArtifactButton.textContent = index >= 1 ? "examine again" : "examine deeper";
+  if (currentPlace.secretExit && index >= 1) revealSecretExit(currentPlace);
 }
 
 function selectedMode() {
@@ -928,6 +1066,7 @@ elements.rerollButton.addEventListener("click", () => {
 
 elements.savePlaceButton.addEventListener("click", saveCurrentPlace);
 elements.takeItemButton.addEventListener("click", takeCurrentItem);
+elements.examineArtifactButton.addEventListener("click", examineCurrentArtifact);
 
 elements.copyLinkButton.addEventListener("click", async () => {
   try {
@@ -950,10 +1089,22 @@ elements.savedButton.addEventListener("click", () => {
   elements.closeSavedButton.focus();
 });
 
+elements.journalButton.addEventListener("click", () => {
+  lastFocusedBeforeDialog = document.activeElement;
+  renderJournal();
+  elements.journalDialog.showModal();
+  elements.closeJournalButton.focus();
+});
+
 elements.closeSavedButton.addEventListener("click", () => elements.savedDialog.close());
+elements.closeJournalButton.addEventListener("click", () => elements.journalDialog.close());
 elements.savedDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
+elements.journalDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.savedDialog.addEventListener("click", (event) => {
   if (event.target === elements.savedDialog) elements.savedDialog.close();
+});
+elements.journalDialog.addEventListener("click", (event) => {
+  if (event.target === elements.journalDialog) elements.journalDialog.close();
 });
 
 $$("input[name='mode']").forEach((radio) => {
@@ -966,6 +1117,13 @@ $$(".demo-stack button").forEach((button) => {
   button.addEventListener("click", () => {
     startJourney(button.dataset.spark, button.dataset.mode || "dream");
   });
+});
+
+elements.continueButton.addEventListener("click", () => {
+  const lastUrl = safeSameOriginPath(localStorage.getItem(STORAGE_KEYS.lastUrl));
+  if (!lastUrl) return;
+  window.history.pushState({}, "", lastUrl);
+  renderFromUrl({ focusTitle: true, scrollToPlace: true });
 });
 
 document.addEventListener("keydown", (event) => {
@@ -981,4 +1139,5 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("popstate", () => renderFromUrl({ focusTitle: true }));
 
 updateProgressUi();
+updateContinueButton();
 renderFromUrl();
