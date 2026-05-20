@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta
+      name="description"
+      content="Deeper generates strange rooms forever. Every click opens a new place. Your path lives in the URL."
+    >
+    <meta name="theme-color" content="#090914">
+    <link rel="canonical" href="/">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Deeper">
+    <meta property="og:title" content="Deeper | Infinite Curiosity Machine">
+    <meta property="og:description" content="Every click opens a new strange room. Your path lives in the URL.">
+    <meta property="og:image" content="./favicon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Deeper | Infinite Curiosity Machine">
+    <meta name="twitter:description" content="Every click opens a new strange room. Your path lives in the URL.">
+    <title>Deeper | Infinite Curiosity Machine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#mainContent">skip to main content</a>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Deeper home">
+        <span class="brand-mark"></span>
+        <span>Deeper</span>
+      </a>
+      <nav class="nav-actions" aria-label="Primary">
+        <button class="ghost-button" id="randomPortalButton" type="button">random portal</button>
+        <button class="ghost-button" id="savedButton" type="button">saved places</button>
+        <button class="ghost-button" id="journalButton" type="button">journal</button>
+        <button class="ghost-button" id="questsButton" type="button">quests</button>
+        <button class="ghost-button" id="mapButton" type="button">map</button>
+        <button class="ghost-button" id="codexButton" type="button">codex</button>
+        <button class="ghost-button" id="helpButton" type="button">?</button>
+      </nav>
+    </header>
+
+    <main id="mainContent">
+      <section class="hero" id="homePanel">
+        <p class="eyebrow">the infinite curiosity machine</p>
+        <h1>A website with no final page.</h1>
+        <p class="hero-copy">
+          Start anywhere. Every choice opens another room: artifact, creature, signal,
+          or idea that should not fit on one page. Your path becomes a rabbit hole only you can reopen.
+        </p>
+
+        <form class="launch-card" id="launchForm">
+          <label for="sparkInput">Name the first door</label>
+          <div class="launch-row">
+            <input
+              id="sparkInput"
+              name="spark"
+              autocomplete="off"
+              placeholder="lost arcade, moon library, tiny dragon market..."
+              maxlength="80"
+            >
+            <button class="primary-button" type="submit">open the first door</button>
+          </div>
+          <div class="mode-grid" role="group" aria-label="Choose exploration mode">
+            <label><input type="radio" name="mode" value="dream" checked> dream</label>
+            <label><input type="radio" name="mode" value="museum"> museum</label>
+            <label><input type="radio" name="mode" value="game"> game</label>
+            <label><input type="radio" name="mode" value="cosmic"> cosmic</label>
+            <label><input type="radio" name="mode" value="liminal"> liminal</label>
+          </div>
+          <p class="mode-helper" id="modeHelper">dream: rooms that remember you wrong</p>
+        </form>
+
+        <div class="demo-stack" aria-label="Suggested first doors">
+          <button type="button" data-spark="The Clock Garden" data-mode="dream">The Clock Garden</button>
+          <button type="button" data-spark="The Door That Remembers You" data-mode="museum">The Door That Remembers You</button>
+          <button type="button" data-spark="The Arcade Below The Ocean" data-mode="game">The Arcade Below The Ocean</button>
+        </div>
+        <button class="continue-button hidden" id="continueButton" type="button">continue last journey</button>
+      </section>
+
+      <section class="explore-layout hidden" id="explorePanel">
+        <aside class="journey-card">
+          <div class="stat">
+            <span class="stat-label">layers down</span>
+            <span class="stat-value" id="depthValue">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">mode</span>
+            <span class="stat-value" id="modeValue">dream</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">signal</span>
+            <span class="stat-value" id="signalValue">quiet</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">carrying</span>
+            <span class="stat-value" id="pocketValue">nothing</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">inventory</span>
+            <span class="stat-value" id="inventoryCount">0/12</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">achievements</span>
+            <span class="stat-value" id="achievementCount">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">quest</span>
+            <span class="stat-value" id="questValue">none</span>
+          </div>
+          <div>
+            <h2 class="sidebar-title">trail</h2>
+            <svg
+              id="constellationMap"
+              class="constellation-map"
+              role="img"
+              aria-label="Map of rooms visited on this journey"
+              viewBox="0 0 400 400"
+            ></svg>
+            <ol class="trail-list" id="trailList"></ol>
+          </div>
+        </aside>
+
+        <article class="place-card" id="placeCard">
+          <div class="place-topline">
+            <span id="placeType">hidden room</span>
+            <span id="placeCode">seed 0000</span>
+          </div>
+          <h2 id="placeTitle" tabindex="-1"></h2>
+          <p class="place-body" id="placeBody"></p>
+          <p class="quest-hint hidden" id="questHint"></p>
+
+          <header class="maze-folio">
+            <span id="mazeFolioChapter">folio 000</span>
+            <span id="mazeFolioCaption">the room is still arranging itself</span>
+          </header>
+          <section class="maze-page" id="mazePage">
+            <button class="maze-panel maze-panel-large maze-panel-button" id="chapterPanel" data-maze-panel="chapter" type="button">
+              <span class="maze-motif" id="motifLabel" aria-hidden="true"></span>
+              <span class="maze-kicker" id="chapterLabel">chapter</span>
+              <h3 id="chapterTitle">The page turns</h3>
+              <p id="chapterText"></p>
+              <span class="maze-panel-hint">click to unfold</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="lorePanel" data-maze-panel="lore" type="button">
+              <span class="maze-kicker">field note</span>
+              <h3 id="loreTitle">Field note</h3>
+              <p id="loreText"></p>
+              <span class="maze-panel-hint">open note</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="ritualPanel" data-maze-panel="ritual" type="button">
+              <span class="maze-kicker">exit ritual</span>
+              <h3 id="ritualTitle">Ritual</h3>
+              <p id="ritualText"></p>
+              <span class="maze-panel-hint">read ritual</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="dialogueButton" data-maze-panel="dialogue" type="button">
+              <span class="maze-kicker" id="speakerLabel">someone nearby</span>
+              <strong id="dialogueText">Ask the room what it knows.</strong>
+              <span class="maze-panel-hint">listen again</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="sigilButton" data-maze-panel="sigil" type="button">
+              <span class="maze-kicker" id="sigilLabel">sigil</span>
+              <strong id="sigilText">Inspect the mark on the wall.</strong>
+              <span class="maze-panel-hint">trace mark</span>
+            </button>
+          </section>
+          <div class="maze-drawer hidden" id="mazeDrawer" aria-hidden="true">
+            <div class="maze-drawer-inner" role="region" aria-live="polite">
+              <button class="icon-button maze-drawer-close" id="closeMazeDrawer" type="button" aria-label="Close maze detail">x</button>
+              <span class="maze-kicker" id="mazeDrawerKicker"></span>
+              <h3 id="mazeDrawerTitle"></h3>
+              <p id="mazeDrawerBody"></p>
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <section>
+              <h3 id="artifactHeading">what you find</h3>
+              <p id="artifactText"></p>
+              <div class="mini-actions">
+                <button class="mini-button" id="takeItemButton" type="button">take artifact</button>
+                <button class="mini-button" id="examineArtifactButton" type="button">examine</button>
+              </div>
+              <p class="artifact-secret hidden" id="artifactSecretText"></p>
+            </section>
+            <section>
+              <h3 id="ruleHeading">the rule here</h3>
+              <p id="ruleText"></p>
+            </section>
+            <section>
+              <h3 id="whisperHeading">something whispers</h3>
+              <p id="whisperText"></p>
+            </section>
+          </div>
+
+          <div class="choices" role="group" aria-labelledby="choicesHeading">
+            <div class="choices-header">
+              <h3 id="choicesHeading">choose where to go next</h3>
+              <button class="text-button" id="rerollButton" type="button">shuffle the doors</button>
+            </div>
+            <div class="choice-grid" id="choiceGrid"></div>
+          </div>
+
+          <div class="place-actions">
+            <button class="secondary-button" id="savePlaceButton" type="button">keep this room</button>
+            <button class="secondary-button" id="copyLinkButton" type="button">copy this exact door</button>
+            <a class="secondary-button" href="./">return to the surface</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <dialog class="saved-dialog" id="savedDialog" aria-labelledby="savedTitle">
+      <div class="dialog-header">
+        <h2 id="savedTitle">Rooms you kept</h2>
+        <button class="icon-button" id="closeSavedButton" type="button" aria-label="Close saved places">x</button>
+      </div>
+      <div id="savedList" class="saved-list"></div>
+    </dialog>
+
+    <dialog class="saved-dialog" id="journalDialog" aria-labelledby="journalTitle">
+      <div class="dialog-header">
+        <h2 id="journalTitle">Journey journal</h2>
+        <button class="icon-button" id="closeJournalButton" type="button" aria-label="Close journey journal">x</button>
+      </div>
+      <div id="journalList" class="saved-list"></div>
+    </dialog>
+
+    <dialog class="saved-dialog" id="questsDialog" aria-labelledby="questsTitle">
+      <div class="dialog-header">
+        <h2 id="questsTitle">Active quest</h2>
+        <button class="icon-button" id="closeQuestsButton" type="button" aria-label="Close quests">x</button>
+      </div>
+      <div id="questsPanel" class="saved-list"></div>
+    </dialog>
+
+    <dialog class="saved-dialog constellation-dialog" id="constellationDialog" aria-labelledby="mapTitle">
+      <div class="dialog-header">
+        <h2 id="mapTitle">Your constellation</h2>
+        <button class="icon-button" id="closeMapButton" type="button" aria-label="Close constellation map">x</button>
+      </div>
+      <svg
+        id="constellationMapFull"
+        class="constellation-map constellation-map--full"
+        role="img"
+        aria-label="Expanded map of rooms visited on this journey"
+        viewBox="0 0 800 800"
+      ></svg>
+    </dialog>
+
+    <dialog class="saved-dialog codex-dialog" id="codexDialog" aria-labelledby="codexTitle">
+      <div class="dialog-header">
+        <h2 id="codexTitle">the codex</h2>
+        <button class="icon-button" id="closeCodexButton" type="button" aria-label="Close codex">x</button>
+      </div>
+      <div class="codex-tabs" role="tablist" aria-label="Codex sections">
+        <button class="codex-tab is-active" type="button" data-codex-tab="rooms">rooms</button>
+        <button class="codex-tab" type="button" data-codex-tab="sigils">sigils</button>
+        <button class="codex-tab" type="button" data-codex-tab="rules">rules</button>
+        <button class="codex-tab" type="button" data-codex-tab="artifacts">artifacts</button>
+      </div>
+      <div id="codexStats" class="codex-stats"></div>
+      <div id="codexShelf" class="codex-shelf"></div>
+    </dialog>
+
+    <dialog class="saved-dialog help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+      <div class="dialog-header">
+        <h2 id="helpTitle">keyboard shortcuts</h2>
+        <button class="icon-button" id="closeHelpButton" type="button" aria-label="Close keyboard shortcuts">x</button>
+      </div>
+      <div class="help-grid">
+        <span><kbd>1-9</kbd> choose exits</span>
+        <span><kbd>r</kbd> shuffle doors</span>
+        <span><kbd>s</kbd> keep room</span>
+        <span><kbd>e</kbd> examine artifact</span>
+        <span><kbd>t</kbd> take artifact</span>
+        <span><kbd>m</kbd> map</span>
+        <span><kbd>j</kbd> journal</span>
+        <span><kbd>q</kbd> quests</span>
+        <span><kbd>c</kbd> chapter</span>
+        <span><kbd>l</kbd> lore</span>
+        <span><kbd>d</kbd> dialogue</span>
+        <span><kbd>g</kbd> sigil</span>
+      </div>
+    </dialog>
+
+    <div class="sr-only" id="routeAnnouncer" role="status" aria-live="polite"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
