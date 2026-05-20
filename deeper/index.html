@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta
       name="description"
-      content="Deeper is an endless curiosity website where each click creates a new strange place to explore."
+      content="Deeper generates strange rooms forever. Every click opens a new place. Your path lives in the URL."
     >
     <meta name="theme-color" content="#090914">
     <title>Deeper | Infinite Curiosity Machine</title>
@@ -33,17 +33,17 @@
       </nav>
     </header>
 
-    <main>
+    <main id="mainContent">
       <section class="hero" id="homePanel">
-        <div class="eyebrow">the infinite curiosity machine</div>
+        <p class="eyebrow">the infinite curiosity machine</p>
         <h1>A website with no final page.</h1>
         <p class="hero-copy">
-          Start anywhere. Every choice creates a deeper room, artifact, creature, signal,
-          or impossible idea. Your path becomes a private rabbit hole you can keep exploring.
+          Start anywhere. Every choice opens another room: artifact, creature, signal,
+          or idea that should not fit on one page. Your path becomes a rabbit hole only you can reopen.
         </p>
 
         <form class="launch-card" id="launchForm">
-          <label for="sparkInput">Give the machine a spark</label>
+          <label for="sparkInput">Name the first door</label>
           <div class="launch-row">
             <input
               id="sparkInput"
@@ -52,7 +52,7 @@
               placeholder="lost arcade, moon library, tiny dragon market..."
               maxlength="80"
             >
-            <button class="primary-button" type="submit">start exploring</button>
+            <button class="primary-button" type="submit">open the first door</button>
           </div>
           <div class="mode-grid" role="group" aria-label="Choose exploration mode">
             <label><input type="radio" name="mode" value="dream" checked> dream</label>
@@ -60,19 +60,20 @@
             <label><input type="radio" name="mode" value="game"> game</label>
             <label><input type="radio" name="mode" value="cosmic"> cosmic</label>
           </div>
+          <p class="mode-helper" id="modeHelper">dream: rooms that remember you wrong</p>
         </form>
 
-        <div class="demo-stack" aria-label="Example paths">
-          <span>The Clock Garden</span>
-          <span>The Door That Remembers You</span>
-          <span>The Arcade Below The Ocean</span>
+        <div class="demo-stack" aria-label="Suggested first doors">
+          <button type="button" data-spark="The Clock Garden" data-mode="dream">The Clock Garden</button>
+          <button type="button" data-spark="The Door That Remembers You" data-mode="museum">The Door That Remembers You</button>
+          <button type="button" data-spark="The Arcade Below The Ocean" data-mode="game">The Arcade Below The Ocean</button>
         </div>
       </section>
 
-      <section class="explore-layout hidden" id="explorePanel" aria-live="polite">
+      <section class="explore-layout hidden" id="explorePanel">
         <aside class="journey-card">
           <div class="stat">
-            <span class="stat-label">depth</span>
+            <span class="stat-label">layers down</span>
             <span class="stat-value" id="depthValue">0</span>
           </div>
           <div class="stat">
@@ -83,60 +84,74 @@
             <span class="stat-label">signal</span>
             <span class="stat-value" id="signalValue">quiet</span>
           </div>
+          <div class="stat">
+            <span class="stat-label">carrying</span>
+            <span class="stat-value" id="pocketValue">nothing</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">inventory</span>
+            <span class="stat-value" id="inventoryCount">0/12</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">achievements</span>
+            <span class="stat-value" id="achievementCount">0</span>
+          </div>
           <div>
-            <div class="sidebar-title">trail</div>
+            <h2 class="sidebar-title">trail</h2>
             <ol class="trail-list" id="trailList"></ol>
           </div>
         </aside>
 
-        <article class="place-card">
+        <article class="place-card" id="placeCard">
           <div class="place-topline">
             <span id="placeType">hidden room</span>
             <span id="placeCode">seed 0000</span>
           </div>
-          <h2 id="placeTitle"></h2>
+          <h2 id="placeTitle" tabindex="-1"></h2>
           <p class="place-body" id="placeBody"></p>
 
           <div class="detail-grid">
             <section>
-              <h3>what you find</h3>
+              <h3 id="artifactHeading">what you find</h3>
               <p id="artifactText"></p>
+              <button class="mini-button" id="takeItemButton" type="button">take artifact</button>
             </section>
             <section>
-              <h3>the rule here</h3>
+              <h3 id="ruleHeading">the rule here</h3>
               <p id="ruleText"></p>
             </section>
             <section>
-              <h3>something whispers</h3>
+              <h3 id="whisperHeading">something whispers</h3>
               <p id="whisperText"></p>
             </section>
           </div>
 
-          <div class="choices">
+          <div class="choices" role="group" aria-labelledby="choicesHeading">
             <div class="choices-header">
-              <span>choose where to go next</span>
-              <button class="text-button" id="rerollButton" type="button">regenerate exits</button>
+              <h3 id="choicesHeading">choose where to go next</h3>
+              <button class="text-button" id="rerollButton" type="button">shuffle the doors</button>
             </div>
             <div class="choice-grid" id="choiceGrid"></div>
           </div>
 
           <div class="place-actions">
-            <button class="secondary-button" id="savePlaceButton" type="button">save this place</button>
-            <button class="secondary-button" id="copyLinkButton" type="button">copy link</button>
-            <a class="secondary-button" href="./">start over</a>
+            <button class="secondary-button" id="savePlaceButton" type="button">keep this room</button>
+            <button class="secondary-button" id="copyLinkButton" type="button">copy this exact door</button>
+            <a class="secondary-button" href="./">return to the surface</a>
           </div>
         </article>
       </section>
     </main>
 
-    <dialog class="saved-dialog" id="savedDialog">
+    <dialog class="saved-dialog" id="savedDialog" aria-labelledby="savedTitle">
       <div class="dialog-header">
-        <h2>Saved places</h2>
+        <h2 id="savedTitle">Rooms you kept</h2>
         <button class="icon-button" id="closeSavedButton" type="button" aria-label="Close saved places">x</button>
       </div>
       <div id="savedList" class="saved-list"></div>
     </dialog>
 
+    <div class="sr-only" id="routeAnnouncer" role="status" aria-live="polite"></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="./app.js" type="module"></script>
