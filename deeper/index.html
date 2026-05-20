@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Deeper is an endless curiosity website where each click creates a new strange place to explore."
+    >
+    <meta name="theme-color" content="#090914">
+    <title>Deeper | Infinite Curiosity Machine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Deeper home">
+        <span class="brand-mark"></span>
+        <span>Deeper</span>
+      </a>
+      <nav class="nav-actions" aria-label="Primary">
+        <button class="ghost-button" id="randomPortalButton" type="button">random portal</button>
+        <button class="ghost-button" id="savedButton" type="button">saved places</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="homePanel">
+        <div class="eyebrow">the infinite curiosity machine</div>
+        <h1>A website with no final page.</h1>
+        <p class="hero-copy">
+          Start anywhere. Every choice creates a deeper room, artifact, creature, signal,
+          or impossible idea. Your path becomes a private rabbit hole you can keep exploring.
+        </p>
+
+        <form class="launch-card" id="launchForm">
+          <label for="sparkInput">Give the machine a spark</label>
+          <div class="launch-row">
+            <input
+              id="sparkInput"
+              name="spark"
+              autocomplete="off"
+              placeholder="lost arcade, moon library, tiny dragon market..."
+              maxlength="80"
+            >
+            <button class="primary-button" type="submit">start exploring</button>
+          </div>
+          <div class="mode-grid" role="group" aria-label="Choose exploration mode">
+            <label><input type="radio" name="mode" value="dream" checked> dream</label>
+            <label><input type="radio" name="mode" value="museum"> museum</label>
+            <label><input type="radio" name="mode" value="game"> game</label>
+            <label><input type="radio" name="mode" value="cosmic"> cosmic</label>
+          </div>
+        </form>
+
+        <div class="demo-stack" aria-label="Example paths">
+          <span>The Clock Garden</span>
+          <span>The Door That Remembers You</span>
+          <span>The Arcade Below The Ocean</span>
+        </div>
+      </section>
+
+      <section class="explore-layout hidden" id="explorePanel" aria-live="polite">
+        <aside class="journey-card">
+          <div class="stat">
+            <span class="stat-label">depth</span>
+            <span class="stat-value" id="depthValue">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">mode</span>
+            <span class="stat-value" id="modeValue">dream</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">signal</span>
+            <span class="stat-value" id="signalValue">quiet</span>
+          </div>
+          <div>
+            <div class="sidebar-title">trail</div>
+            <ol class="trail-list" id="trailList"></ol>
+          </div>
+        </aside>
+
+        <article class="place-card">
+          <div class="place-topline">
+            <span id="placeType">hidden room</span>
+            <span id="placeCode">seed 0000</span>
+          </div>
+          <h2 id="placeTitle"></h2>
+          <p class="place-body" id="placeBody"></p>
+
+          <div class="detail-grid">
+            <section>
+              <h3>what you find</h3>
+              <p id="artifactText"></p>
+            </section>
+            <section>
+              <h3>the rule here</h3>
+              <p id="ruleText"></p>
+            </section>
+            <section>
+              <h3>something whispers</h3>
+              <p id="whisperText"></p>
+            </section>
+          </div>
+
+          <div class="choices">
+            <div class="choices-header">
+              <span>choose where to go next</span>
+              <button class="text-button" id="rerollButton" type="button">regenerate exits</button>
+            </div>
+            <div class="choice-grid" id="choiceGrid"></div>
+          </div>
+
+          <div class="place-actions">
+            <button class="secondary-button" id="savePlaceButton" type="button">save this place</button>
+            <button class="secondary-button" id="copyLinkButton" type="button">copy link</button>
+            <a class="secondary-button" href="./">start over</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <dialog class="saved-dialog" id="savedDialog">
+      <div class="dialog-header">
+        <h2>Saved places</h2>
+        <button class="icon-button" id="closeSavedButton" type="button" aria-label="Close saved places">x</button>
+      </div>
+      <div id="savedList" class="saved-list"></div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
