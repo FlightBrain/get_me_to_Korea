@@ -573,6 +573,90 @@ h1 {
   font-weight: 800;
 }
 
+.maze-page {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+}
+
+.maze-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 10rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent-a, var(--cyan)) 16%, transparent), transparent 55%),
+    rgba(255, 255, 255, 0.055);
+  color: var(--muted);
+  text-align: left;
+}
+
+.maze-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 1rem auto;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.maze-panel-large {
+  grid-row: span 2;
+}
+
+.maze-kicker {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.maze-panel h3,
+.maze-panel strong {
+  display: block;
+  margin: 0 0 0.55rem;
+  color: var(--text);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.15;
+}
+
+.maze-panel p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.maze-panel-button {
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.maze-panel-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.085);
+}
+
+.place-card[data-layout*="oracle"] .maze-panel {
+  border-color: rgba(255, 211, 106, 0.24);
+}
+
+.place-card[data-layout*="archive"] .maze-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 211, 106, 0.08), transparent),
+    rgba(255, 255, 255, 0.055);
+}
+
 .place-card::before {
   content: "";
   position: absolute;
@@ -894,7 +978,8 @@ h1 {
   }
 
   .detail-grid,
-  .choice-grid {
+  .choice-grid,
+  .maze-page {
     grid-template-columns: 1fr;
   }
 

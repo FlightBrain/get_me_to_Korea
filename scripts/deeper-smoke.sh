@@ -7,10 +7,11 @@ echo "== syntax =="
 node --check app.js
 node --check content-packs.js
 node --check content-expansions.js
+node --check content-megapack.js
 python3 -m json.tool vercel.json >/dev/null
 
 echo "== required files =="
-for file in index.html app.js content-packs.js content-expansions.js styles.css vercel.json README.md; do
+for file in index.html app.js content-packs.js content-expansions.js content-megapack.js styles.css vercel.json README.md; do
   test -f "$file" || { echo "missing $file"; exit 1; }
 done
 

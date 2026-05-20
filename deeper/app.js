@@ -8,6 +8,15 @@ import {
   DEEPER_SECRET_LINES,
   DEEPER_SURFACE_RUMORS
 } from "./content-expansions.js";
+import {
+  DEEPER_CREATURE_DIALOGUE,
+  DEEPER_EXIT_RITUALS,
+  DEEPER_LABYRINTH_SIGILS,
+  DEEPER_LORE_PANELS,
+  DEEPER_MAZE_SECTIONS,
+  DEEPER_PAGE_CHAPTERS,
+  DEEPER_ROOM_DESIGNS
+} from "./content-megapack.js";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -56,6 +65,19 @@ const elements = {
   achievementCount: $("#achievementCount"),
   questValue: $("#questValue"),
   questHint: $("#questHint"),
+  chapterLabel: $("#chapterLabel"),
+  chapterTitle: $("#chapterTitle"),
+  chapterText: $("#chapterText"),
+  loreTitle: $("#loreTitle"),
+  loreText: $("#loreText"),
+  ritualTitle: $("#ritualTitle"),
+  ritualText: $("#ritualText"),
+  speakerLabel: $("#speakerLabel"),
+  dialogueText: $("#dialogueText"),
+  dialogueButton: $("#dialogueButton"),
+  sigilLabel: $("#sigilLabel"),
+  sigilText: $("#sigilText"),
+  sigilButton: $("#sigilButton"),
   trailList: $("#trailList"),
   constellationMap: $("#constellationMap"),
   constellationMapFull: $("#constellationMapFull"),
@@ -493,9 +515,27 @@ function pickModeLine(rng, lines, mode) {
   return matching.length ? pick(rng, matching).text : pick(rng, lines).text;
 }
 
+function pickModeObject(rng, lines, mode) {
+  const matching = lines.filter((line) => line.mode === mode);
+  return matching.length ? pick(rng, matching) : pick(rng, lines);
+}
+
 function pickDepthLine(rng, lines, mode, depth) {
   const matching = lines.filter((line) => line.mode === mode && line.depth === depth);
   return matching.length ? pick(rng, matching).text : pickModeLine(rng, lines, mode);
+}
+
+function buildMazePage(rng, mode, depth) {
+  return {
+    chapter: pickModeObject(rng, DEEPER_PAGE_CHAPTERS, mode),
+    lore: pickModeObject(rng, DEEPER_LORE_PANELS, mode),
+    ritual: pickModeObject(rng, DEEPER_EXIT_RITUALS, mode),
+    dialogue: pickModeObject(rng, DEEPER_CREATURE_DIALOGUE, mode),
+    sigil: pickModeObject(rng, DEEPER_LABYRINTH_SIGILS, mode),
+    section: pickModeObject(rng, DEEPER_MAZE_SECTIONS, mode),
+    design: pickModeObject(rng, DEEPER_ROOM_DESIGNS, mode),
+    depth
+  };
 }
 
 function buildExaminations(rng, object, being, signal) {
@@ -778,6 +818,7 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
   const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule: finalRule, signal, being, item, trail, isLoop });
   const examinations = buildExaminations(rng, foundObject, being, signal);
   const secretExit = hashString(`secret:${seed}:${depth}`) % 5 === 0;
+  const mazePage = buildMazePage(rng, safeMode, depth);
 
   if (tier === "rare" || tier === "legendary") {
     choices.push({
@@ -811,7 +852,8 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     examinations,
     secretExit,
     isLoop,
-    roomEvent
+    roomEvent,
+    mazePage
   };
 }
 
@@ -974,6 +1016,7 @@ function renderPlace(place, options = {}) {
   delete elements.examineArtifactButton.dataset.examined;
   elements.takeItemButton.disabled = save.inventory.some((item) => item.id === place.item.id) || save.inventory.length >= MAX_INVENTORY;
   elements.takeItemButton.textContent = save.inventory.some((item) => item.id === place.item.id) ? "artifact kept" : "take artifact";
+  renderMazePage(place);
 
   const headings = modeMeta[place.mode].headings;
   elements.artifactHeading.textContent = headings[0];
@@ -1008,6 +1051,23 @@ function renderPlace(place, options = {}) {
 
   if (options.scrollToPlace) scrollToPlace();
   if (options.focusTitle) elements.placeTitle.focus({ preventScroll: true });
+}
+
+function renderMazePage(place) {
+  const page = place.mazePage;
+  if (!page) return;
+  elements.chapterLabel.textContent = `${page.section.section} / ${page.design.layout}`;
+  elements.chapterTitle.textContent = page.chapter.heading;
+  elements.chapterText.textContent = `${page.chapter.text} ${page.section.body}`;
+  elements.loreTitle.textContent = page.lore.title;
+  elements.loreText.textContent = page.lore.text;
+  elements.ritualTitle.textContent = page.ritual.label;
+  elements.ritualText.textContent = `${page.ritual.instruction} ${page.ritual.consequence}`;
+  elements.speakerLabel.textContent = page.dialogue.speaker;
+  elements.dialogueText.textContent = page.dialogue.line;
+  elements.sigilLabel.textContent = page.sigil.sigil;
+  elements.sigilText.textContent = `${page.sigil.mark}: ${page.sigil.meaning}`;
+  elements.placeCard.dataset.layout = page.design.layout;
 }
 
 function renderTrail(trail) {
