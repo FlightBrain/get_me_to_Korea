@@ -46,17 +46,25 @@ const elements = {
   journalButton: $("#journalButton"),
   questsButton: $("#questsButton"),
   mapButton: $("#mapButton"),
+  codexButton: $("#codexButton"),
+  helpButton: $("#helpButton"),
   savedDialog: $("#savedDialog"),
   journalDialog: $("#journalDialog"),
   questsDialog: $("#questsDialog"),
   constellationDialog: $("#constellationDialog"),
+  codexDialog: $("#codexDialog"),
+  helpDialog: $("#helpDialog"),
   closeSavedButton: $("#closeSavedButton"),
   closeJournalButton: $("#closeJournalButton"),
   closeQuestsButton: $("#closeQuestsButton"),
   closeMapButton: $("#closeMapButton"),
+  closeCodexButton: $("#closeCodexButton"),
+  closeHelpButton: $("#closeHelpButton"),
   savedList: $("#savedList"),
   journalList: $("#journalList"),
   questsPanel: $("#questsPanel"),
+  codexStats: $("#codexStats"),
+  codexShelf: $("#codexShelf"),
   depthValue: $("#depthValue"),
   modeValue: $("#modeValue"),
   signalValue: $("#signalValue"),
@@ -910,9 +918,15 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
 
 function defaultSave() {
   return {
-    version: 2,
+    version: 3,
     inventory: [],
     achievements: {},
+    codex: {
+      rooms: {},
+      sigils: {},
+      rules: {},
+      artifacts: {}
+    },
     quests: {
       active: null,
       completed: []
@@ -941,6 +955,12 @@ function loadSave() {
       quests: {
         active: raw.quests?.active || null,
         completed: Array.isArray(raw.quests?.completed) ? raw.quests.completed.slice(-30) : []
+      },
+      codex: {
+        rooms: raw.codex?.rooms && typeof raw.codex.rooms === "object" ? raw.codex.rooms : {},
+        sigils: raw.codex?.sigils && typeof raw.codex.sigils === "object" ? raw.codex.sigils : {},
+        rules: raw.codex?.rules && typeof raw.codex.rules === "object" ? raw.codex.rules : {},
+        artifacts: raw.codex?.artifacts && typeof raw.codex.artifacts === "object" ? raw.codex.artifacts : {}
       },
       inventory: Array.isArray(raw.inventory) ? raw.inventory.slice(0, MAX_INVENTORY) : [],
       achievements: raw.achievements && typeof raw.achievements === "object" ? raw.achievements : {},
@@ -1018,7 +1038,43 @@ function recordRoomVisit(place) {
       if (!save.stats.modesVisited.includes(place.mode)) save.stats.modesVisited.push(place.mode);
       if (place.tier === "rare" || place.tier === "legendary") save.stats.rareRoomsFound += 1;
     }
+    discoverFromPlace(save, place);
   });
+}
+
+function bumpCodex(bucket, key, entry) {
+  if (!key) return;
+  const previous = bucket[key];
+  bucket[key] = {
+    ...entry,
+    firstSeen: previous?.firstSeen || new Date().toISOString(),
+    count: (previous?.count || 0) + 1
+  };
+}
+
+function discoverFromPlace(save, place) {
+  const url = safeSameOriginPath(window.location.href) || "/";
+  bumpCodex(save.codex.rooms, `${place.code}:${place.depth}`, {
+    title: clampString(place.title, 120),
+    mode: place.mode,
+    tier: place.tier,
+    url
+  });
+  bumpCodex(save.codex.rules, slugify(place.rule), {
+    title: "rule",
+    text: clampString(place.rule, 180),
+    mode: place.mode,
+    url
+  });
+  const sigil = place.mazePage?.sigil;
+  if (sigil) {
+    bumpCodex(save.codex.sigils, sigil.sigil, {
+      title: sigil.mark,
+      text: clampString(sigil.meaning, 220),
+      mode: place.mode,
+      url
+    });
+  }
 }
 
 function updateProgressUi(save = loadSave()) {
@@ -1348,7 +1404,24 @@ function renderSavedPlaces() {
 function getJournalEntries() {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.journal) || "[]");
-    return Array.isArray(parsed) ? parsed.slice(-80).reverse() : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((entry) => {
+        const url = safeSameOriginPath(entry?.url);
+        if (!url) return null;
+        return {
+          id: clampString(entry.id || url, 180),
+          title: clampString(entry.title || "untitled room", 120),
+          depth: clampNumber(entry.depth || "0", 0, 999),
+          mode: banks[entry.mode] ? entry.mode : "dream",
+          tier: ["common", "uncommon", "rare", "legendary"].includes(entry.tier) ? entry.tier : "common",
+          url,
+          visitedAt: clampString(entry.visitedAt || "", 40)
+        };
+      })
+      .filter(Boolean)
+      .slice(-80)
+      .reverse();
   } catch {
     return [];
   }
@@ -1428,6 +1501,45 @@ function renderQuestsDialog() {
   text.append(title, meta, bar);
   item.appendChild(text);
   elements.questsPanel.appendChild(item);
+}
+
+function renderCodex(tab = "rooms") {
+  const save = loadSave();
+  const bucket = save.codex[tab] || {};
+  const entries = Object.entries(bucket).sort((a, b) => (b[1].count || 0) - (a[1].count || 0));
+  elements.codexShelf.innerHTML = "";
+  elements.codexStats.textContent = `${entries.length} ${tab} discovered`;
+  if (entries.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = `no ${tab} recorded yet. go deeper and the codex will start filing evidence.`;
+    elements.codexShelf.appendChild(empty);
+    return;
+  }
+  entries.slice(0, 80).forEach(([id, entry]) => {
+    const card = document.createElement("article");
+    card.className = "codex-card";
+    card.dataset.kind = tab;
+    const glyph = document.createElement("div");
+    glyph.className = "codex-card-glyph";
+    glyph.textContent = tab === "sigils" ? "◇" : tab === "artifacts" ? "◈" : tab === "rules" ? "§" : "●";
+    const title = document.createElement("strong");
+    title.textContent = entry.title || id;
+    const meta = document.createElement("span");
+    meta.className = "codex-card-meta";
+    meta.textContent = `${entry.mode || "unknown"} · seen ${entry.count || 1}x`;
+    const body = document.createElement("p");
+    body.textContent = entry.text || entry.url || "recorded by the maze";
+    card.append(glyph, title, meta, body);
+    if (entry.url) {
+      card.addEventListener("click", () => {
+        window.history.pushState({}, "", entry.url);
+        elements.codexDialog.close();
+        renderFromUrl({ focusTitle: true, scrollToPlace: true });
+      });
+    }
+    elements.codexShelf.appendChild(card);
+  });
 }
 
 function nodeId(place) {
@@ -1531,6 +1643,12 @@ function renderConstellation(svg, graph, size) {
       window.history.pushState({}, "", node.url);
       renderFromUrl({ focusTitle: true, scrollToPlace: true });
     });
+    circle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        circle.dispatchEvent(new MouseEvent("click"));
+      }
+    });
     svg.appendChild(circle);
   });
 }
@@ -1557,6 +1675,12 @@ function takeCurrentItem() {
       ...currentPlace.item,
       acquiredAt: new Date().toISOString(),
       acquiredDepth: currentPlace.depth
+    });
+    bumpCodex(save.codex.artifacts, currentPlace.item.id, {
+      title: currentPlace.item.name,
+      text: `found ${currentPlace.depth} layers down in ${currentPlace.mode} mode`,
+      mode: currentPlace.mode,
+      url: safeSameOriginPath(window.location.href) || "/"
     });
     showToast(`${currentPlace.item.name} added to your pockets`);
   });
@@ -1681,14 +1805,31 @@ elements.mapButton.addEventListener("click", () => {
   elements.closeMapButton.focus();
 });
 
+elements.codexButton.addEventListener("click", () => {
+  lastFocusedBeforeDialog = document.activeElement;
+  renderCodex();
+  elements.codexDialog.showModal();
+  elements.closeCodexButton.focus();
+});
+
+elements.helpButton.addEventListener("click", () => {
+  lastFocusedBeforeDialog = document.activeElement;
+  elements.helpDialog.showModal();
+  elements.closeHelpButton.focus();
+});
+
 elements.closeSavedButton.addEventListener("click", () => elements.savedDialog.close());
 elements.closeJournalButton.addEventListener("click", () => elements.journalDialog.close());
 elements.closeQuestsButton.addEventListener("click", () => elements.questsDialog.close());
 elements.closeMapButton.addEventListener("click", () => elements.constellationDialog.close());
+elements.closeCodexButton.addEventListener("click", () => elements.codexDialog.close());
+elements.closeHelpButton.addEventListener("click", () => elements.helpDialog.close());
 elements.savedDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.journalDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.questsDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.constellationDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
+elements.codexDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
+elements.helpDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.savedDialog.addEventListener("click", (event) => {
   if (event.target === elements.savedDialog) elements.savedDialog.close();
 });
@@ -1700,6 +1841,19 @@ elements.questsDialog.addEventListener("click", (event) => {
 });
 elements.constellationDialog.addEventListener("click", (event) => {
   if (event.target === elements.constellationDialog) elements.constellationDialog.close();
+});
+elements.codexDialog.addEventListener("click", (event) => {
+  if (event.target === elements.codexDialog) elements.codexDialog.close();
+});
+elements.helpDialog.addEventListener("click", (event) => {
+  if (event.target === elements.helpDialog) elements.helpDialog.close();
+});
+
+$$(".codex-tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    $$(".codex-tab").forEach((tab) => tab.classList.toggle("is-active", tab === button));
+    renderCodex(button.dataset.codexTab);
+  });
 });
 
 $$("input[name='mode']").forEach((radio) => {
@@ -1738,6 +1892,9 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "e") elements.examineArtifactButton.click();
   if (event.key.toLowerCase() === "t") elements.takeItemButton.click();
   if (event.key.toLowerCase() === "m") elements.mapButton.click();
+  if (event.key.toLowerCase() === "j") elements.journalButton.click();
+  if (event.key.toLowerCase() === "q") elements.questsButton.click();
+  if (event.key === "?") elements.helpButton.click();
   if (event.key.toLowerCase() === "c") handleMazePanel("chapter");
   if (event.key.toLowerCase() === "l") handleMazePanel("lore");
   if (event.key.toLowerCase() === "d") handleMazePanel("dialogue");

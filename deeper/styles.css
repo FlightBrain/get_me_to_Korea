@@ -7,13 +7,29 @@
   --line: rgba(255, 255, 255, 0.13);
   --text: #f7f2ff;
   --muted: #b7adc9;
-  --dim: #9a91ad;
+  --dim: #b0a8c0;
   --pink: #ff6fd8;
   --violet: #8f7cff;
   --cyan: #62e8ff;
   --gold: #ffd36a;
   --green: #8dffb3;
   --shadow: 0 30px 100px rgba(0, 0, 0, 0.38);
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 1rem;
+  z-index: 99;
+  padding: 0.6rem 0.8rem;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 900;
+}
+
+.skip-link:focus {
+  left: 1rem;
 }
 
 * {
@@ -1068,6 +1084,88 @@ h1 {
   max-height: 26rem;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.codex-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+}
+
+.codex-tab {
+  min-height: 2.35rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.codex-tab.is-active {
+  border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+  background: rgba(98, 232, 255, 0.12);
+  color: var(--text);
+}
+
+.codex-stats {
+  margin-top: 0.8rem;
+  color: var(--dim);
+  font-size: 0.86rem;
+}
+
+.codex-shelf,
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+  max-height: min(54dvh, 34rem);
+  overflow: auto;
+}
+
+.codex-card,
+.help-grid span {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+}
+
+.codex-card {
+  cursor: pointer;
+}
+
+.codex-card-glyph {
+  color: var(--accent-a, var(--cyan));
+  font-size: 1.35rem;
+}
+
+.codex-card-meta {
+  color: var(--dim);
+  font-size: 0.78rem;
+}
+
+.codex-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+kbd {
+  width: fit-content;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .saved-item {

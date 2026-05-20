@@ -8,6 +8,16 @@
       content="Deeper generates strange rooms forever. Every click opens a new place. Your path lives in the URL."
     >
     <meta name="theme-color" content="#090914">
+    <link rel="canonical" href="/">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Deeper">
+    <meta property="og:title" content="Deeper | Infinite Curiosity Machine">
+    <meta property="og:description" content="Every click opens a new strange room. Your path lives in the URL.">
+    <meta property="og:image" content="./favicon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Deeper | Infinite Curiosity Machine">
+    <meta name="twitter:description" content="Every click opens a new strange room. Your path lives in the URL.">
     <title>Deeper | Infinite Curiosity Machine</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +28,7 @@
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
+    <a class="skip-link" href="#mainContent">skip to main content</a>
     <div class="ambient ambient-one"></div>
     <div class="ambient ambient-two"></div>
     <div class="grain" aria-hidden="true"></div>
@@ -33,6 +44,8 @@
         <button class="ghost-button" id="journalButton" type="button">journal</button>
         <button class="ghost-button" id="questsButton" type="button">quests</button>
         <button class="ghost-button" id="mapButton" type="button">map</button>
+        <button class="ghost-button" id="codexButton" type="button">codex</button>
+        <button class="ghost-button" id="helpButton" type="button">?</button>
       </nav>
     </header>
 
@@ -244,6 +257,42 @@
         aria-label="Expanded map of rooms visited on this journey"
         viewBox="0 0 800 800"
       ></svg>
+    </dialog>
+
+    <dialog class="saved-dialog codex-dialog" id="codexDialog" aria-labelledby="codexTitle">
+      <div class="dialog-header">
+        <h2 id="codexTitle">the codex</h2>
+        <button class="icon-button" id="closeCodexButton" type="button" aria-label="Close codex">x</button>
+      </div>
+      <div class="codex-tabs" role="tablist" aria-label="Codex sections">
+        <button class="codex-tab is-active" type="button" data-codex-tab="rooms">rooms</button>
+        <button class="codex-tab" type="button" data-codex-tab="sigils">sigils</button>
+        <button class="codex-tab" type="button" data-codex-tab="rules">rules</button>
+        <button class="codex-tab" type="button" data-codex-tab="artifacts">artifacts</button>
+      </div>
+      <div id="codexStats" class="codex-stats"></div>
+      <div id="codexShelf" class="codex-shelf"></div>
+    </dialog>
+
+    <dialog class="saved-dialog help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+      <div class="dialog-header">
+        <h2 id="helpTitle">keyboard shortcuts</h2>
+        <button class="icon-button" id="closeHelpButton" type="button" aria-label="Close keyboard shortcuts">x</button>
+      </div>
+      <div class="help-grid">
+        <span><kbd>1-9</kbd> choose exits</span>
+        <span><kbd>r</kbd> shuffle doors</span>
+        <span><kbd>s</kbd> keep room</span>
+        <span><kbd>e</kbd> examine artifact</span>
+        <span><kbd>t</kbd> take artifact</span>
+        <span><kbd>m</kbd> map</span>
+        <span><kbd>j</kbd> journal</span>
+        <span><kbd>q</kbd> quests</span>
+        <span><kbd>c</kbd> chapter</span>
+        <span><kbd>l</kbd> lore</span>
+        <span><kbd>d</kbd> dialogue</span>
+        <span><kbd>g</kbd> sigil</span>
+      </div>
     </dialog>
 
     <div class="sr-only" id="routeAnnouncer" role="status" aria-live="polite"></div>
