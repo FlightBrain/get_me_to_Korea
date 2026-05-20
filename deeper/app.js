@@ -65,11 +65,18 @@ const elements = {
   achievementCount: $("#achievementCount"),
   questValue: $("#questValue"),
   questHint: $("#questHint"),
+  mazeFolioChapter: $("#mazeFolioChapter"),
+  mazeFolioCaption: $("#mazeFolioCaption"),
+  mazePage: $("#mazePage"),
+  motifLabel: $("#motifLabel"),
+  chapterPanel: $("#chapterPanel"),
   chapterLabel: $("#chapterLabel"),
   chapterTitle: $("#chapterTitle"),
   chapterText: $("#chapterText"),
+  lorePanel: $("#lorePanel"),
   loreTitle: $("#loreTitle"),
   loreText: $("#loreText"),
+  ritualPanel: $("#ritualPanel"),
   ritualTitle: $("#ritualTitle"),
   ritualText: $("#ritualText"),
   speakerLabel: $("#speakerLabel"),
@@ -78,6 +85,11 @@ const elements = {
   sigilLabel: $("#sigilLabel"),
   sigilText: $("#sigilText"),
   sigilButton: $("#sigilButton"),
+  mazeDrawer: $("#mazeDrawer"),
+  closeMazeDrawer: $("#closeMazeDrawer"),
+  mazeDrawerKicker: $("#mazeDrawerKicker"),
+  mazeDrawerTitle: $("#mazeDrawerTitle"),
+  mazeDrawerBody: $("#mazeDrawerBody"),
   trailList: $("#trailList"),
   constellationMap: $("#constellationMap"),
   constellationMapFull: $("#constellationMapFull"),
@@ -380,11 +392,30 @@ const accents = [
   ["#ffd36a", "#ff6fd8"]
 ];
 
+const paletteMap = {
+  "aurora pink": ["#ff6fd8", "#8f7cff"],
+  "signal cyan": ["#62e8ff", "#8dffb3"],
+  "receipt gold": ["#ffd36a", "#ff9f6e"],
+  "void violet": ["#8f7cff", "#38bdf8"],
+  "soft green": ["#8dffb3", "#62e8ff"],
+  "warning amber": ["#ff9f6e", "#ffd36a"],
+  "moon white": ["#f7f2ff", "#62e8ff"],
+  "deep blue": ["#38bdf8", "#8f7cff"],
+  "museum red": ["#fb7185", "#ffd36a"],
+  "terminal lime": ["#a3e635", "#62e8ff"]
+};
+
+const modeIndexes = new WeakMap();
+
 Object.entries(DEEPER_CONTENT_PACKS).forEach(([mode, pack]) => {
   if (!banks[mode]) return;
   ["places", "beings", "objects", "rules", "signals"].forEach((key) => {
     banks[mode][key] = [...banks[mode][key], ...(pack[key] || [])];
   });
+});
+
+Object.values(banks).forEach((bank) => {
+  bank.allTargets = [...bank.places, ...bank.objects, ...bank.beings];
 });
 
 DEEPER_WHISPER_LINES.forEach((line) => {
@@ -510,19 +541,39 @@ function makeItem(object, mode, seed, code) {
   };
 }
 
+function indexByMode(lines) {
+  if (modeIndexes.has(lines)) return modeIndexes.get(lines);
+  const index = { _all: lines };
+  lines.forEach((line) => {
+    if (!line.mode) return;
+    if (!index[line.mode]) index[line.mode] = [];
+    index[line.mode].push(line);
+    if (Number.isFinite(line.depth)) {
+      const depthKey = `${line.mode}:${line.depth}`;
+      if (!index[depthKey]) index[depthKey] = [];
+      index[depthKey].push(line);
+    }
+  });
+  modeIndexes.set(lines, index);
+  return index;
+}
+
 function pickModeLine(rng, lines, mode) {
-  const matching = lines.filter((line) => line.mode === mode);
-  return matching.length ? pick(rng, matching).text : pick(rng, lines).text;
+  const index = indexByMode(lines);
+  const matching = index[mode] || index._all;
+  return pick(rng, matching).text;
 }
 
 function pickModeObject(rng, lines, mode) {
-  const matching = lines.filter((line) => line.mode === mode);
-  return matching.length ? pick(rng, matching) : pick(rng, lines);
+  const index = indexByMode(lines);
+  const matching = index[mode] || index._all;
+  return pick(rng, matching);
 }
 
 function pickDepthLine(rng, lines, mode, depth) {
-  const matching = lines.filter((line) => line.mode === mode && line.depth === depth);
-  return matching.length ? pick(rng, matching).text : pickModeLine(rng, lines, mode);
+  const index = indexByMode(lines);
+  const matching = index[`${mode}:${depth}`];
+  return matching?.length ? pick(rng, matching).text : pickModeLine(rng, lines, mode);
 }
 
 function buildMazePage(rng, mode, depth) {
@@ -658,7 +709,7 @@ function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, bein
     const exitType = pick(rng, exitTypes);
     const ending = pick(rng, universal.endings);
     const verb = pick(rng, universal.verbs);
-    const target = pick(rng, [...bank.places, ...bank.objects, ...bank.beings]);
+    const target = pick(rng, bank.allTargets);
     const otherMode = pick(rng, allModes.filter((candidate) => candidate !== mode));
     const nextMode = rng() < 0.1 ? otherMode : mode;
     const labelByType = {
@@ -1016,7 +1067,6 @@ function renderPlace(place, options = {}) {
   delete elements.examineArtifactButton.dataset.examined;
   elements.takeItemButton.disabled = save.inventory.some((item) => item.id === place.item.id) || save.inventory.length >= MAX_INVENTORY;
   elements.takeItemButton.textContent = save.inventory.some((item) => item.id === place.item.id) ? "artifact kept" : "take artifact";
-  renderMazePage(place);
 
   const headings = modeMeta[place.mode].headings;
   elements.artifactHeading.textContent = headings[0];
@@ -1029,6 +1079,7 @@ function renderPlace(place, options = {}) {
   document.documentElement.style.setProperty("--accent-a", place.accent[0]);
   document.documentElement.style.setProperty("--accent-b", place.accent[1]);
   document.documentElement.style.setProperty("--depth-factor", Math.min(place.depth / 20, 1).toFixed(2));
+  renderMazePage(place);
 
   elements.placeCard.className = `place-card tier-${place.tier}`;
   if (place.isLoop) elements.placeCard.classList.add("is-loop");
@@ -1056,6 +1107,10 @@ function renderPlace(place, options = {}) {
 function renderMazePage(place) {
   const page = place.mazePage;
   if (!page) return;
+  const palette = paletteMap[page.design.palette] || place.accent;
+  const roomHash = hashString(`${place.code}:${page.design.layout}:${page.design.palette}`);
+  elements.mazeFolioChapter.textContent = page.chapter.chapter;
+  elements.mazeFolioCaption.textContent = page.design.caption;
   elements.chapterLabel.textContent = `${page.section.section} / ${page.design.layout}`;
   elements.chapterTitle.textContent = page.chapter.heading;
   elements.chapterText.textContent = `${page.chapter.text} ${page.section.body}`;
@@ -1068,6 +1123,57 @@ function renderMazePage(place) {
   elements.sigilLabel.textContent = page.sigil.sigil;
   elements.sigilText.textContent = `${page.sigil.mark}: ${page.sigil.meaning}`;
   elements.placeCard.dataset.layout = page.design.layout;
+  elements.placeCard.dataset.section = page.section.section;
+  elements.placeCard.dataset.palette = slugify(page.design.palette);
+  elements.placeCard.dataset.texture = slugify(page.design.texture);
+  elements.motifLabel.textContent = page.design.motif;
+  document.documentElement.style.setProperty("--accent-a", palette[0]);
+  document.documentElement.style.setProperty("--accent-b", palette[1]);
+  document.documentElement.style.setProperty("--room-angle", `${roomHash % 360}deg`);
+  document.documentElement.style.setProperty("--spot-a-x", `${20 + (roomHash % 55)}%`);
+  document.documentElement.style.setProperty("--spot-b-y", `${18 + ((roomHash >> 8) % 62)}%`);
+  document.documentElement.style.setProperty("--room-motif", `"${page.design.motif}"`);
+  if (!prefersReducedMotion()) {
+    elements.mazePage.classList.remove("is-entering");
+    void elements.mazePage.offsetWidth;
+    elements.mazePage.classList.add("is-entering");
+  }
+}
+
+function openMazeDrawer(kicker, title, body) {
+  elements.mazeDrawerKicker.textContent = kicker;
+  elements.mazeDrawerTitle.textContent = title;
+  elements.mazeDrawerBody.textContent = body;
+  elements.mazeDrawer.classList.remove("hidden");
+  requestAnimationFrame(() => elements.mazeDrawer.classList.add("is-open"));
+  elements.mazeDrawer.setAttribute("aria-hidden", "false");
+  elements.closeMazeDrawer.focus();
+}
+
+function closeMazeDrawer() {
+  elements.mazeDrawer.classList.remove("is-open");
+  elements.mazeDrawer.setAttribute("aria-hidden", "true");
+  setTimeout(() => elements.mazeDrawer.classList.add("hidden"), prefersReducedMotion() ? 0 : 240);
+}
+
+function handleMazePanel(panelKey) {
+  if (!currentPlace?.mazePage) return;
+  const page = currentPlace.mazePage;
+  const drawers = {
+    chapter: [
+      `${page.section.section} / ${page.design.layout}`,
+      page.chapter.heading,
+      `${page.chapter.text} ${page.section.body}`
+    ],
+    lore: ["field note", page.lore.title, page.lore.text],
+    ritual: ["exit ritual", page.ritual.label, `${page.ritual.instruction} ${page.ritual.consequence}`],
+    dialogue: [page.dialogue.speaker, "Someone nearby speaks", page.dialogue.line],
+    sigil: [page.sigil.sigil, page.sigil.mark, page.sigil.meaning]
+  };
+  const target = document.querySelector(`[data-maze-panel="${panelKey}"]`);
+  target?.classList.add("is-pulsed");
+  setTimeout(() => target?.classList.remove("is-pulsed"), 420);
+  openMazeDrawer(...drawers[panelKey]);
 }
 
 function renderTrail(trail) {
@@ -1523,6 +1629,15 @@ elements.rerollButton.addEventListener("click", () => {
 elements.savePlaceButton.addEventListener("click", saveCurrentPlace);
 elements.takeItemButton.addEventListener("click", takeCurrentItem);
 elements.examineArtifactButton.addEventListener("click", examineCurrentArtifact);
+elements.chapterPanel.addEventListener("click", () => handleMazePanel("chapter"));
+elements.lorePanel.addEventListener("click", () => handleMazePanel("lore"));
+elements.ritualPanel.addEventListener("click", () => handleMazePanel("ritual"));
+elements.dialogueButton.addEventListener("click", () => handleMazePanel("dialogue"));
+elements.sigilButton.addEventListener("click", () => handleMazePanel("sigil"));
+elements.closeMazeDrawer.addEventListener("click", closeMazeDrawer);
+elements.mazeDrawer.addEventListener("click", (event) => {
+  if (event.target === elements.mazeDrawer) closeMazeDrawer();
+});
 
 elements.copyLinkButton.addEventListener("click", async () => {
   try {
@@ -1607,13 +1722,26 @@ elements.continueButton.addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (!currentPlace || event.metaKey || event.ctrlKey || event.altKey) return;
-  if (event.key >= "1" && event.key <= "5") {
+  const activeTag = document.activeElement?.tagName;
+  if (event.metaKey || event.ctrlKey || event.altKey || activeTag === "INPUT" || activeTag === "TEXTAREA") return;
+  if (event.key === "Escape" && elements.mazeDrawer.classList.contains("is-open")) {
+    closeMazeDrawer();
+    return;
+  }
+  if (!currentPlace) return;
+  if (event.key >= "1" && event.key <= "9") {
     const choice = currentPlace.choices[Number(event.key) - 1];
     if (choice) chooseExit(currentPlace, choice);
   }
   if (event.key.toLowerCase() === "r") elements.rerollButton.click();
   if (event.key.toLowerCase() === "s") elements.savePlaceButton.click();
+  if (event.key.toLowerCase() === "e") elements.examineArtifactButton.click();
+  if (event.key.toLowerCase() === "t") elements.takeItemButton.click();
+  if (event.key.toLowerCase() === "m") elements.mapButton.click();
+  if (event.key.toLowerCase() === "c") handleMazePanel("chapter");
+  if (event.key.toLowerCase() === "l") handleMazePanel("lore");
+  if (event.key.toLowerCase() === "d") handleMazePanel("dialogue");
+  if (event.key.toLowerCase() === "g") handleMazePanel("sigil");
 });
 
 window.addEventListener("popstate", () => renderFromUrl({ focusTitle: true }));

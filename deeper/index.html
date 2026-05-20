@@ -127,31 +127,49 @@
           <p class="place-body" id="placeBody"></p>
           <p class="quest-hint hidden" id="questHint"></p>
 
+          <header class="maze-folio">
+            <span id="mazeFolioChapter">folio 000</span>
+            <span id="mazeFolioCaption">the room is still arranging itself</span>
+          </header>
           <section class="maze-page" id="mazePage">
-            <div class="maze-panel maze-panel-large">
+            <button class="maze-panel maze-panel-large maze-panel-button" id="chapterPanel" data-maze-panel="chapter" type="button">
+              <span class="maze-motif" id="motifLabel" aria-hidden="true"></span>
               <span class="maze-kicker" id="chapterLabel">chapter</span>
               <h3 id="chapterTitle">The page turns</h3>
               <p id="chapterText"></p>
-            </div>
-            <div class="maze-panel">
+              <span class="maze-panel-hint">click to unfold</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="lorePanel" data-maze-panel="lore" type="button">
               <span class="maze-kicker">field note</span>
               <h3 id="loreTitle">Field note</h3>
               <p id="loreText"></p>
-            </div>
-            <div class="maze-panel">
+              <span class="maze-panel-hint">open note</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="ritualPanel" data-maze-panel="ritual" type="button">
               <span class="maze-kicker">exit ritual</span>
               <h3 id="ritualTitle">Ritual</h3>
               <p id="ritualText"></p>
-            </div>
-            <button class="maze-panel maze-panel-button" id="dialogueButton" type="button">
+              <span class="maze-panel-hint">read ritual</span>
+            </button>
+            <button class="maze-panel maze-panel-button" id="dialogueButton" data-maze-panel="dialogue" type="button">
               <span class="maze-kicker" id="speakerLabel">someone nearby</span>
               <strong id="dialogueText">Ask the room what it knows.</strong>
+              <span class="maze-panel-hint">listen again</span>
             </button>
-            <button class="maze-panel maze-panel-button" id="sigilButton" type="button">
+            <button class="maze-panel maze-panel-button" id="sigilButton" data-maze-panel="sigil" type="button">
               <span class="maze-kicker" id="sigilLabel">sigil</span>
               <strong id="sigilText">Inspect the mark on the wall.</strong>
+              <span class="maze-panel-hint">trace mark</span>
             </button>
           </section>
+          <div class="maze-drawer hidden" id="mazeDrawer" aria-hidden="true">
+            <div class="maze-drawer-inner" role="region" aria-live="polite">
+              <button class="icon-button maze-drawer-close" id="closeMazeDrawer" type="button" aria-label="Close maze detail">x</button>
+              <span class="maze-kicker" id="mazeDrawerKicker"></span>
+              <h3 id="mazeDrawerTitle"></h3>
+              <p id="mazeDrawerBody"></p>
+            </div>
+          </div>
 
           <div class="detail-grid">
             <section>
