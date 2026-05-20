@@ -10,6 +10,7 @@ Deeper is a Vercel-ready infinite curiosity website. It generates a new strange 
 - Tracks depth and a short breadcrumb trail.
 - Adds rare rooms, carry-forward pocket items, local inventory, and achievements.
 - Adds a journey journal, continue-last-journey button, loop rooms, artifact examination, and secret exits.
+- Adds real quests, a fifth liminal mode, milestone rooms, ascent exits, and a constellation map of the journey.
 - Supports keyboard shortcuts: `1` to `5` choose exits, `r` shuffles doors, `s` saves the room.
 - Saves favorite places in local browser storage.
 - Uses safer same-origin saved links and bounded URL parameters.

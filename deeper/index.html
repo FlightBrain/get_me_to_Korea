@@ -31,6 +31,8 @@
         <button class="ghost-button" id="randomPortalButton" type="button">random portal</button>
         <button class="ghost-button" id="savedButton" type="button">saved places</button>
         <button class="ghost-button" id="journalButton" type="button">journal</button>
+        <button class="ghost-button" id="questsButton" type="button">quests</button>
+        <button class="ghost-button" id="mapButton" type="button">map</button>
       </nav>
     </header>
 
@@ -60,6 +62,7 @@
             <label><input type="radio" name="mode" value="museum"> museum</label>
             <label><input type="radio" name="mode" value="game"> game</label>
             <label><input type="radio" name="mode" value="cosmic"> cosmic</label>
+            <label><input type="radio" name="mode" value="liminal"> liminal</label>
           </div>
           <p class="mode-helper" id="modeHelper">dream: rooms that remember you wrong</p>
         </form>
@@ -98,8 +101,19 @@
             <span class="stat-label">achievements</span>
             <span class="stat-value" id="achievementCount">0</span>
           </div>
+          <div class="stat">
+            <span class="stat-label">quest</span>
+            <span class="stat-value" id="questValue">none</span>
+          </div>
           <div>
             <h2 class="sidebar-title">trail</h2>
+            <svg
+              id="constellationMap"
+              class="constellation-map"
+              role="img"
+              aria-label="Map of rooms visited on this journey"
+              viewBox="0 0 400 400"
+            ></svg>
             <ol class="trail-list" id="trailList"></ol>
           </div>
         </aside>
@@ -111,6 +125,7 @@
           </div>
           <h2 id="placeTitle" tabindex="-1"></h2>
           <p class="place-body" id="placeBody"></p>
+          <p class="quest-hint hidden" id="questHint"></p>
 
           <div class="detail-grid">
             <section>
@@ -163,6 +178,28 @@
         <button class="icon-button" id="closeJournalButton" type="button" aria-label="Close journey journal">x</button>
       </div>
       <div id="journalList" class="saved-list"></div>
+    </dialog>
+
+    <dialog class="saved-dialog" id="questsDialog" aria-labelledby="questsTitle">
+      <div class="dialog-header">
+        <h2 id="questsTitle">Active quest</h2>
+        <button class="icon-button" id="closeQuestsButton" type="button" aria-label="Close quests">x</button>
+      </div>
+      <div id="questsPanel" class="saved-list"></div>
+    </dialog>
+
+    <dialog class="saved-dialog constellation-dialog" id="constellationDialog" aria-labelledby="mapTitle">
+      <div class="dialog-header">
+        <h2 id="mapTitle">Your constellation</h2>
+        <button class="icon-button" id="closeMapButton" type="button" aria-label="Close constellation map">x</button>
+      </div>
+      <svg
+        id="constellationMapFull"
+        class="constellation-map constellation-map--full"
+        role="img"
+        aria-label="Expanded map of rooms visited on this journey"
+        viewBox="0 0 800 800"
+      ></svg>
     </dialog>
 
     <div class="sr-only" id="routeAnnouncer" role="status" aria-live="polite"></div>

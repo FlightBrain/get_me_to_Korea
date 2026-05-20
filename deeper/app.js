@@ -9,7 +9,8 @@ const STORAGE_KEYS = {
   saved: "deeper.savedPlaces.v1",
   save: "deeper.save.v1",
   journal: "deeper.journal.v1",
-  lastUrl: "deeper.lastUrl.v1"
+  lastUrl: "deeper.lastUrl.v1",
+  constellation: "deeper.constellation.v1"
 };
 
 const elements = {
@@ -23,19 +24,30 @@ const elements = {
   randomPortalButton: $("#randomPortalButton"),
   savedButton: $("#savedButton"),
   journalButton: $("#journalButton"),
+  questsButton: $("#questsButton"),
+  mapButton: $("#mapButton"),
   savedDialog: $("#savedDialog"),
   journalDialog: $("#journalDialog"),
+  questsDialog: $("#questsDialog"),
+  constellationDialog: $("#constellationDialog"),
   closeSavedButton: $("#closeSavedButton"),
   closeJournalButton: $("#closeJournalButton"),
+  closeQuestsButton: $("#closeQuestsButton"),
+  closeMapButton: $("#closeMapButton"),
   savedList: $("#savedList"),
   journalList: $("#journalList"),
+  questsPanel: $("#questsPanel"),
   depthValue: $("#depthValue"),
   modeValue: $("#modeValue"),
   signalValue: $("#signalValue"),
   pocketValue: $("#pocketValue"),
   inventoryCount: $("#inventoryCount"),
   achievementCount: $("#achievementCount"),
+  questValue: $("#questValue"),
+  questHint: $("#questHint"),
   trailList: $("#trailList"),
+  constellationMap: $("#constellationMap"),
+  constellationMapFull: $("#constellationMapFull"),
   placeCard: $("#placeCard"),
   placeType: $("#placeType"),
   placeCode: $("#placeCode"),
@@ -74,6 +86,10 @@ const modeMeta = {
   cosmic: {
     helper: "cosmic: places measured in songs, not miles",
     headings: ["drifting nearby", "physics here", "transmission"]
+  },
+  liminal: {
+    helper: "liminal: rooms with forms you already filled out",
+    headings: ["left on the counter", "posted notice", "PA announcement"]
   }
 };
 
@@ -238,6 +254,44 @@ const banks = {
       "No one exits a constellation by the same line they entered."
     ],
     signals: ["stellar", "cold", "radio", "ancient", "wide-awake"]
+  },
+  liminal: {
+    places: [
+      "waiting room for the next room",
+      "elevator lobby with no building",
+      "corridor that charges by step",
+      "break room for ghosts on shift",
+      "office where forms go to molt",
+      "parking garage under a memory",
+      "service desk at the end of the hall",
+      "stairwell labeled maybe"
+    ],
+    beings: [
+      "receptionist who already filed you",
+      "janitor of closed doors",
+      "intern from the void",
+      "security camera that apologizes",
+      "clerk with a rubber stamp heart",
+      "manager of missing elevators",
+      "copy machine that learned regret"
+    ],
+    objects: [
+      "ticket stub for a room you have not reached",
+      "lanyard that grants false confidence",
+      "clipboard of unfinished names",
+      "keycard that only works backward",
+      "binder full of almost-exits",
+      "receipt for waiting",
+      "floor plan with one extra floor"
+    ],
+    rules: [
+      "You must sign in to sign out.",
+      "All exits require a reason.",
+      "The fire alarm is the only honest speaker.",
+      "Do not stand too close to your appointment time.",
+      "Visitors may keep one impossible receipt."
+    ],
+    signals: ["fluorescent", "stamped", "pending", "misfiled", "on hold"]
   }
 };
 
@@ -296,10 +350,32 @@ const accents = [
 const achievements = [
   { id: "first_threshold", title: "First Threshold", test: (save) => save.stats.roomsVisited >= 1 },
   { id: "deep_diver", title: "Deep Diver", test: (save) => save.stats.maxDepth >= 10 },
-  { id: "mode_tourist", title: "Mode Tourist", test: (save) => save.stats.modesVisited.length >= 4 },
+  { id: "mode_tourist", title: "Mode Tourist", test: (save) => save.stats.modesVisited.length >= 5 },
   { id: "curator", title: "Curator", test: (save) => save.inventory.length >= 5 },
   { id: "rare_sighting", title: "Rare Sighting", test: (save) => save.stats.rareRoomsFound >= 1 },
-  { id: "loop_watcher", title: "Loop Watcher", test: (save) => save.stats.rerollsUsed >= 5 }
+  { id: "loop_watcher", title: "Loop Watcher", test: (save) => save.stats.rerollsUsed >= 5 },
+  { id: "quest_finisher", title: "Quest Finisher", test: (save) => save.quests.completed.length >= 1 },
+  { id: "surface_return", title: "Surface Return", test: (save) => save.stats.ascents >= 3 }
+];
+
+const questTemplates = [
+  { id: "depth_5", title: "Reach five layers down", target: 5, unit: "layers", progress: (save) => save.stats.maxDepth },
+  { id: "depth_10", title: "Touch the tenth layer", target: 10, unit: "layers", progress: (save) => save.stats.maxDepth },
+  { id: "liminal_visit", title: "Find the liminal office", target: 1, unit: "visit", progress: (save) => (save.stats.modesVisited.includes("liminal") ? 1 : 0) },
+  { id: "rare_room", title: "Find one rare room", target: 1, unit: "room", progress: (save) => save.stats.rareRoomsFound },
+  { id: "curator_3", title: "Keep three artifacts", target: 3, unit: "artifacts", progress: (save) => save.inventory.length },
+  { id: "save_room", title: "Pocket a favorite room", target: 1, unit: "room", progress: (save) => save.stats.roomsSaved },
+  { id: "reroll_3", title: "Shuffle doors three times", target: 3, unit: "shuffles", progress: (save) => save.stats.rerollsUsed },
+  { id: "examine_2", title: "Examine artifacts twice", target: 2, unit: "examinations", progress: (save) => save.stats.examinations },
+  { id: "ascend_2", title: "Climb upward twice", target: 2, unit: "ascents", progress: (save) => save.stats.ascents }
+];
+
+const strata = [
+  { min: 21, name: "basement of the internet", bonus: 0.12 },
+  { min: 13, name: "machine knows you", bonus: 0.08 },
+  { min: 8, name: "deep layer", bonus: 0.05 },
+  { min: 4, name: "familiar wrongness", bonus: 0.02 },
+  { min: 0, name: "threshold", bonus: 0 }
 ];
 
 let currentPlace = null;
@@ -356,12 +432,17 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function getStratum(depth) {
+  return strata.find((item) => depth >= item.min) || strata.at(-1);
+}
+
 function rollTier(seed, depth, reroll) {
   const rng = makeRng(hashString(`tier:${seed}:${depth}:${reroll}`));
   const roll = rng();
-  if (roll < 0.01) return "legendary";
-  if (roll < 0.05) return "rare";
-  if (roll < 0.2) return "uncommon";
+  const bonus = getStratum(depth).bonus;
+  if (roll < 0.01 + bonus / 8) return "legendary";
+  if (roll < 0.05 + bonus / 2) return "rare";
+  if (roll < 0.2 + bonus) return "uncommon";
   return "common";
 }
 
@@ -463,6 +544,13 @@ function buildBody({ rng, safeMode, title, being, sceneObject, depth, spark, tra
   if (safeMode === "museum") {
     lines.push("A tiny placard insists this room was acquired under suspicious circumstances.");
   }
+  if (safeMode === "liminal") {
+    lines.push("Somewhere overhead, a speaker calls your number in a voice that has never seen a face.");
+  }
+  const stratum = getStratum(depth);
+  if (stratum.min > 0) {
+    lines.push(`You have entered the ${stratum.name}. The site feels less optional now.`);
+  }
   return lines.join(" ");
 }
 
@@ -529,7 +617,51 @@ function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, bein
     };
   }
 
+  if (depth > 0 && (depth % 5 === 0 || trail.length >= 2)) {
+    choices.push({
+      label: `Climb back toward ${trail.at(-2) || "the surface"}`,
+      hint: `Layer ${Math.max(0, depth - 1)}. The air gets lighter.`,
+      seed: slugify(`${seed}:ascent:${depth}:${reroll}`),
+      nextMode: mode,
+      ascent: 1
+    });
+  }
+
   return choices;
+}
+
+function milestoneOverride(depth, save) {
+  const milestones = {
+    5: {
+      title: "The Room That Counts You",
+      type: "milestone chamber",
+      tier: "uncommon",
+      rule: "The trail must be read backwards before it will let you pass.",
+      whisper: "\"Five layers is when the website starts keeping score.\""
+    },
+    10: {
+      title: "Inventory Audit",
+      type: "audit room",
+      tier: "rare",
+      rule: "You may only keep what you can explain.",
+      whisper: `"The pockets report ${save.inventory.length} artifacts and refuse to elaborate."`
+    },
+    13: {
+      title: "The Thirteenth Layer",
+      type: "unlucky threshold",
+      tier: "rare",
+      rule: "Every door is honest exactly once.",
+      whisper: "\"Thirteen is not unlucky. It is under-documented.\""
+    },
+    21: {
+      title: "Basement Receipt",
+      type: "basement ledger",
+      tier: "legendary",
+      rule: "All descents must eventually itemize themselves.",
+      whisper: `"Receipt: ${save.stats.roomsVisited} rooms, ${save.stats.rerollsUsed} shuffles, ${save.stats.rareRoomsFound} rare sightings."`
+    }
+  };
+  return milestones[depth] || null;
 }
 
 function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
@@ -547,7 +679,7 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
   const code = hashString(seed || randomSeed("empty")).toString(16).slice(0, 6).padStart(6, "0");
   const tier = rollTier(seed, depth, reroll);
   const item = makeItem(foundObject, safeMode, seed, code);
-  const isLoop = trail.includes(title) || seed.includes("loop");
+  const save = loadSave();
   const titlePatterns = [
     () => `The ${titleCase(mood)} ${titleCase(place)}`,
     () => `The ${titleCase(place)} Where ${titleCase(being)} Wait`,
@@ -555,8 +687,10 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     () => `The ${titleCase(foundObject)} Room`
   ];
   let title = depth === 0 && spark ? titleCase(spark) : pick(rng, titlePatterns)();
+  const isLoop = trail.some((entry) => slugify(entry) === slugify(title)) || seed.includes("loop") || seed.includes("break-loop");
   let type = depth > 20 ? "basement of the internet" : depth > 8 ? "deep layer" : pick(rng, ["hidden room", "portal", "strange exhibit", "side quest", "living map", "threshold"]);
   let accent = pick(rng, accents);
+  const milestone = milestoneOverride(depth, save);
 
   if (tier === "uncommon") type = "glimmering chamber";
   if (tier === "rare") {
@@ -575,6 +709,11 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     signal = "looped";
     accent = ["#ff9f6e", "#ffd36a"];
   }
+  if (milestone) {
+    title = milestone.title;
+    type = milestone.type;
+    accent = milestone.tier === "legendary" ? ["#ffd36a", "#8dffb3"] : ["#ffd36a", "#ff6fd8"];
+  }
 
   const nextTrail = [...trail, title].slice(-MAX_TRAIL);
   let body = buildBody({ rng, safeMode, title, being, sceneObject, depth, spark, trail, pocket, tier });
@@ -582,8 +721,9 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     body += " You have been here before, but the furniture has moved one inch closer to the exit.";
   }
   const artifact = buildArtifact(rng, foundObject, being);
-  const whisper = buildWhisper(rng, being, foundObject, rule, signal);
-  const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule, signal, being, item, trail, isLoop });
+  const whisper = milestone?.whisper || buildWhisper(rng, being, foundObject, rule, signal);
+  const finalRule = milestone?.rule || rule;
+  const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule: finalRule, signal, being, item, trail, isLoop });
   const examinations = buildExaminations(rng, foundObject, being, signal);
   const secretExit = hashString(`secret:${seed}:${depth}`) % 5 === 0;
 
@@ -607,11 +747,11 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
     type,
     code,
     signal,
-    tier,
+    tier: milestone?.tier || tier,
     reroll,
     body,
     artifact,
-    rule,
+    rule: finalRule,
     whisper,
     choices,
     accent,
@@ -624,16 +764,23 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
 
 function defaultSave() {
   return {
-    version: 1,
+    version: 2,
     inventory: [],
     achievements: {},
+    quests: {
+      active: null,
+      completed: []
+    },
     visitedRooms: [],
     stats: {
       roomsVisited: 0,
       maxDepth: 0,
       modesVisited: [],
       rareRoomsFound: 0,
-      rerollsUsed: 0
+      rerollsUsed: 0,
+      roomsSaved: 0,
+      examinations: 0,
+      ascents: 0
     }
   };
 }
@@ -645,6 +792,10 @@ function loadSave() {
       ...defaultSave(),
       ...raw,
       stats: { ...defaultSave().stats, ...(raw.stats || {}) },
+      quests: {
+        active: raw.quests?.active || null,
+        completed: Array.isArray(raw.quests?.completed) ? raw.quests.completed.slice(-30) : []
+      },
       inventory: Array.isArray(raw.inventory) ? raw.inventory.slice(0, MAX_INVENTORY) : [],
       achievements: raw.achievements && typeof raw.achievements === "object" ? raw.achievements : {},
       visitedRooms: Array.isArray(raw.visitedRooms) ? raw.visitedRooms.slice(-250) : []
@@ -660,11 +811,45 @@ function saveGame(save) {
 
 function updateSave(mutator) {
   const save = loadSave();
+  ensureQuest(save);
   mutator(save);
+  checkQuest(save);
   checkAchievements(save);
   saveGame(save);
   updateProgressUi(save);
   return save;
+}
+
+function ensureQuest(save) {
+  if (save.quests.active) return;
+  const completed = new Set(save.quests.completed);
+  const available = questTemplates.filter((quest) => !completed.has(quest.id));
+  const pool = available.length ? available : questTemplates;
+  const index = hashString(`${Date.now()}:${save.stats.roomsVisited}:${save.inventory.length}`) % pool.length;
+  save.quests.active = { id: pool[index].id, assignedAt: new Date().toISOString() };
+}
+
+function activeQuest(save = loadSave()) {
+  ensureQuest(save);
+  return questTemplates.find((quest) => quest.id === save.quests.active?.id) || questTemplates[0];
+}
+
+function questProgress(save = loadSave()) {
+  const quest = activeQuest(save);
+  return {
+    quest,
+    value: Math.min(quest.progress(save), quest.target)
+  };
+}
+
+function checkQuest(save) {
+  const { quest, value } = questProgress(save);
+  if (value < quest.target) return;
+  save.quests.completed.push(quest.id);
+  save.quests.completed = [...new Set(save.quests.completed)].slice(-30);
+  showToast(`quest complete: ${quest.title}`);
+  save.quests.active = null;
+  ensureQuest(save);
 }
 
 function checkAchievements(save) {
@@ -693,6 +878,8 @@ function recordRoomVisit(place) {
 function updateProgressUi(save = loadSave()) {
   elements.inventoryCount.textContent = `${save.inventory.length}/${MAX_INVENTORY}`;
   elements.achievementCount.textContent = Object.keys(save.achievements).length;
+  const { quest, value } = questProgress(save);
+  elements.questValue.textContent = `${value}/${quest.target}`;
 }
 
 function renderFromUrl(options = {}) {
@@ -730,6 +917,8 @@ function renderPlace(place, options = {}) {
   elements.artifactSecretText.classList.add("hidden");
   elements.artifactSecretText.textContent = "";
   elements.examineArtifactButton.textContent = "examine";
+  delete elements.examineArtifactButton.dataset.index;
+  delete elements.examineArtifactButton.dataset.examined;
   elements.takeItemButton.disabled = save.inventory.some((item) => item.id === place.item.id) || save.inventory.length >= MAX_INVENTORY;
   elements.takeItemButton.textContent = save.inventory.some((item) => item.id === place.item.id) ? "artifact kept" : "take artifact";
 
@@ -756,8 +945,11 @@ function renderPlace(place, options = {}) {
   renderTrail(place.trail);
   renderChoices(place);
   recordRoomVisit(place);
+  renderQuestHint();
   rememberLastUrl();
   appendJournal(place);
+  recordConstellationStep(place);
+  renderConstellations();
   updateProgressUi();
   elements.routeAnnouncer.textContent = `${place.title}, ${place.depth} layers down.`;
 
@@ -804,12 +996,18 @@ function revealSecretExit(place) {
 function chooseExit(place, choice) {
   navigator.vibrate?.(8);
   const nextPocket = slugify(place.item.name);
+  const ascent = choice.ascent || 0;
+  if (ascent > 0) {
+    updateSave((save) => {
+      save.stats.ascents += 1;
+    });
+  }
   navigateToPlace({
     seed: choice.seed,
     mode: choice.nextMode || place.mode,
-    depth: place.depth + 1,
+    depth: ascent ? Math.max(0, place.depth - ascent) : place.depth + 1,
     spark: place.spark || place.title,
-    trail: place.trail,
+    trail: ascent ? place.trail.slice(0, -ascent) : place.trail,
     reroll: "0",
     pocket: nextPocket
   });
@@ -885,6 +1083,9 @@ function saveCurrentPlace() {
   if (!currentPlace) return;
   const safeUrl = safeSameOriginPath(window.location.href);
   if (!safeUrl) return;
+  updateSave((save) => {
+    save.stats.roomsSaved += 1;
+  });
   const places = getSavedPlaces().filter((place) => place.url !== safeUrl);
   places.unshift({
     title: currentPlace.title,
@@ -980,6 +1181,139 @@ function renderJournal() {
   });
 }
 
+function renderQuestHint() {
+  const save = loadSave();
+  const { quest, value } = questProgress(save);
+  elements.questHint.textContent = `Quest: ${quest.title}. Progress ${value}/${quest.target} ${quest.unit}.`;
+  elements.questHint.classList.remove("hidden");
+}
+
+function renderQuestsDialog() {
+  const save = loadSave();
+  const { quest, value } = questProgress(save);
+  elements.questsPanel.innerHTML = "";
+  const item = document.createElement("div");
+  item.className = "saved-item quest-row";
+  const text = document.createElement("div");
+  const title = document.createElement("strong");
+  title.textContent = quest.title;
+  const meta = document.createElement("span");
+  meta.textContent = `${value} / ${quest.target} ${quest.unit}`;
+  const bar = document.createElement("div");
+  bar.className = "quest-bar";
+  const fill = document.createElement("span");
+  fill.style.width = `${Math.min(100, (value / quest.target) * 100)}%`;
+  bar.appendChild(fill);
+  text.append(title, meta, bar);
+  item.appendChild(text);
+  elements.questsPanel.appendChild(item);
+}
+
+function nodeId(place) {
+  return `${place.code}:${place.depth}`;
+}
+
+function loadConstellation() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.constellation) || "{}");
+    return {
+      version: 1,
+      nodes: parsed.nodes && typeof parsed.nodes === "object" ? parsed.nodes : {},
+      edges: Array.isArray(parsed.edges) ? parsed.edges.slice(-180) : [],
+      currentId: parsed.currentId || null,
+      previousId: parsed.previousId || null
+    };
+  } catch {
+    return { version: 1, nodes: {}, edges: [], currentId: null, previousId: null };
+  }
+}
+
+function saveConstellation(graph) {
+  const nodes = Object.fromEntries(Object.entries(graph.nodes).slice(-140));
+  localStorage.setItem(STORAGE_KEYS.constellation, JSON.stringify({ ...graph, nodes, edges: graph.edges.slice(-180) }));
+}
+
+function recordConstellationStep(place) {
+  const graph = loadConstellation();
+  const id = nodeId(place);
+  const safeUrl = safeSameOriginPath(window.location.href);
+  graph.nodes[id] = {
+    id,
+    title: place.title,
+    depth: place.depth,
+    mode: place.mode,
+    tier: place.tier,
+    url: safeUrl || "/",
+    angle: (hashString(`${place.title}:${place.depth}`) % 628) / 100,
+    visitedAt: new Date().toISOString()
+  };
+  if (graph.currentId && graph.currentId !== id) {
+    const edgeId = `${graph.currentId}->${id}`;
+    if (!graph.edges.some((edge) => edge.id === edgeId)) {
+      graph.edges.push({ id: edgeId, from: graph.currentId, to: id });
+    }
+  }
+  graph.previousId = graph.currentId;
+  graph.currentId = id;
+  saveConstellation(graph);
+}
+
+function renderConstellations() {
+  const graph = loadConstellation();
+  renderConstellation(elements.constellationMap, graph, 400);
+  renderConstellation(elements.constellationMapFull, graph, 800);
+}
+
+function renderConstellation(svg, graph, size) {
+  if (!svg) return;
+  const namespace = "http://www.w3.org/2000/svg";
+  svg.replaceChildren();
+  const center = size / 2;
+  const maxRadius = center - 32;
+  const nodes = Object.values(graph.nodes);
+  const positions = new Map();
+  nodes.forEach((node) => {
+    const radius = Math.min(maxRadius, 18 + node.depth * (size / 45));
+    positions.set(node.id, {
+      x: center + Math.cos(node.angle) * radius,
+      y: center + Math.sin(node.angle) * radius
+    });
+  });
+
+  graph.edges.forEach((edge) => {
+    const from = positions.get(edge.from);
+    const to = positions.get(edge.to);
+    if (!from || !to) return;
+    const line = document.createElementNS(namespace, "line");
+    line.setAttribute("x1", from.x);
+    line.setAttribute("y1", from.y);
+    line.setAttribute("x2", to.x);
+    line.setAttribute("y2", to.y);
+    line.classList.add("star-edge");
+    svg.appendChild(line);
+  });
+
+  nodes.forEach((node) => {
+    const position = positions.get(node.id);
+    const circle = document.createElementNS(namespace, "circle");
+    circle.setAttribute("cx", position.x);
+    circle.setAttribute("cy", position.y);
+    circle.setAttribute("r", node.id === graph.currentId ? 7 : 4);
+    circle.classList.add("star-node");
+    if (node.id === graph.currentId) circle.classList.add("is-current");
+    circle.dataset.tier = node.tier;
+    circle.dataset.mode = node.mode;
+    circle.setAttribute("tabindex", "0");
+    circle.setAttribute("role", "link");
+    circle.setAttribute("aria-label", `${node.title}, ${node.depth} layers down`);
+    circle.addEventListener("click", () => {
+      window.history.pushState({}, "", node.url);
+      renderFromUrl({ focusTitle: true, scrollToPlace: true });
+    });
+    svg.appendChild(circle);
+  });
+}
+
 function rememberLastUrl() {
   const safeUrl = safeSameOriginPath(window.location.href);
   if (safeUrl) localStorage.setItem(STORAGE_KEYS.lastUrl, safeUrl);
@@ -1010,6 +1344,12 @@ function takeCurrentItem() {
 
 function examineCurrentArtifact() {
   if (!currentPlace) return;
+  if (!elements.examineArtifactButton.dataset.examined) {
+    updateSave((save) => {
+      save.stats.examinations += 1;
+    });
+    elements.examineArtifactButton.dataset.examined = "true";
+  }
   const index = clampNumber(elements.examineArtifactButton.dataset.index || "0", 0, 99);
   const line = currentPlace.examinations[index % currentPlace.examinations.length];
   elements.artifactSecretText.textContent = line;
@@ -1096,15 +1436,39 @@ elements.journalButton.addEventListener("click", () => {
   elements.closeJournalButton.focus();
 });
 
+elements.questsButton.addEventListener("click", () => {
+  lastFocusedBeforeDialog = document.activeElement;
+  renderQuestsDialog();
+  elements.questsDialog.showModal();
+  elements.closeQuestsButton.focus();
+});
+
+elements.mapButton.addEventListener("click", () => {
+  lastFocusedBeforeDialog = document.activeElement;
+  renderConstellations();
+  elements.constellationDialog.showModal();
+  elements.closeMapButton.focus();
+});
+
 elements.closeSavedButton.addEventListener("click", () => elements.savedDialog.close());
 elements.closeJournalButton.addEventListener("click", () => elements.journalDialog.close());
+elements.closeQuestsButton.addEventListener("click", () => elements.questsDialog.close());
+elements.closeMapButton.addEventListener("click", () => elements.constellationDialog.close());
 elements.savedDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.journalDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
+elements.questsDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
+elements.constellationDialog.addEventListener("close", () => lastFocusedBeforeDialog?.focus?.());
 elements.savedDialog.addEventListener("click", (event) => {
   if (event.target === elements.savedDialog) elements.savedDialog.close();
 });
 elements.journalDialog.addEventListener("click", (event) => {
   if (event.target === elements.journalDialog) elements.journalDialog.close();
+});
+elements.questsDialog.addEventListener("click", (event) => {
+  if (event.target === elements.questsDialog) elements.questsDialog.close();
+});
+elements.constellationDialog.addEventListener("click", (event) => {
+  if (event.target === elements.constellationDialog) elements.constellationDialog.close();
 });
 
 $$("input[name='mode']").forEach((radio) => {
