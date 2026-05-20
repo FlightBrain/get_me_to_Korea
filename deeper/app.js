@@ -1,4 +1,13 @@
 import { DEEPER_BODY_LINES, DEEPER_CONTENT_PACKS, DEEPER_EVENT_LINES, DEEPER_WHISPER_LINES } from "./content-packs.js";
+import {
+  DEEPER_ARTIFACT_LINES,
+  DEEPER_ASCENT_LINES,
+  DEEPER_CHOICE_HINTS,
+  DEEPER_MILESTONE_LORE,
+  DEEPER_QUEST_LORE,
+  DEEPER_SECRET_LINES,
+  DEEPER_SURFACE_RUMORS
+} from "./content-expansions.js";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -484,6 +493,11 @@ function pickModeLine(rng, lines, mode) {
   return matching.length ? pick(rng, matching).text : pick(rng, lines).text;
 }
 
+function pickDepthLine(rng, lines, mode, depth) {
+  const matching = lines.filter((line) => line.mode === mode && line.depth === depth);
+  return matching.length ? pick(rng, matching).text : pickModeLine(rng, lines, mode);
+}
+
 function buildExaminations(rng, object, being, signal) {
   return [
     `The ${object} shows a reflection of ${being}, but the reflection is three rooms ahead.`,
@@ -575,13 +589,14 @@ function buildBody({ rng, safeMode, title, being, sceneObject, depth, spark, tra
   return lines.join(" ");
 }
 
-function buildArtifact(rng, object, being) {
+function buildArtifact(rng, object, being, mode) {
   const templates = [
     `Under a label that says do not touch: a ${object}. When you lean closer, a tiny label appears: "${pick(rng, universal.endings)}."`,
     `Someone left a ${object} here like they meant to come back. It warms in your pocket when you hesitate.`,
     `The ${object} is not listed on any map. It hums when your cursor gets near.`,
     `A ${being} slides a ${object} toward you without making eye contact.`
   ];
+  if (rng() > 0.42) return pickModeLine(rng, DEEPER_ARTIFACT_LINES, mode);
   return pick(rng, templates);
 }
 
@@ -615,7 +630,7 @@ function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, bein
     };
     return {
       label: labelByType[exitType],
-      hint: `${titleCase(ending)}. Layer ${depth + 1}.`,
+      hint: pickModeLine(rng, DEEPER_CHOICE_HINTS, mode).replace("{depth}", String(depth + 1)),
       seed: slugify(`${seed}:${exitType}:${index}:${target}:${reroll}`) || randomSeed("choice"),
       nextMode
     };
@@ -642,7 +657,7 @@ function buildChoices({ rng, seed, bank, mode, depth, reroll, rule, signal, bein
   if (depth > 0 && (depth % 5 === 0 || trail.length >= 2)) {
     choices.push({
       label: `Climb back toward ${trail.at(-2) || "the surface"}`,
-      hint: `Layer ${Math.max(0, depth - 1)}. The air gets lighter.`,
+      hint: pickModeLine(rng, DEEPER_ASCENT_LINES, mode).replace("{depth}", String(Math.max(0, depth - 1))),
       seed: slugify(`${seed}:ascent:${depth}:${reroll}`),
       nextMode: mode,
       ascent: 1
@@ -751,7 +766,13 @@ function createPlace({ seed, mode, depth, spark, trail, reroll, pocket }) {
   if (roomEvent) {
     body += ` ${roomEvent}`;
   }
-  const artifact = buildArtifact(rng, foundObject, being);
+  if (milestone) {
+    body += ` ${pickDepthLine(rng, DEEPER_MILESTONE_LORE, safeMode, depth)}`;
+  }
+  if (depth === 0 && trail.length > 0) {
+    body += ` ${pickModeLine(rng, DEEPER_SURFACE_RUMORS, safeMode)}`;
+  }
+  const artifact = buildArtifact(rng, foundObject, being, safeMode);
   const whisper = milestone?.whisper || buildWhisper(rng, being, foundObject, rule, signal, safeMode);
   const finalRule = milestone?.rule || rule;
   const choices = buildChoices({ rng, seed, bank, mode: safeMode, depth, reroll, rule: finalRule, signal, being, item, trail, isLoop });
@@ -1216,7 +1237,9 @@ function renderJournal() {
 function renderQuestHint() {
   const save = loadSave();
   const { quest, value } = questProgress(save);
-  elements.questHint.textContent = `Quest: ${quest.title}. Progress ${value}/${quest.target} ${quest.unit}.`;
+  const rng = makeRng(hashString(`quest-hint:${currentPlace?.seed}:${quest.id}:${value}`));
+  const lore = currentPlace ? pickModeLine(rng, DEEPER_QUEST_LORE, currentPlace.mode) : "";
+  elements.questHint.textContent = `Quest: ${quest.title}. Progress ${value}/${quest.target} ${quest.unit}. ${lore}`;
   elements.questHint.classList.remove("hidden");
 }
 
@@ -1383,7 +1406,8 @@ function examineCurrentArtifact() {
     elements.examineArtifactButton.dataset.examined = "true";
   }
   const index = clampNumber(elements.examineArtifactButton.dataset.index || "0", 0, 99);
-  const line = currentPlace.examinations[index % currentPlace.examinations.length];
+  const rng = makeRng(hashString(`secret-line:${currentPlace.seed}:${index}`));
+  const line = index % 2 === 0 ? pickModeLine(rng, DEEPER_SECRET_LINES, currentPlace.mode) : currentPlace.examinations[index % currentPlace.examinations.length];
   elements.artifactSecretText.textContent = line;
   elements.artifactSecretText.classList.remove("hidden");
   elements.examineArtifactButton.dataset.index = String(index + 1);
